@@ -1,0 +1,181 @@
+import fs from "fs"
+import path from "path"
+import { source } from "@/lib/source"
+import {
+  getComponentInstallCommand,
+  installMethods,
+} from "@/lib/install-commands"
+
+const registryRoot = path.join(process.cwd(), "registry")
+
+const packageInstallCommands = {
+  npm: "npm install",
+  yarn: "yarn add",
+  bun: "bun add",
+  pnpm: "pnpm add",
+}
+
+function getComponentsList() {
+  const components = source.pageTree.children.find(
+    (page) => page.$id === "components"
+  )
+
+  if (components?.type !== "folder") {
+    return ""
+  }
+
+  const list = components.children.filter(
+    (component) => component.type === "page"
+  )
+
+  return list
+    .map((component) => `- [${component.name}](${component.url})`)
+    .join("\n")
+}
+
+function parseCommands(commands: string) {
+  return [...commands.matchAll(/["']([^"']+)["']/g)].map((match) => match[1])
+}
+
+function getAttribute(tag: string, name: string) {
+  return tag.match(new RegExp(`${name}="([^"]+)"`))?.[1]
+}
+
+function renderPackageCommands(
+  commands: string,
+  commandMap: Record<string, string>,
+) {
+  const packages = parseCommands(commands)
+    .map((command) => command.replace(/^@honestui\//, ""))
+    .join(" ")
+
+  return Object.entries(commandMap)
+    .map(([manager, command]) => `### ${manager}\n\n\`\`\`bash\n${command} ${packages}\n\`\`\``)
+    .join("\n\n")
+}
+
+function stripMdxComponentTags(content: string) {
+  return content
+    .replace(/<CodeTabs(?:\s[^>]*)?>/g, "")
+    .replace(/<\/CodeTabs>/g, "")
+    .replace(/<TabsList(?:\s[^>]*)?>[\s\S]*?<\/TabsList>/g, "")
+    .replace(/<TabsPanel(?:\s[^>]*)?>/g, "")
+    .replace(/<\/TabsPanel>/g, "")
+    .replace(/<Alert(?:\s[^>]*)?>/g, "> ")
+    .replace(/<\/Alert>/g, "")
+    .replace(/<AlertContent(?:\s[^>]*)?>/g, "")
+    .replace(/<\/AlertContent>/g, "")
+    .replace(/<Steps[^>]*>/g, "")
+    .replace(/<\/Steps>/g, "")
+    .replace(/<Step(?:\s[^>]*)?>/g, "")
+    .replace(/<\/Step>/g, "")
+    .replace(/<StepContent(?:\s[^>]*)?>/g, "")
+    .replace(/<\/StepContent>/g, "")
+    .replace(/<StepTitle(?:\s[^>]*)?>([\s\S]*?)<\/StepTitle>/g, "### $1")
+    .replace(/<StepDescription(?:\s[^>]*)?>([\s\S]*?)<\/StepDescription>/g, "$1")
+    .replace(/<ApiTable[^>]*>/g, "")
+    .replace(/<\/ApiTable>/g, "")
+    .replace(
+      /<ApiRow\s+([\s\S]*?)>([\s\S]*?)<\/ApiRow>/g,
+      (_match, attrs: string, description: string) => {
+        const name = attrs.match(/name="([^"]*)"/)?.[1] ?? "";
+        const typeMatch = attrs.match(/type=(?:"([^"]*)"|'([^']*)')/);
+        const type = typeMatch ? (typeMatch[1] ?? typeMatch[2] ?? "") : "";
+        const defaultMatch = attrs.match(/default=(?:"([^"]*)"|'([^']*)')/);
+        const defaultValue = defaultMatch ? (defaultMatch[1] ?? defaultMatch[2] ?? "") : "";
+        const required = /(?:^|\s)required(?:\s|$)/.test(attrs);
+        const meta = [type && `type: \`${type}\``, defaultValue && `default: \`${defaultValue}\``]
+          .filter(Boolean)
+          .join(" · ");
+        return `### \`${name}\`${required ? " (required)" : ""}\n\n${meta}\n\n${description.trim()}`;
+      },
+    )
+    .replace(/<Link\s+href="([^"]+)"[^>]*>([\s\S]*?)<\/Link>/g, "[$2]($1)")
+}
+
+function renderRegistrySource(
+  name: string,
+  title: string | undefined,
+  kind: "component" | "example",
+) {
+  if (!/^[a-z0-9-]+$/.test(name)) {
+    return undefined
+  }
+
+  const candidates =
+    kind === "component"
+      ? [`ai/${name}.tsx`, `lib/${name}.ts`, `lib/${name}.tsx`, `styles/${name}.css`]
+      : [`examples/${name}.tsx`]
+  const absolutePath = candidates
+    .map((candidate) => path.join(registryRoot, candidate))
+    .find((candidate) => fs.existsSync(candidate))
+
+  if (!absolutePath) {
+    return undefined
+  }
+
+  let src = fs.readFileSync(absolutePath, "utf8")
+
+  // Show the paths a project has after installing.
+  src = src.replaceAll("@/registry/ai/", "@/components/ai/").replaceAll("@/registry/lib/", "@/lib/")
+  src = src.replaceAll("export default", "export")
+
+  const heading = title ? `### ${title}\n\n` : ""
+
+  return `${heading}\`\`\`${path.extname(absolutePath).slice(1)}
+${src}
+\`\`\``
+}
+
+export function processMdxForLLMs(content: string) {
+  content = stripMdxComponentTags(content)
+
+  // Replace <ComponentsList /> with a markdown list of components.
+  const componentsListRegex = /<ComponentsList\s*\/>/g
+  content = content.replace(componentsListRegex, getComponentsList())
+
+  content = content.replace(
+    /<CommandBlock\s+commands=\{\[([\s\S]*?)\]\}\s*\/>/g,
+    (_match, commands) => renderPackageCommands(commands, packageInstallCommands),
+  )
+
+  content = content.replace(
+    /<CliBlock\s+commands=\{\[([\s\S]*?)\]\}\s*\/>/g,
+    (_match, commands) => {
+      const items = parseCommands(commands)
+      return installMethods
+        .map(
+          (method) =>
+            `### ${method}\n\n\`\`\`bash\n${getComponentInstallCommand(method, items)}\n\`\`\``,
+        )
+        .join("\n\n")
+    },
+  )
+
+  content = content.replace(
+    /<ComponentSource[\s\S]*?\/>/g,
+    (match) => {
+      const name = getAttribute(match, "name")
+      const title = getAttribute(match, "title")
+
+      return name ? renderRegistrySource(name, title, "component") ?? match : match
+    },
+  )
+
+  // Replace <ComponentPreview ... name="xxx" ... /> with actual source code.
+  return content.replace(/<ComponentPreview[\s\S]*?\/>/g, (match) => {
+    const name = getAttribute(match, "name")
+    const title = getAttribute(match, "title")
+
+    if (!name) {
+      return match
+    }
+
+    try {
+      return renderRegistrySource(name, title, "example") ?? match
+    } catch (error) {
+      console.error(`Error processing ComponentPreview ${name}:`, error)
+      return match
+    }
+  })
+}

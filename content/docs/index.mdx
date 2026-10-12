@@ -1,0 +1,83 @@
+---
+title: Honest AI
+metaTitle: Honest AI, React Components for Agent and Chat Interfaces
+metaDescription: Copy React components for prompts, agent traces, tool calls, and approvals. Each one renders the state your application passes in.
+description: Copy components for prompts, agent traces, tool calls, and approvals into your project.
+---
+
+Honest AI is a set of interface pieces an agent or chat product needs around its model: a field for the prompt, a trace of what the agent is doing, a record of the tools it called, and a way to ask the person a question before it acts.
+
+Each component renders the state you pass in. None of them calls a model, streams a reply, or runs a tool. Your application does that work and passes the result as props. Because of that, a component never shows progress your application did not report.
+
+Honest AI is built on [Honest UI](https://www.honestui.com). The Honest UI CLI copies each component into your project under `components/ai`, along with the Honest UI components it uses, so you can change the source directly.
+
+## Available components
+
+### Conversation
+
+| Component | Use it for |
+| --- | --- |
+| [Prompt Bar](/docs/components/prompt-bar) | Collecting a prompt, with optional `@` sources, `/` commands, attachments, a model menu, and a Stop button |
+| [Chat Thread](/docs/components/chat-thread) | Laying out a scrolling conversation with the composer under it, and showing a message's files, editor, and versions |
+| [Streaming Text](/docs/components/streaming-text) | Rendering a reply as it arrives, then its copy, retry, and feedback actions, sources, and follow-up prompts |
+| [Markdown](/docs/components/markdown) | Rendering a reply's Markdown, including Markdown that is still arriving |
+| [Context Meter](/docs/components/context-meter) | Showing how full the model's context window is |
+| [Sidebar Nav](/docs/components/sidebar-nav) | Navigating destinations and past conversations |
+| [Search List](/docs/components/search-list) | Filtering a short list, such as saved prompts |
+
+### Agent activity
+
+| Component | Use it for |
+| --- | --- |
+| [Thinking State](/docs/components/thinking-state) | Showing that the agent is working, with its steps, reasoning, searches, and sources behind a disclosure |
+| [Loading State](/docs/components/loading-state) | Showing that long work is in progress, with the time elapsed |
+| [Tool Chips](/docs/components/tool-chips) | Listing the tool calls in a run, what each returned, and the files the run changed |
+| [Task Rows](/docs/components/task-rows) | Listing the tasks in a run with the status of each |
+| [Agent Screen](/docs/components/agent-screen) | Showing what an agent that drives a browser or desktop sees |
+| [Flowchart](/docs/components/flowchart) | Laying out a workflow as steps joined by connectors |
+
+### Decisions
+
+| Component | Use it for |
+| --- | --- |
+| [Approval Card](/docs/components/approval-card) | Asking the person one or more questions before the agent continues |
+| [Recommendation Card](/docs/components/recommendation-card) | Proposing one action with its confidence, and the alternatives |
+| [Diff Table](/docs/components/diff-table) | Reviewing the rows an agent proposes to add or remove |
+| [Selection Actions](/docs/components/selection-actions) | Offering AI edits for selected text, then keeping or discarding the result |
+| [Fine-tune Card](/docs/components/fine-tune-card) | Adjusting a result with a compact panel of controls |
+
+### Results
+
+| Component | Use it for |
+| --- | --- |
+| [Context Cards](/docs/components/context-cards) | Showing the passages an agent retrieved, with their sources |
+| [Code View](/docs/components/code-view) | Showing a file's code or a diff of it |
+| [Artifact Panel](/docs/components/artifact-panel) | Giving a file or document an agent made a surface beside the conversation |
+| [Records Table](/docs/components/records-table) | Showing records with columns an agent fills in cell by cell |
+| [Filter Table](/docs/components/filter-table) | Filtering a table's rows with counted chips |
+| [Insight Cards](/docs/components/insight-cards) | Showing a set of findings one at a time |
+
+### Styles
+
+| Stylesheet | Use it for |
+| --- | --- |
+| [Prose](/docs/prose) | Styling rendered Markdown or plain HTML with one class, in any project |
+
+## What your application supplies
+
+- **The model and the transport.** Call your model from a route or server action and stream the result however your stack does it.
+- **State.** Map your agent's events onto props: a status for Thinking State, an array of calls for Tool Chips, a list of questions for Approval Card, the text so far for Streaming Text.
+- **Words.** Each component takes a `labels` prop for every string it writes, including the names read by screen readers. Replace the English defaults when you translate.
+- **Failure handling.** Tell the component when something failed. Components that show progress have an error status. Components that send a decision, such as Approval Card and Diff Table, show an error when the promise you return rejects, and keep what the person chose.
+
+## Reading the previews
+
+The previews on these pages have no model behind them. Where a preview moves, a timer is standing in for an agent, and the text under the preview says so. Where a preview has a result, it shows the object your handler would receive.
+
+## Theming
+
+The components use Honest UI's theme tokens, and they are built from Honest UI components: Button, Collapsible, Popover, Menu, Dialog, Table, Command, Select, and the form controls. A change to your theme or to one of those components carries through.
+
+## Credit
+
+These components are adapted from [Beautiful UI](https://github.com/slev12397/beautiful-ui) by Shane Levine, used under the MIT License. The Honest AI versions take their content from props, use Honest UI components and tokens, and leave out the scripted demo behavior. Where a Beautiful UI component duplicated something Honest UI already has, the port is built on the Honest UI component, and its page says what was left out. Each source file keeps the original copyright notice.

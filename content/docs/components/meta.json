@@ -1,0 +1,29 @@
+{
+  "title": "Components",
+  "pages": [
+    "prompt-bar",
+    "chat-thread",
+    "streaming-text",
+    "markdown",
+    "context-meter",
+    "thinking-state",
+    "loading-state",
+    "tool-chips",
+    "task-rows",
+    "approval-card",
+    "recommendation-card",
+    "selection-actions",
+    "context-cards",
+    "code-view",
+    "artifact-panel",
+    "diff-table",
+    "records-table",
+    "filter-table",
+    "insight-cards",
+    "flowchart",
+    "fine-tune-card",
+    "agent-screen",
+    "search-list",
+    "sidebar-nav"
+  ]
+}

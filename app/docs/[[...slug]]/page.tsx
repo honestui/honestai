@@ -1,0 +1,201 @@
+import { DocsTableOfContents } from "@/components/docs/mdx/components/table-of-content";
+import { MDXNavigation } from "@/components/docs/mdx/components/navigation";
+import { DocsThemeCustomizer } from "@/components/docs/layout/docs-theme-customizer";
+import { DocsCopyPage } from "@/components/docs/layout/docs-copy-button";
+import { findNeighbour } from "fumadocs-core/page-tree";
+import { mdxComponents } from "@/components/docs/mdx";
+import { notFound } from "next/navigation";
+import { absoluteUrl, SITE_URL } from "@/lib/utils";
+import { Link as LinkIcon } from "honestui/icons";
+import { source } from "@/lib/source";
+import type { Metadata } from "next";
+import Script from "next/script";
+
+export function generateStaticParams() {
+  return source.generateParams();
+}
+
+export async function generateMetadata(props: {
+  params: Promise<{ slug?: string[] }>;
+}): Promise<Metadata> {
+  const params = await props.params;
+  const page = source.getPage(params.slug);
+
+  if (!page) return {};
+
+  const { title, metaTitle, description, metaDescription, image } = page.data;
+  const metadataDescription = metaDescription ?? description;
+
+  const url = absoluteUrl(page.url);
+  const ogImage = image ? absoluteUrl(image) : undefined;
+
+  return {
+    title: metaTitle ?? title,
+    description: metadataDescription,
+    alternates: {
+      canonical: url,
+      types: {
+        "text/markdown": page.url === "/docs" ? "/docs.md" : `${page.url}.md`,
+      },
+    },
+    openGraph: {
+      type: "article",
+      url,
+      title: metaTitle ?? title,
+      description: metadataDescription,
+      siteName: "Honest AI",
+      ...(ogImage && { images: [{ url: ogImage, alt: `${title} - Honest AI` }] }),
+    },
+    twitter: {
+      card: ogImage ? "summary_large_image" : "summary",
+      title: metaTitle ?? title,
+      description: metadataDescription,
+      ...(ogImage && { images: [ogImage] }),
+    },
+  };
+}
+
+type DocsPage = NonNullable<ReturnType<typeof source.getPage>>;
+
+function buildDocsJsonLd(page: DocsPage) {
+  const { title, description, image } = page.data;
+  const url = absoluteUrl(page.url);
+
+  const crumbs = [{ name: "Docs", url: absoluteUrl("/docs") }];
+  if (page.slugs[0] === "components") {
+    // The components have no index page of their own; the overview lists them.
+    crumbs.push({ name: "Components", url: absoluteUrl("/docs") });
+  }
+  if (page.url !== "/docs") {
+    crumbs.push({ name: title, url });
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        headline: title,
+        description,
+        url,
+        mainEntityOfPage: url,
+        ...(image && { image: absoluteUrl(image) }),
+        inLanguage: "en",
+        author: {
+          "@type": "Person",
+          name: "Connor Love",
+          url: "https://x.com/cando145",
+        },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: crumbs.map((crumb, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: crumb.name,
+          item: crumb.url,
+        })),
+      },
+    ],
+  };
+}
+
+export default async function Page(props: { params: Promise<{ slug: string[] }> }) {
+  const params = await props.params;
+  const page = source.getPage(params.slug);
+
+  if (!page) {
+    notFound();
+  }
+
+  const doc = page.data;
+  const MDX = doc.body;
+  const links = doc.links;
+  const neighbours = findNeighbour(source.pageTree, page.url);
+
+  return (
+    <div className="relative mt-10 flex sm:mt-0">
+      <Script
+        id="docs-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          // Escape "<" so frontmatter text can never smuggle in a premature </script>.
+          __html: JSON.stringify(buildDocsJsonLd(page)).replace(/</g, "\\u003c"),
+        }}
+      />
+      <div className="docs-container flex flex-col py-12 pb-32">
+        <div className="flex flex-row items-start gap-4">
+          <div className="flex flex-1 flex-col gap-1">
+            <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight xl:text-4xl">
+              {doc.title}
+            </h1>
+            {doc.description && (
+              <p className="text-muted-foreground text-[15px]">{doc.description}</p>
+            )}
+            {links && (
+              <div className="mt-3 flex flex-row gap-3 select-none">
+                {Object.entries(links).map(([key, value]) => (
+                  <a
+                    className="text-muted-foreground bg-muted/50 hover:text-primary flex flex-row items-center gap-2 rounded-md px-2 py-0.5 text-[11px] capitalize"
+                    href={value}
+                    target="_blank"
+                    key={key}
+                  >
+                    <LinkIcon className="size-2.5" />
+                    {key}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <DocsCopyPage url={absoluteUrl(page.url)} path={page.url} />
+            {page.slugs[0] === "components" && <DocsThemeCustomizer />}
+          </div>
+        </div>
+        <div className="text-primary/80 mt-8 w-full flex-1 text-[14px] *:data-[slot=alert]:first:mt-0">
+          <MDX components={mdxComponents} />
+        </div>
+        <div className="mt-40 flex flex-col gap-8">
+          <div className="grid grid-cols-2 gap-4 sm:gap-8">
+            <div>
+              {neighbours.previous ? (
+                <MDXNavigation
+                  $id={neighbours.previous.$id}
+                  type="previous"
+                  title={neighbours.previous.name}
+                  url={neighbours.previous.url}
+                  description={neighbours.previous.description}
+                />
+              ) : (
+                <div className="h-full rounded-md border border-dashed" />
+              )}
+            </div>
+            <div>
+              {neighbours.next ? (
+                <MDXNavigation
+                  $id={neighbours.next.$id}
+                  type="next"
+                  title={neighbours.next.name}
+                  url={neighbours.next.url}
+                  description={neighbours.next.description}
+                />
+              ) : (
+                <div className="h-full rounded-md border border-dashed" />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="sticky top-26 hidden h-fit self-start xl:flex">
+        {doc.toc?.length ? (
+          <div className="no-scrollbar w-72 overflow-y-auto px-8">
+            <DocsTableOfContents toc={doc.toc} />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
