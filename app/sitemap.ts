@@ -9,18 +9,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
       url: absoluteUrl("/"),
-      changeFrequency: "weekly",
-      priority: 1,
+      lastModified: "2026-10-12",
     },
     ...source.getPages().map((page) => ({
       url: absoluteUrl(page.url),
-      changeFrequency: "weekly" as const,
-      priority: page.url === "/docs" ? 1 : 0.8,
+      ...(page.data.lastModified && { lastModified: page.data.lastModified }),
     })),
     {
+      url: absoluteUrl("/docs/generative/playground"),
+      lastModified: "2026-10-13",
+    },
+    {
       url: absoluteUrl("/privacy"),
-      changeFrequency: "yearly",
-      priority: 0.3,
+      lastModified: "2026-10-12",
     },
   ];
 }

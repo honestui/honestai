@@ -66,6 +66,8 @@ const loveSans = localFont({
       style: "italic",
     },
   ],
+  // Let CSS request the weights and styles each page actually uses.
+  preload: false,
   variable: "--font-love-sans",
   display: "swap",
 });
@@ -73,6 +75,7 @@ const loveSans = localFont({
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 export const metadata: Metadata = {

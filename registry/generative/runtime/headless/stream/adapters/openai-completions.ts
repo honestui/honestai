@@ -16,10 +16,15 @@ export const openAIAdapter = (): StreamProtocolAdapter => ({
 
       try {
         const json = JSON.parse(data) as ChatCompletionChunk;
+        const streamError = (json as unknown as { error?: { message?: string; code?: string } }).error;
+        if (streamError) {
+          yield { type: EventType.RUN_ERROR, message: streamError.message || "The reply stream failed.", code: streamError.code };
+          return;
+        }
         const choice = json.choices?.[0];
-        const delta = choice?.delta;
+        const delta = choice?.delta ?? {};
 
-        if (!delta) continue;
+        if (!choice) continue;
 
         // Emit TEXT_MESSAGE_START on first meaningful delta
         if (!messageStarted && (delta.content || delta.role)) {
@@ -71,6 +76,10 @@ export const openAIAdapter = (): StreamProtocolAdapter => ({
             type: EventType.TEXT_MESSAGE_END,
             messageId,
           };
+        } else if (choice?.finish_reason === "length") {
+          if (messageStarted) yield { type: EventType.TEXT_MESSAGE_END, messageId };
+          yield { type: EventType.RUN_ERROR, code: "reply_truncated", message: "The reply reached its output limit. The partial reply is preserved. Ask for a shorter answer or ask the model to continue from where it stopped." };
+          return;
         } else if (choice?.finish_reason === "tool_calls") {
           for (const toolCallId of Object.values(toolCallIds)) {
             yield {
@@ -79,8 +88,8 @@ export const openAIAdapter = (): StreamProtocolAdapter => ({
             };
           }
         }
-      } catch (e) {
-        console.error("Failed to parse OpenAI SSE event", e);
+      } catch {
+        console.error("Failed to parse OpenAI SSE event");
       }
     }
   },

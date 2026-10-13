@@ -11,7 +11,11 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it.each(["gemini-3.8-flash", "gpt-6-luna"])("the hosted playground sends %s to this site's server and names no local model", async (model) => {
+it.each([
+  ["gemini-3.8-flash", "stop"],
+  ["gpt-6-luna", "stop"],
+  ["gpt-6-luna", "length"],
+])("the hosted playground sends %s and handles finish_reason=%s", async (model, finishReason) => {
   const chunk = (delta: object, finish: string | null = null) =>
     `data: ${JSON.stringify({ choices: [{ delta, finish_reason: finish }] })}\n\n`;
   let finishReply!: (response: Response) => void;
@@ -22,7 +26,7 @@ it.each(["gemini-3.8-flash", "gpt-6-luna"])("the hosted playground sends %s to t
   );
   const reply = new Response(
     chunk({ role: "assistant", content: "## Hosted reply" }) +
-      chunk({}, "stop") +
+      chunk({}, finishReason) +
       "data: [DONE]\n\n",
     { headers: { "Content-Type": "text/event-stream" } },
   );
@@ -75,5 +79,9 @@ it.each(["gemini-3.8-flash", "gpt-6-luna"])("the hosted playground sends %s to t
   expect(container.querySelector(".honest-prose h2")?.textContent).toBe(
     "Hosted reply",
   );
+  if (finishReason === "length") {
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain("output limit");
+    expect(input.value).toBe("Hello");
+  }
   await React.act(async () => root.unmount());
 });

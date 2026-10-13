@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: absoluteUrl("/docs/generative/playground") },
+  twitter: { card: "summary", title, description },
   openGraph: {
     type: "website",
     url: absoluteUrl("/docs/generative/playground"),

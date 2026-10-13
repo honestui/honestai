@@ -7,6 +7,18 @@ afterEach(() => vi.unstubAllEnvs());
 
 const data = (chunk: object) => `data: ${JSON.stringify(chunk)}\n\n`;
 
+it("surfaces a timeout after partial text as a stream error", async () => {
+  const { streamProtocol } = createHostedLLM({ onContextUsed: vi.fn() });
+  const events = [];
+  const response = new Response(
+    data({ choices: [{ delta: { content: "Partial reply" } }] }) +
+    data({ error: { code: "reply_timeout", message: "The reply timed out. Try again." } }),
+  );
+  for await (const event of streamProtocol.parse(response)) events.push(event);
+  expect(events).toContainEqual(expect.objectContaining({ type: EventType.TEXT_MESSAGE_CONTENT, delta: "Partial reply" }));
+  expect(events).toContainEqual(expect.objectContaining({ type: EventType.RUN_ERROR, code: "reply_timeout", message: "The reply timed out. Try again." }));
+});
+
 async function replyAndCount(body: string) {
   const counted = vi.fn();
   const { streamProtocol } = createHostedLLM({ onContextUsed: counted });

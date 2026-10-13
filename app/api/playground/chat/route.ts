@@ -9,6 +9,9 @@ const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const MAX_MESSAGES = 40;
 const MAX_CONVERSATION_CHARACTERS = 40_000;
 const MAX_REPLY_TOKENS = 4_000;
+const MAX_REQUEST_BYTES = 256_000;
+const REPLY_TIMEOUT_MS = 60_000;
+const TIMEOUT_MESSAGE = "The reply timed out. Any text already received is preserved. Try a shorter request or send your message again.";
 const REQUESTS_PER_WINDOW = 10;
 const WINDOW_MILLISECONDS = 60_000;
 
@@ -67,7 +70,43 @@ function readConversation(body: unknown): ChatMessage[] | null {
 }
 
 function refuse(status: number, error: string) {
-  return Response.json({ error }, { status });
+  return Response.json({ error }, { status, headers: { "Cache-Control": "no-store" } });
+}
+
+/** Bound bytes even when Content-Length is missing or inaccurate. */
+async function readBody(request: Request): Promise<unknown | Response> {
+  const length = Number(request.headers.get("content-length"));
+  if (length > MAX_REQUEST_BYTES) {
+    void request.body?.cancel().catch(() => {});
+    return refuse(413, "This request is too large. Shorten your message or start a new chat.");
+  }
+  if (!request.body) return null;
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let bytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      bytes += value.byteLength;
+      if (bytes > MAX_REQUEST_BYTES) {
+        void reader.cancel().catch(() => {});
+        return refuse(413, "This request is too large. Shorten your message or start a new chat.");
+      }
+      chunks.push(value);
+    }
+    const body = new Uint8Array(bytes);
+    let offset = 0;
+    for (const chunk of chunks) {
+      body.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return JSON.parse(new TextDecoder().decode(body));
+  } catch {
+    return null;
+  } finally {
+    reader.releaseLock();
+  }
 }
 
 export async function POST(request: Request) {
@@ -79,8 +118,14 @@ export async function POST(request: Request) {
   // A browser on another site sends its own Origin. Scripts can omit it, which
   // is why the limits below do not depend on this check.
   const origin = request.headers.get("origin");
-  if (origin && new URL(origin).host !== request.headers.get("host")) {
-    return refuse(403, "This endpoint only serves the playground page.");
+  if (origin) {
+    try {
+      if (new URL(origin).host !== request.headers.get("host")) {
+        return refuse(403, "This endpoint only serves the playground page.");
+      }
+    } catch {
+      return refuse(403, "This endpoint only serves the playground page.");
+    }
   }
 
   const client =
@@ -89,8 +134,9 @@ export async function POST(request: Request) {
     return refuse(429, "Too many messages. Wait a minute, then send it again.");
   }
 
-  const body = await request.json().catch(() => null);
-  const requestedModel = body?.model ?? provider.model;
+  const body = await readBody(request);
+  if (body instanceof Response) return body;
+  const requestedModel = (body as { model?: unknown } | null)?.model ?? provider.model;
   const selected = provider.models?.find((item) => item.model === requestedModel);
   if (!selected) return refuse(400, "Choose an available playground model.");
   const conversation = readConversation(body);
@@ -102,6 +148,10 @@ export async function POST(request: Request) {
   }
 
   let upstream: Response;
+  const deadline = new AbortController();
+  const timer = setTimeout(() => deadline.abort(), REPLY_TIMEOUT_MS);
+  timer.unref();
+  const signal = AbortSignal.any([request.signal, deadline.signal]);
   try {
     upstream = await fetch(selected.provider === "openai" ? OPENAI_URL : GEMINI_URL, {
       method: "POST",
@@ -120,23 +170,111 @@ export async function POST(request: Request) {
         messages: [{ role: "system", content: systemPrompt }, ...conversation],
       }),
       // Stopping the reply in the browser stops the upstream request.
-      signal: request.signal,
+      signal,
     });
   } catch (error) {
+    clearTimeout(timer);
     if (request.signal.aborted) return new Response(null, { status: 499 });
+    if (deadline.signal.aborted) return refuse(504, TIMEOUT_MESSAGE);
     console.error(`Playground: the request to ${selected.provider} failed`, error instanceof Error ? error.name : "Unknown error");
     return refuse(502, "The model could not be reached. Try again in a moment.");
   }
 
   if (!upstream.ok || !upstream.body) {
+    clearTimeout(timer);
+    if (selected.provider === "openai" && upstream.status === 429) {
+      // Read only documented codes. Never return or log the provider's raw message.
+      const details = await upstream.json().catch(() => null);
+      const code = details?.error?.code;
+      let message: string | undefined;
+      let reason = "rate_limit_or_unknown";
+      if (code === "credit_balance_exhausted") {
+        reason = "credit_balance_exhausted";
+        message = "The playground's OpenAI API credits are exhausted. The site owner needs to add API credits before replies can resume.";
+      } else if (code === "organization_spend_limit_exceeded" || code === "project_spend_limit_exceeded") {
+        reason = "spend_limit_exceeded";
+        message = "The playground has reached its OpenAI API spending limit. The site owner needs to review the limit before replies can resume.";
+      } else if (code === "organization_usage_limit_exceeded") {
+        reason = "usage_limit_exceeded";
+        message = "The playground has reached its OpenAI API usage limit. The site owner needs to review the limit before replies can resume.";
+      } else if (code === "insufficient_quota" || details?.error?.type === "insufficient_quota") {
+        reason = "insufficient_quota";
+        message = "OpenAI cannot serve replies with the playground's current API quota. The site owner needs to check API credits and limits.";
+      }
+      console.error(`Playground: openai answered 429 (${reason})`);
+      return message
+        ? refuse(503, message)
+        : refuse(429, "OpenAI is limiting requests to the playground. Wait before sending your message again.");
+    }
     // Provider error bodies can contain account details; log only the status.
+    void upstream.body?.cancel().catch(() => {});
     console.error(`Playground: ${selected.provider} answered ${upstream.status}`);
+    if (upstream.status === 401 || upstream.status === 403) {
+      return refuse(502, "The playground cannot authenticate or access this model. The site owner needs to check the API key and permissions before replies can resume.");
+    }
+    if (upstream.status === 404) {
+      return refuse(502, "This model is unavailable to the playground. Choose another model, or ask the site owner to check model access.");
+    }
+    if (upstream.status === 400) {
+      return refuse(502, "The provider rejected this request. The site owner needs to review the model configuration.");
+    }
     return upstream.status === 429
       ? refuse(503, "The playground is busy. Try again in a moment.")
       : refuse(502, "The model returned an error. Try again in a moment.");
   }
 
-  return new Response(upstream.body, {
+  const reader = upstream.body.getReader();
+  let closed = false;
+  const cleanup = () => {
+    clearTimeout(timer);
+    signal.removeEventListener("abort", onAbort);
+  };
+  let streamController: ReadableStreamDefaultController<Uint8Array>;
+  const onAbort = () => {
+    if (closed) return;
+    closed = true;
+    cleanup();
+    if (request.signal.aborted) {
+      streamController.error(new DOMException("Request canceled", "AbortError"));
+    } else {
+      streamController.enqueue(new TextEncoder().encode(`\n\ndata: ${JSON.stringify({ error: { message: TIMEOUT_MESSAGE, code: "reply_timeout" } })}\n\n`));
+      streamController.close();
+    }
+    void reader.cancel().finally(() => reader.releaseLock()).catch(() => {});
+  };
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      streamController = controller;
+      signal.addEventListener("abort", onAbort, { once: true });
+      if (signal.aborted) onAbort();
+    },
+    async pull(controller) {
+      try {
+        const { done, value } = await reader.read();
+        if (closed) return;
+        if (done) {
+          closed = true;
+          cleanup();
+          reader.releaseLock();
+          controller.close();
+        } else controller.enqueue(value);
+      } catch {
+        if (closed) return;
+        closed = true;
+        cleanup();
+        reader.releaseLock();
+        controller.enqueue(new TextEncoder().encode(`\n\ndata: ${JSON.stringify({ error: { message: "The connection ended before the reply finished. Any text already received is preserved. Try again in a moment." } })}\n\n`));
+        controller.close();
+      }
+    },
+    cancel() {
+      closed = true;
+      cleanup();
+      deadline.abort();
+      return reader.cancel().finally(() => reader.releaseLock());
+    },
+  });
+  return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-store",

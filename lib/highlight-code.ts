@@ -4,6 +4,7 @@ import {
   transformerNotationFocus,
   transformerNotationHighlight,
   transformerNotationWordHighlight,
+  transformerStyleToClass,
 } from "@shikijs/transformers";
 import type { ShikiTransformer } from "shiki";
 import { codeToHtml } from "shiki";
@@ -105,6 +106,8 @@ export async function highlightCode(
 ) {
   const { showLineNumbers = true } = options ?? {};
 
+  // Keep the registry local to this block so concurrent renders cannot share state.
+  const styles = transformerStyleToClass();
   const html = await codeToHtml(code, {
     lang: language,
     themes: {
@@ -113,6 +116,7 @@ export async function highlightCode(
     },
     defaultColor: false,
     transformers: [
+      styles,
       {
         code(node) {
           if (showLineNumbers) {
@@ -135,5 +139,5 @@ export async function highlightCode(
     ],
   });
 
-  return html;
+  return `<style>${styles.getCSS()}</style>${html}`;
 }

@@ -9,7 +9,6 @@ import { absoluteUrl, SITE_URL } from "@/lib/utils";
 import { Link as LinkIcon } from "honestui/icons";
 import { source } from "@/lib/source";
 import type { Metadata } from "next";
-import Script from "next/script";
 
 export function generateStaticParams() {
   return source.generateParams();
@@ -58,7 +57,7 @@ export async function generateMetadata(props: {
 type DocsPage = NonNullable<ReturnType<typeof source.getPage>>;
 
 function buildDocsJsonLd(page: DocsPage) {
-  const { title, description, image } = page.data;
+  const { title, description, image, lastModified } = page.data;
   const url = absoluteUrl(page.url);
 
   const crumbs = [{ name: "Docs", url: absoluteUrl("/docs") }];
@@ -79,6 +78,7 @@ function buildDocsJsonLd(page: DocsPage) {
         description,
         url,
         mainEntityOfPage: url,
+        ...(lastModified && { dateModified: lastModified }),
         ...(image && { image: absoluteUrl(image) }),
         inLanguage: "en",
         author: {
@@ -117,7 +117,7 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
 
   return (
     <div className="relative mt-10 flex sm:mt-0">
-      <Script
+      <script
         id="docs-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{

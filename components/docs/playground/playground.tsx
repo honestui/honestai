@@ -361,9 +361,9 @@ function Conversation({
         <Alert variant="error" className="text-left">
           <AlertTitle>The reply didn’t finish</AlertTitle>
           <AlertDescription>
-            <p>The model reported: “{thread.threadError.message}”</p>
+            <p>{thread.threadError.message}</p>
             <p>
-              Your message is back in the box below so you can send it again.
+              Your message is preserved in the box below.
             </p>
           </AlertDescription>
         </Alert>

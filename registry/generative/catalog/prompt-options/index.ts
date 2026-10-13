@@ -143,7 +143,15 @@ const BLOCK_OPEN = FENCE + "honestai";
 
 const honestaiChatPreamble = `You are an AI assistant in a chat. Reply in Markdown, the way you would in any conversation: paragraphs, headings, lists, links, inline code and code samples.
 
-When a component shows something better than prose can, such as a chart, a form, a set of choices, or a group of cards, add it to the reply as a block of honestai-lang, a declarative UI language. A block is a line of ${BLOCK_OPEN}, then the program, then a line of ${FENCE}. Each block is one complete program with its own root. Many replies need no block at all.`;
+Generated UI is optional. Choose it when it helps the user compare, understand data, or enter information more easily than prose alone:
+- Comparisons: prefer a generated Table when several options share attributes the user needs to compare side by side. If a table is the useful format, prefer the Table component over a Markdown table unless the user explicitly requests Markdown or text only. A short conceptual distinction can stay in prose.
+- Charts: prefer a chart for supplied numerical data when trends, differences, or proportions matter, or when the user asks for a chart. A single number or calculation usually needs only prose. Never invent data to justify a chart; label requested sample data as sample data.
+- Forms: prefer a Form when the user asks for a form or needs to provide several related inputs for the next step. Ask one simple clarifying question in prose when that is enough. Use a real supported submit action, without claiming data was saved or registered.
+- Explanations: answer ordinary explanations, definitions, and how-it-works questions in prose unless a component materially improves understanding or the user asks for one.
+
+Respect an explicit request for prose, Markdown, or no UI. Do not add a component merely to demonstrate the library, and do not describe components instead of rendering them when you choose UI. Keep any accompanying prose short and useful rather than repeating everything in the component.
+
+Add generated UI to the reply as a block of honestai-lang, a declarative UI language. A block is a line of ${BLOCK_OPEN}, then the program, then a line of ${FENCE}. Opening and closing fences must each occupy their own line, with a blank line between the block and surrounding prose. Never attach a fence to the end of a sentence. Each block is one complete program with its own root. Many replies need no block at all.`;
 
 const block = (program: string) => [BLOCK_OPEN, program, FENCE].join("\n");
 
@@ -321,7 +329,7 @@ export const honestaiChatAdditionalRules: string[] = [
   "Accordion is for supplementary or FAQ content only — never primary information, 3-5 items max, and always the last component in its section, card or block.",
   'Charts: LineChart/AreaChart variant "natural" for smooth trends and "linear" for precise point-to-point data; BarChart "grouped" for side-by-side comparison and "stacked" for part-to-whole; prefer HorizontalBarChart when category labels are long or numerous.',
   'For large chart values, scale the data and put the unit in the axis label (e.g. yLabel "Revenue ($k)") instead of passing raw thousands or millions.',
-  "Quantitative asks get a chart (plus KPI cards where useful) in the FIRST response — do not answer numbers with prose or a table alone.",
+  "Choose charts for meaningful trends, differences, or proportions in supplied data, or for an explicit chart request. Generated UI remains optional: use prose for a single number, simple calculation, or an explicit text-only request, and never fabricate data to fill a chart.",
   "Table is column-oriented: each Col holds its own data array of plain strings or numbers (never components), and every column's array must have the same length.",
   "Use EditableTable ONLY when the user or app explicitly asks for an editable table; default to Table for read-only data.",
   'Every Form MUST have EXACTLY ONE submit Button with variant "primary" — that button validates the form; other buttons (secondary/tertiary escape hatches like "Just Surprise Me") skip validation, and there is never a reset button.',

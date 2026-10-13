@@ -26,7 +26,7 @@ beforeEach(() => {
   vi.stubEnv("GEMINI_API_KEY", "test-key");
   vi.stubEnv("OPENAI_API_KEY", "");
   vi.stubGlobal("fetch", upstream);
-  upstream.mockResolvedValue(
+  upstream.mockImplementation(async () =>
     new Response('data: {"choices":[{"delta":{"content":"Hi"}}]}\n\n'),
   );
 });
@@ -37,6 +37,133 @@ afterEach(() => {
 });
 
 describe("playground chat route", () => {
+  it.each([undefined, "1", "300000"])("rejects oversized bodies with Content-Length=%s", async (length) => {
+    const response = await post({ ...hello, padding: "x".repeat(256_001) }, length ? { "content-length": length } : {});
+    expect(response.status).toBe(413);
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
+  it("measures UTF-8 bytes instead of character count", async () => {
+    const response = await post({ ...hello, padding: "😀".repeat(65_000) });
+    expect(response.status).toBe(413);
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed origins without throwing", async () => {
+    expect((await post(hello, { origin: "null" })).status).toBe(403);
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
+  it("times out a provider that never returns headers", async () => {
+    vi.useFakeTimers();
+    upstream.mockImplementation((_url, init) => new Promise((_resolve, reject) => {
+      init!.signal!.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), { once: true });
+    }));
+    try {
+      const pending = post(hello);
+      await vi.advanceTimersByTimeAsync(60_001);
+      const response = await pending;
+      expect(response.status).toBe(504);
+      expect(await response.text()).toContain("timed out");
+      expect(upstream.mock.calls[0][1]!.signal!.aborted).toBe(true);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("ends a stalled reply stream, preserves its text, and cancels the upstream reader", async () => {
+    vi.useFakeTimers();
+    const canceled = vi.fn();
+    upstream.mockResolvedValue(new Response(new ReadableStream({
+      start(controller) { controller.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"Partial reply"}}]}\n\n')); },
+      cancel: canceled,
+    })));
+    try {
+      const response = await post(hello);
+      const text = response.text();
+      await vi.advanceTimersByTimeAsync(60_001);
+      expect(await text).toContain("Partial reply");
+      expect(await text).toContain("reply_timeout");
+      expect(canceled).toHaveBeenCalledOnce();
+      expect(vi.getTimerCount()).toBe(0);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("cancels upstream work and clears the deadline when the visitor stops", async () => {
+    vi.useFakeTimers();
+    const canceled = vi.fn();
+    upstream.mockResolvedValue(new Response(new ReadableStream({ cancel: canceled })));
+    try {
+      const response = await post(hello);
+      await response.body!.cancel();
+      expect(canceled).toHaveBeenCalledOnce();
+      expect(upstream.mock.calls[0][1]!.signal!.aborted).toBe(true);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("clears the deadline after a completed reply", async () => {
+    vi.useFakeTimers();
+    try {
+      const response = await post(hello);
+      expect(await response.text()).toContain('"content":"Hi"');
+      expect(vi.getTimerCount()).toBe(0);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it.each([
+    [401, "API key and permissions"],
+    [403, "API key and permissions"],
+    [404, "Choose another model"],
+    [400, "review the model configuration"],
+  ])("gives actionable recovery for upstream %s", async (status, expected) => {
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      upstream.mockResolvedValue(new Response("private account details", { status }));
+      const response = await post(hello);
+      expect(await response.text()).toContain(expected);
+      expect(JSON.stringify(logged.mock.calls)).not.toContain("private account details");
+    } finally { logged.mockRestore(); }
+  });
+
+  it.each([
+    ["credit_balance_exhausted", "credits are exhausted"],
+    ["project_spend_limit_exceeded", "spending limit"],
+    ["organization_spend_limit_exceeded", "spending limit"],
+    ["organization_usage_limit_exceeded", "usage limit"],
+    ["insufficient_quota", "check API credits and limits"],
+  ])("explains OpenAI %s without telling visitors to retry or exposing account details", async (code, expected) => {
+    vi.stubEnv("OPENAI_API_KEY", "test-openai-key");
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      upstream.mockResolvedValue(Response.json({ error: { code, type: "insufficient_quota", message: "private-account sk-secret" } }, { status: 429 }));
+      const response = await post(hello);
+      expect(response.status).toBe(503);
+      const text = await response.text();
+      expect(text).toContain(expected);
+      expect(text).not.toMatch(/busy|Try again|private-account|sk-secret/);
+      expect(JSON.stringify(logged.mock.calls)).not.toMatch(/private-account|sk-secret/);
+      expect(upstream).toHaveBeenCalledTimes(1);
+    } finally {
+      logged.mockRestore();
+    }
+  });
+
+  it.each([
+    { error: { code: "rate_limit_exceeded", message: "private details" } },
+    { error: { code: "sk-secret", message: "private details" } },
+  ])("handles temporary or unclassified OpenAI 429s safely: %j", async (body) => {
+    vi.stubEnv("OPENAI_API_KEY", "test-openai-key");
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      upstream.mockResolvedValue(Response.json(body, { status: 429 }));
+      const response = await post(hello);
+      expect(response.status).toBe(429);
+      expect(await response.text()).toContain("Wait before sending");
+      expect(JSON.stringify(logged.mock.calls)).not.toMatch(/sk-secret|private details/);
+    } finally {
+      logged.mockRestore();
+    }
+  });
+
   it("defaults to GPT-6 Luna with the server's OpenAI key when both keys are configured", async () => {
     vi.stubEnv("OPENAI_API_KEY", "test-openai-key");
     expect((await post(hello)).status).toBe(200);
