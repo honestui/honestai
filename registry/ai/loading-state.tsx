@@ -5,7 +5,14 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { TextShimmer } from "@/components/animated/text-shimmer"
 
-export type LoadingPattern = "drive" | "dots" | "orbit"
+export type LoadingPattern =
+  | "drive"
+  | "dots"
+  | "orbit"
+  | "diagonal"
+  | "diamond"
+  | "square"
+  | "pulse"
 
 // Each cell's delay in the cycle. `null` leaves a cell unlit.
 const waveDelays = Array.from({ length: 9 }, (_, index) => {
@@ -22,15 +29,50 @@ const orbitDelays = Array.from({ length: 9 }, (_, index) => {
 
 const patterns: Record<
   LoadingPattern,
-  { delays: (number | null)[]; durationMs: number; isRound: boolean }
+  {
+    delays: (number | null)[]
+    durationMs: number
+    isRound?: boolean
+    hideEmpty?: boolean
+    animationName?: string
+  }
 > = {
   drive: { delays: waveDelays, durationMs: 650, isRound: false },
   dots: { delays: waveDelays, durationMs: 650, isRound: true },
   orbit: { delays: orbitDelays, durationMs: 950, isRound: false },
+  diagonal: {
+    delays: Array.from({ length: 9 }, (_, index) =>
+      -1200 + (Math.floor(index / 3) + (index % 3)) * 150
+    ),
+    durationMs: 1200,
+  },
+  diamond: {
+    // Top, right, bottom, and left travel around a softly pulsing center.
+    delays: [null, -1200, null, -300, -750, -900, null, -600, null],
+    durationMs: 1200,
+    hideEmpty: true,
+  },
+  square: {
+    delays: Array.from({ length: 9 }, (_, index) => {
+      const position = perimeter.indexOf(index)
+      return position === -1 ? null : -1200 + position * 150
+    }),
+    durationMs: 1200,
+    hideEmpty: true,
+  },
+  pulse: {
+    delays: [-1200, -1000, -800],
+    durationMs: 1200,
+    animationName: "hui-loading-pulse",
+  },
 }
 
-const gridStyles =
-  "@keyframes hui-loading-cell{0%,100%{opacity:.15}40%{opacity:1}}@media(prefers-reduced-motion:reduce){.hui-loading-cell{animation:none!important}}"
+const gridStyles = `
+@keyframes hui-loading-cell{0%,100%{opacity:.15}40%{opacity:1}}
+@keyframes hui-loading-pulse{0%,70%,100%{opacity:.25;transform:scale(.85)}35%{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.hui-loading-cell{animation:none!important;transform:none!important}}
+@media(forced-colors:active){.hui-loading-cell{background:CanvasText}}
+`
 
 function formatElapsed(milliseconds: number) {
   const seconds = Math.max(0, Math.floor(milliseconds / 1000))
@@ -76,7 +118,7 @@ function LoadingState({
   ...props
 }: LoadingStateProps) {
   const elapsed = useElapsed(startedAt, showElapsed)
-  const { delays, durationMs, isRound } = patterns[pattern]
+  const { delays, durationMs, isRound, hideEmpty, animationName = "hui-loading-cell" } = patterns[pattern]
 
   return (
     <div
@@ -88,7 +130,12 @@ function LoadingState({
       {...props}
     >
       <style>{gridStyles}</style>
-      <span aria-hidden="true" className="grid shrink-0 grid-cols-[repeat(3,4px)] gap-[1.5px]">
+      <span
+        aria-hidden="true"
+        data-slot="loading-state-mark"
+        data-pattern={pattern}
+        className="grid size-[15px] shrink-0 content-center grid-cols-[repeat(3,4px)] gap-[1.5px]"
+      >
         {delays.map((delay, index) => (
           <span
             key={index}
@@ -98,10 +145,11 @@ function LoadingState({
             )}
             style={{
               opacity: delay === null ? 0.08 : 0.15,
+              visibility: delay === null && hideEmpty ? "hidden" : undefined,
               animation:
                 delay === null
                   ? undefined
-                  : `hui-loading-cell ${durationMs}ms ease-in-out ${delay}ms infinite`,
+                  : `${animationName} ${durationMs}ms ease-in-out ${delay}ms infinite`,
             }}
           />
         ))}

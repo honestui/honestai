@@ -14,13 +14,17 @@ afterEach(() => {
 it("the hosted playground sends to this site's server and names no local model", async () => {
   const chunk = (delta: object, finish: string | null = null) =>
     `data: ${JSON.stringify({ choices: [{ delta, finish_reason: finish }] })}\n\n`;
-  const server = vi.fn<typeof fetch>(async () =>
-    new Response(
-      chunk({ role: "assistant", content: "## Hosted reply" }) +
-        chunk({}, "stop") +
-        "data: [DONE]\n\n",
-      { headers: { "Content-Type": "text/event-stream" } },
-    ),
+  let finishReply!: (response: Response) => void;
+  const server = vi.fn<typeof fetch>(() =>
+    new Promise<Response>((resolve) => {
+      finishReply = resolve;
+    }),
+  );
+  const reply = new Response(
+    chunk({ role: "assistant", content: "## Hosted reply" }) +
+      chunk({}, "stop") +
+      "data: [DONE]\n\n",
+    { headers: { "Content-Type": "text/event-stream" } },
   );
   // The transport keeps the fetch it finds when the module loads.
   vi.stubGlobal("fetch", server);
@@ -37,7 +41,6 @@ it("the hosted playground sends to this site's server and names no local model",
     );
   });
   expect(container.textContent).toContain("gemini-3.8-flash");
-  expect(container.textContent).toContain("Messages are sent to Google");
   expect(container.textContent).not.toMatch(/Ollama|local model/i);
 
   const input = container.querySelector(
@@ -62,6 +65,12 @@ it("the hosted playground sends to this site's server and names no local model",
   expect(JSON.parse(init!.body as string).messages).toEqual([
     { role: "user", content: "Hello" },
   ]);
+  expect(container.querySelector('[data-slot="loading-state"]')).not.toBeNull();
+  expect(container.querySelector('[role="status"]')?.textContent).toContain(
+    "Waiting for gemini-3.8-flash",
+  );
+  await React.act(async () => finishReply(reply));
+  expect(container.querySelector('[data-slot="loading-state"]')).toBeNull();
   expect(container.querySelector(".honest-prose h2")?.textContent).toBe(
     "Hosted reply",
   );

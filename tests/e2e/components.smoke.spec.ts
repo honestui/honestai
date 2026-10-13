@@ -411,6 +411,32 @@ test.describe("Component docs previews, second set", () => {
     await expectNoAxeViolations(page)
   })
 
+  test("Loading State patterns preserve status, layout, and reduced motion", async ({ page }) => {
+    await page.goto("/docs/components/loading-state")
+    const preview = await mountPreview(page, "loading-state-patterns", "loading-state")
+    const marks = preview.locator('[data-slot="loading-state-mark"]')
+    await expect(marks).toHaveCount(7)
+    await expect(preview.getByRole("status")).toHaveCount(7)
+    await expect(preview.getByRole("status").last()).toHaveText("Drafting the reply")
+
+    for (const mark of await marks.all()) {
+      await expect(mark).toHaveAttribute("aria-hidden", "true")
+      await expect(mark).toHaveCSS("width", "15px")
+      await expect(mark).toHaveCSS("height", "15px")
+    }
+
+    const pulse = marks.filter({ has: page.locator(".hui-loading-cell") }).last()
+    await expect(pulse.locator(".hui-loading-cell").first()).toHaveCSS("animation-name", "hui-loading-pulse")
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    for (const cell of await preview.locator(".hui-loading-cell, .beui-text-shimmer").all()) {
+      await expect(cell).toHaveCSS("animation-name", "none")
+    }
+
+    await page.setViewportSize({ width: 320, height: 720 })
+    await expect(preview.getByRole("status").last()).toBeVisible()
+    await expectNoAxeViolations(page)
+  })
+
   for (const [slug, slot] of [
     ["loading-state", "loading-state"],
     ["context-cards", "context-cards"],

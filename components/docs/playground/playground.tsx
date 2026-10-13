@@ -30,7 +30,7 @@ import { ContextMeter } from "@/registry/ai/context-meter";
 import { MessageScroller } from "@/registry/ai/message-scroller";
 import { Markdown } from "@/registry/ai/markdown";
 import { PromptBar } from "@/registry/ai/prompt-bar";
-import { ThinkingState } from "@/registry/ai/thinking-state";
+import { LoadingState } from "@/registry/ai/loading-state";
 import { honestChatLibrary } from "@/registry/generative";
 import { honestChatPromptOptions } from "@/registry/generative/catalog";
 import {
@@ -575,8 +575,7 @@ function Conversation({
               ...(isWaitingForFirstToken
                 ? [
                     <div key="waiting" className={column}>
-                      <ThinkingState
-                        status="running"
+                      <LoadingState
                         label={`Waiting for ${model}`}
                       />
                     </div>,

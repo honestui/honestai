@@ -16,7 +16,7 @@ Use [Thinking State](/docs/components/thinking-state) instead when you have step
 ## Anatomy
 
 <Anatomy title="LoadingState">
-  <AnatomyItem name="Mark" description="A 3 by 3 grid of cells that light in a pattern" />
+  <AnatomyItem name="Mark" description="A compact decorative pattern of pulsing cells" />
   <AnatomyItem name="Label" description="What is in progress" />
   <AnatomyItem name="Elapsed" description="Seconds, then minutes and seconds, since the work began" />
 </Anatomy>
@@ -27,7 +27,17 @@ Installing `loading-state` brings [Text Shimmer](https://www.honestui.com/docs/a
 
 ### Patterns
 
-`pattern` is `drive`, `dots`, or `orbit`. Drive and dots sweep a wave across the grid, in square or round cells. Orbit laps the edge. The pattern is decoration and carries no meaning.
+All patterns occupy the same space and use the same foreground color. Choose a form to suit the surrounding interface; the pattern is decorative and reports no progress.
+
+| Pattern | Form and motion |
+| --- | --- |
+| `drive` | Nine rounded squares with a wave across the grid. |
+| `dots` | The same wave, with round cells. |
+| `orbit` | A pulse around the grid's edge, with a dim center. |
+| `diagonal` | Nine rounded squares with a diagonal brightness sweep. |
+| `diamond` | Five rounded squares: a pulse around four points and through the center. |
+| `square` | Eight rounded squares around an empty center, with a traveling pulse. |
+| `pulse` | Three rounded squares that brighten and gently scale in sequence. |
 
 ### Elapsed time
 
@@ -87,9 +97,9 @@ Write the label as the work, not as "Loading". "Building the export" tells the p
 
 ### Patterns
 
-The three patterns, without the elapsed time.
+The seven patterns, without the elapsed time.
 
-<ComponentPreview name="loading-state-patterns" previewClassName="h-auto min-h-[180px]" />
+<ComponentPreview name="loading-state-patterns" previewClassName="h-auto min-h-[320px]" />
 
 ## API reference
 
@@ -100,6 +110,6 @@ Accepts native div props beyond those listed.
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `label` | string | Required | What is in progress. |
-| `pattern` | `"drive" \| "dots" \| "orbit"` | `"drive"` | The mark's animation. |
+| `pattern` | `"drive" \| "dots" \| "orbit" \| "diagonal" \| "diamond" \| "square" \| "pulse"` | `"drive"` | The mark's form and animation. |
 | `showElapsed` | boolean | `true` | Shows the time since `startedAt`. |
 | `startedAt` | `number \| Date` | Mount time | When the work began. |
