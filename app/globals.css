@@ -1,3 +1,7 @@
+/* Compiled library CSS must not establish utilities ahead of the reset. */
+@layer properties, theme, base, components, utilities;
+
+@import "honestui/charts.css";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "fumadocs-ui/css/shadcn.css";

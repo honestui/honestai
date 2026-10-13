@@ -47,7 +47,7 @@ With `allowAttachments`, the attach button opens the system file picker, and eac
 
 ### Model
 
-Passing `models` adds a menu. The first model is selected unless you pass `defaultModel` or control it with `model` and `onModelChange`.
+Passing `models` adds a menu. The first model is selected unless you pass `defaultModel` or control it with `model` and `onModelChange`. Each model has an `id` and a `label`, and can have a `description` shown beside it and an `icon` shown before it.
 
 ### Stopping
 
@@ -213,5 +213,5 @@ Accepts native form props beyond those listed.
 | --- | --- |
 | `PromptBarSubmission` | `text` (trimmed), `attachments`, and `model` (undefined without `models`) |
 | `PromptBarItem` | `id`, `label`, and optional `description`, `icon` |
-| `PromptBarModel` | `id`, `label`, and optional `description` |
+| `PromptBarModel` | `id`, `label`, and optional `description` and `icon` |
 | `PromptBarLabels` | `prompt`, `send`, `stop`, `attach`, `attachments`, `removeAttachment`, `model`, `mentions`, `commands`, `noMatches`, `suggestionCount` |

@@ -39,6 +39,7 @@ const NEW_PAGES: readonly { url: string; releasedOn: string }[] = [
   { url: "/docs/components/insight-cards", releasedOn: "2026-10-12" },
   { url: "/docs/components/loading-state", releasedOn: "2026-10-12" },
   { url: "/docs/components/markdown", releasedOn: "2026-10-12" },
+  { url: "/docs/components/message-scroller", releasedOn: "2026-10-12" },
   { url: "/docs/components/prompt-bar", releasedOn: "2026-10-12" },
   { url: "/docs/components/recommendation-card", releasedOn: "2026-10-12" },
   { url: "/docs/components/records-table", releasedOn: "2026-10-12" },
@@ -63,7 +64,7 @@ function isRecentlyReleased(url: string): boolean {
   return Date.now() - Date.parse(releasedOn) < NEW_WINDOW_MS;
 }
 
-function PageGroup({ label, pages }: { label: string; pages: PageItem[] }) {
+export function PageGroup({ label, pages }: { label: string; pages: PageItem[] }) {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
 

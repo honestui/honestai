@@ -70,7 +70,7 @@ The thread fills its parent's height. Give the parent a height, or the thread wi
 
 The message list is a log named by `label`, so screen readers announce messages as they are added, in order. It can take focus, so it can be scrolled from the keyboard.
 
-Every message has an author. On user messages the author is read but not shown.
+Every message has an author. On user messages the author is read but not shown. Set `hideAuthor` to do the same for an assistant message.
 
 Attachments are a list named "Attachments". Edit and the two version arrows are buttons with names, and an arrow that has nowhere to go is marked disabled but keeps focus. The editor is a text area named "Message". Opening it moves focus into it, and closing it returns focus to Edit. A failed send is an alert.
 
@@ -197,6 +197,7 @@ Accepts native div props beyond those listed.
 | --- | --- | --- | --- |
 | `role` | `"user" \| "assistant"` | Required | Sets the message's layout. |
 | `author` | string | Required | Who is speaking. |
+| `hideAuthor` | boolean | `false` | Hides the author and `meta` from view. Both are still read aloud. |
 | `meta` | string | None | A short note beside the author. |
 | `attachments` | `ChatAttachment[]` | None | The files sent with the message. |
 | `editText` | string | None | The message as plain text. With `onEdit`, it shows Edit. |

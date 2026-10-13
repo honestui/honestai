@@ -32,6 +32,8 @@ export type PromptBarModel = {
   id: string
   label: string
   description?: string
+  /** Shown before the label, such as the logo of the model's maker. Decorative: the label names the model. */
+  icon?: React.ReactNode
 }
 
 export type PromptBarSubmission = {
@@ -490,6 +492,7 @@ function PromptBar({
                 }
               >
                 <span className="sr-only">{labels.model}: </span>
+                {selectedModel?.icon}
                 <span className="min-w-0 truncate">{selectedModel?.label ?? labels.model}</span>
                 <ChevronDownIcon
                   aria-hidden="true"
@@ -500,8 +503,11 @@ function PromptBar({
                 <MenuRadioGroup value={model} onValueChange={(next) => setModel(String(next))}>
                   {models.map((item) => (
                     <MenuRadioItem key={item.id} value={item.id}>
-                      <span className="flex min-w-0 items-baseline justify-between gap-[var(--hui-space-4)]">
-                        <span className="min-w-0 truncate">{item.label}</span>
+                      <span className="flex min-w-0 items-center justify-between gap-[var(--hui-space-4)]">
+                        <span className="flex min-w-0 items-center gap-[var(--hui-space-2)]">
+                          {item.icon}
+                          <span className="min-w-0 truncate">{item.label}</span>
+                        </span>
                         {item.description && (
                           <span className="shrink-0 text-[var(--hui-color-foreground-base-secondary)] [font-size:var(--hui-font-size-mini)]">
                             {item.description}
@@ -515,7 +521,10 @@ function PromptBar({
             </Menu>
           )}
 
-          <div className="ms-auto flex shrink-0 items-center gap-[var(--hui-space-2)]">
+          <div
+            data-slot="prompt-bar-actions"
+            className="ms-auto flex shrink-0 items-center gap-[var(--hui-space-2)]"
+          >
             {actions}
             {/* One button for both, so focus stays put when a reply starts. */}
             <Button

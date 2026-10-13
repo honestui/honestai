@@ -5,16 +5,30 @@ import {
   CollapsibleTrigger,
   CollapsiblePanel,
 } from "@/components/ui/collapsible";
-import type { ComponentProps } from "react";
+import { Button } from "@/components/ui/button";
+import { useState, type ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 export function CodeCollapsibleWrapper({
   className,
   children,
+  open: controlledOpen,
+  defaultOpen = false,
+  onOpenChange,
   ...props
 }: ComponentProps<typeof Collapsible>) {
+  const [expanded, setExpanded] = useState(defaultOpen);
+  const open = controlledOpen ?? expanded;
   return (
-    <Collapsible className={cn("group/collapsible relative", className)} {...props}>
+    <Collapsible
+      className={cn("group/collapsible relative", className)}
+      {...props}
+      open={open}
+      onOpenChange={(nextOpen, details) => {
+        setExpanded(nextOpen);
+        onOpenChange?.(nextOpen, details);
+      }}
+    >
       <CollapsiblePanel
         className="relative h-full overflow-hidden data-closed:max-h-64 [&>figure]:mt-0 [&>figure]:md:mx-0!"
         hidden={false}
@@ -22,13 +36,15 @@ export function CodeCollapsibleWrapper({
       >
         {children}
       </CollapsiblePanel>
-      <CollapsibleTrigger className="to-background text-muted-foreground hover:[&>div]:border-primary/50 hover:text-foreground absolute inset-x-0 -bottom-1 flex h-16 cursor-pointer items-end justify-end bg-linear-to-b from-transparent via-50% text-sm font-medium transition-colors duration-[0ms] group-data-open/collapsible:hidden hover:duration-200">
-        <div className="bg-background mr-4 mb-4 rounded-md border px-2 py-0.5 font-normal shadow-[0px_0px_8px_20px_var(--color-background)]/50">
-          Expand
-        </div>
-      </CollapsibleTrigger>
-      <CollapsibleTrigger className="text-muted-foreground hover:border-primary/50 hover:text-foreground bg-background absolute right-4 bottom-4 hidden cursor-pointer rounded-md border px-2 py-0.5 text-sm font-normal shadow-sm transition-colors duration-[0ms] group-data-open/collapsible:block hover:duration-200">
-        Collapse
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 -bottom-1 h-16 bg-linear-to-b from-transparent to-background group-data-open/collapsible:hidden"
+      />
+      <CollapsibleTrigger
+        render={<Button variant="secondary" size="sm" />}
+        className="absolute right-4 bottom-4"
+      >
+        {open ? "Collapse" : "Expand"}
       </CollapsibleTrigger>
     </Collapsible>
   );

@@ -1,0 +1,154 @@
+---
+title: Component library
+metaTitle: Honest AI Generative UI Component Library
+description: Use Honest AI component contracts backed by existing Honest AI and Honest UI implementations.
+---
+
+`honestLibrary` renders application layouts with a `Stack` root. `honestChatLibrary` renders the generated blocks inside a Markdown chat reply. Its `Stack` root is a plain vertical list, `Card` is an optional frame, and it adds follow-ups and sections.
+
+## Choose a library
+
+| Library | Root | Server spec | Use |
+| --- | --- | --- | --- |
+| `honestLibrary` | `Stack` | `spec.json` | Application layouts with flex containers |
+| `honestChatLibrary` | `Stack` | `chat-spec.json` | Blocks in a Markdown chat reply, with follow-ups and sections |
+
+A component must be registered in the selected library, and its parent must allow it as a child. The catalogs share many names but are not interchangeable. Use the matching JSON spec to inspect the exact accepted arguments.
+
+## Read a component signature
+
+A signature lists positional arguments in the order the model must write them. For example, `TextContent(text: string, size?: …)` accepts text first and an optional size second:
+
+```text
+root = Stack([TextContent("Example note", "small")])
+```
+
+`?` means optional. Arrays describe repeated children; unions list allowed component types or values. When skipping an optional argument before a later one, use `null` to keep its position. The generated spec includes the complete signatures and JSON schemas.
+
+## Reused components
+
+| Generated capability | Implementation |
+| --- | --- |
+| Markdown and text content | Honest AI Markdown |
+| Code blocks | Honest AI Code View |
+| Read-only tables | Honest AI Records Table |
+| Context cards | Honest AI Context Cards |
+| Conversation, composer, tool activity, loading | Honest AI Chat Thread, Prompt Bar, Tool Chips, Loading State |
+| Buttons, inputs, selections, sliders, switches, tabs, accordions, dialogs, badges, cards | Honest UI components |
+| Editable tables | Honest UI Data Grid |
+| Single dates and date ranges | Honest UI calendar popover and Date Range Picker |
+| Bar, line, area, pie, scatter, and stacked bars | Honest UI Charts |
+| Radar and polar bars | Additional ECharts renderers with a text data table |
+
+Card layouts, entity lists, follow-up actions, and form bindings compose the existing components. They share the existing primitive components and theme tokens.
+
+## Registered contracts
+
+These names are the Honest AI Lang wire format. The generated output stays compatible with those contracts while the visual implementation uses Honest components.
+
+### Layout
+
+`Stack`, `Tabs`, `TabItem`, `Accordion`, `AccordionItem`, `Steps`, `StepsItem`, `Carousel`, `Separator`, `Modal`.
+
+### Content
+
+`Card`, `CardHeader`, `TextContent`, `MarkDownRenderer`, `Callout`, `TextCallout`, `Image`, `ImageBlock`, `ImageGallery`, `CodeBlock`, `InlineHeader`.
+
+### Tables
+
+`Table`, `Col`, `EditableTable`.
+
+### Charts (2D)
+
+`BarChart`, `LineChart`, `AreaChart`, `RadarChart`, `HorizontalBarChart`, `Series`.
+
+### Charts (1D)
+
+`PieChart`, `RadialChart`, `SingleStackedBarChart`, `Slice`.
+
+### Charts (Scatter)
+
+`ScatterChart`, `ScatterSeries`, `Point`.
+
+### Forms
+
+`Form`, `FormControl`, `Label`, `Input`, `TextArea`, `Select`, `SelectItem`, `DatePicker`, `Slider`, `CheckBoxGroup`, `CheckBoxItem`, `RadioGroup`, `RadioItem`, `SwitchGroup`, `SwitchItem`, `Chips`, `ChipItem`, `OptionCards`, `OptionCard`.
+
+### Date fields
+
+Use `DatePicker("targetDate", "single")` for a deadline or target date. It opens an Honest UI calendar popover and stores one date as `YYYY-MM-DD`. Picking a day closes the calendar; optional fields can be cleared.
+
+Use `DatePicker("travelDates", "range")` for a period. It opens the Honest UI Date Range Picker and stores a `from` and `to` value once both endpoints are selected. Wrap either picker in `FormControl` inside a `Form`. Date fields use these pickers rather than a browser-native date input.
+
+```text
+root = Stack([form])
+form = Form("plan", buttons, [deadline, period])
+buttons = Buttons([Button("Save dates", @ToAssistant("Save dates"))])
+deadline = FormControl("Target date", DatePicker("targetDate", "single"))
+period = FormControl("Travel dates", DatePicker("travelDates", "range"))
+```
+
+### Buttons
+
+`Button`, `Buttons`, `IconButton`.
+
+### Data Display
+
+`TagBlock`, `Tag`, `Icon`, `EntityList`, `ListBlock`, `ListItem`.
+
+### Cards
+
+`SnippetCardBlock`, `SnippetCardItem`, `OverviewCardBlock`, `OverviewCardItem`, `ContextCardBlock`, `ContextCardItem`, `CompositeCardBlock`, `CompositeCardItem`, `VisualCardBlock`, `VisualCardItem`, `Text`, `BoldText`, `IconText`, `ImageText`, `ImageTextLarge`, `MetricIndicatorInline`, `MetricIndicatorWithStrikethrough`.
+
+## Extend the library
+
+This example adds a delivery summary using Honest UI Card and Badge. The status is sample content, not a live shipment.
+
+<ComponentPreview name="generative-custom-demo" playground />
+
+Register components at module scope. Schemas define the props the model may generate; the React function defines how those props render.
+
+```tsx
+"use client"
+
+import { z } from "zod/v4"
+import { defineComponent, honestLibrary } from "@/lib/generative"
+
+const Notice = defineComponent({
+  name: "Notice",
+  description: "A short notice supplied by the application",
+  props: z.object({ text: z.string() }),
+  component: ({ props }) => <p>{props.text}</p>,
+})
+
+export const library = honestLibrary.extend({ components: { add: [Notice] } })
+```
+
+The `Stack` root accepts the new component, so `root = Stack([Notice("Example notice")])` can render it. If you add it inside a constrained container such as Card, extend that container's child schema as well. Regenerate the server spec after changing the library.
+
+## Keep the server spec in sync
+
+After adding or changing a component, export a spec from that same library:
+
+```ts
+import { honestLibrary } from "@/lib/generative"
+
+export const spec = {
+  ...honestLibrary.toSpec(),
+  schema: honestLibrary.toJSONSchema(),
+}
+
+export const serializedSpec = JSON.stringify(spec, null, 2)
+```
+
+Use your extended library in place of `honestLibrary` when exporting custom contracts. Write the serialized result to the JSON file used by your server. Run this export in a Node build script that can load your library source; do not call the client library from a Next.js server route. Server routes import the generated JSON instead.
+
+Regenerate after changing names, argument order, validation rules, or allowed children. Then test a program containing the changed component against both the client renderer and server parser.
+
+## Forms and actions
+
+`FormControl` associates a label and hint with the field. Field values flow into the runtime's form or reactive state. Validation runs before primary form actions; invalid input stays in place and shows an error. Fields and generated actions are disabled while output is streaming.
+
+Date range values use ISO strings in `{ from, to }`. Editable tables use positional row `values` matching the column order. Save changes emits the edited form state through `onAction`; your handler owns persistence.
+
+Image and source URLs accept HTTP or HTTPS. URL actions and custom actions are delivered to your application handler. Handle these explicitly instead of treating generated URLs or actions as trusted instructions.

@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
+import { getGenerativeRegistryItem, generativeRegistryNames } from "./generative-registry";
 import { Index } from "@/registry/__index__";
 
 const HONEST_UI_REGISTRY_URL = "https://www.honestui.com/r";
@@ -49,6 +50,9 @@ export function getRegistryComponent(name: string) {
 export async function getRegistryItem(name: string): Promise<RegistryItem | null> {
   if (!/^[a-z0-9-]+$/.test(name)) return null;
 
+  const generativeItem = await getGenerativeRegistryItem(name, getDependencies, toInstalledImports);
+  if (generativeItem) return generativeItem;
+
   for (const location of locations) {
     for (const extension of location.extensions) {
       const fileName = `${name}${extension}`;
@@ -93,6 +97,7 @@ export async function getPublicItems() {
     }
   }
 
+  items.push(...generativeRegistryNames.map(name => ({ name, type: "registry:lib" as const })));
   return items.sort((first, second) => first.name.localeCompare(second.name));
 }
 
@@ -106,7 +111,7 @@ export function getRegistryDependencyUrls(item: RegistryItem, origin: string) {
 
 /** In this repo, items import each other from `registry`. Installed, they sit in `components/ai` and `lib`. */
 function toInstalledImports(source: string) {
-  return source.replaceAll("@/registry/ai/", "@/components/ai/").replaceAll("@/registry/lib/", "@/lib/");
+  return source.replaceAll("@/components/product/", "@/components/ui/").replaceAll("@/registry/generative/", "@/lib/generative/").replaceAll("@/registry/ai/", "@/components/ai/").replaceAll("@/registry/lib/", "@/lib/");
 }
 
 const noDependencies = { dependencies: [], honestUiDependencies: [], localDependencies: [] };
@@ -124,6 +129,7 @@ function getDependencies(source: string) {
     if (specifier.startsWith("@/registry/ai/") || specifier.startsWith("@/registry/lib/")) {
       localDependencies.add(path.basename(specifier));
     } else if (
+      specifier.startsWith("@/components/product/") ||
       specifier.startsWith("@/components/ui/") ||
       specifier.startsWith("@/components/animated/") ||
       (specifier.startsWith("@/lib/") && specifier !== "@/lib/utils")

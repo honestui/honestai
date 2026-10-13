@@ -40,6 +40,7 @@ const COMPONENT_ICONS = {
   flowchart: DistributeVerticalCenterIcon,
   "insight-cards": ActivitySparkIcon,
   "loading-state": Loading03Icon,
+  "message-scroller": DistributeVerticalCenterIcon,
   markdown: ParagraphIcon,
   "prompt-bar": InputLongTextIcon,
   "recommendation-card": CardExchangeIcon,
@@ -52,6 +53,14 @@ const COMPONENT_ICONS = {
   "thinking-state": MagicWand01Icon,
   "tool-chips": ToolsIcon,
   prose: ParagraphIcon,
+  examples: BrowserIcon,
+  language: CommandLineIcon,
+  state: SlidersHorizontalIcon,
+  tools: ToolsIcon,
+  renderer: BrowserIcon,
+  chat: BubbleChatIcon,
+  library: Layers01Icon,
+  server: ToolsIcon,
 } as const;
 
 /** The sidebar icon for a documentation page, chosen by the last segment of its URL. */

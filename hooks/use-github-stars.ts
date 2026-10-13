@@ -1,6 +1,6 @@
 export const getGithubStars = async (): Promise<number | null> => {
   try {
-    const res = await fetch(`https://api.github.com/repos/honestui/honestui`, {
+    const res = await fetch(`https://api.github.com/repos/honestui/honestai`, {
       headers: {
         Accept: "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",

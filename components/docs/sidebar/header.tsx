@@ -24,7 +24,7 @@ const DocsHeader = async () => {
           }
           render={
             <Link
-              href="https://github.com/honestui/honestui"
+              href="https://github.com/honestui/honestai"
               rel="noreferrer"
               target="_blank"
             />

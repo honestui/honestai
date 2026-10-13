@@ -4,6 +4,7 @@ import { RotateCw } from "honestui/icons";
 import * as React from "react";
 
 import { ComponentPreviewSourceProvider } from "@/components/docs/component/component-preview-source-context";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import { getIconForLanguageExtension } from "@/assets/language/icons";
 import { LazyMount } from "@/components/docs/component/lazy-mount";
@@ -61,17 +62,19 @@ export function ComponentPreviewTabs({
                 {titleAction}
               </div>
               <div className="flex items-center gap-1.5">
-                <button
+                <Button
                   type="button"
+                  variant="link"
+                  size="icon-sm"
                   onClick={() => setReloadKey((key) => key + 1)}
                   aria-label="Reload preview"
-                  className="text-muted-foreground hover:text-foreground flex size-3 shrink-0 translate-x-1 cursor-pointer items-center justify-center opacity-0 transition-all duration-200 ease-out group-hover:translate-x-0 group-hover:opacity-100"
+                  className="text-muted-foreground"
                 >
                   <RotateCw
-                    className="size-4! transition-transform duration-500 ease-out"
+                    className="size-4! motion-safe:transition-transform motion-safe:duration-500 motion-reduce:transform-none"
                     style={{ transform: `rotate(${reloadKey * 360}deg)` }}
                   />
-                </button>
+                </Button>
                 {!hideCode && (
                   <TabsList variant="underline">
                     <TabsTab className="h-5! px-1.5 hover:bg-transparent!" value="code">

@@ -4,6 +4,7 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar";
+import { PlaygroundLink } from "./playground-link";
 import { SidebarSections } from "./sidebar-sections";
 import { BrandWordmark } from "@/components/brand-wordmark";
 import { HONEST_UI_URL } from "@/globals/constants/site";
@@ -47,7 +48,10 @@ export function DocsSidebar({
           <SidebarSections tree={source.pageTree} />
         </SidebarContent>
         <SidebarFooter className="gap-1 px-4 py-3 group-data-[collapsible=icon]:hidden">
-          <p className="mb-1 text-[11px] font-medium text-muted-foreground">Resources</p>
+          <PlaygroundLink />
+          <p className="mb-1 text-[11px] font-medium text-muted-foreground">
+            Resources
+          </p>
           <a
             className="text-muted-foreground w-fit rounded-sm text-xs outline-none hover:text-foreground hover:underline hover:underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50"
             href={HONEST_UI_URL}

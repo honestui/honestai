@@ -62,7 +62,9 @@ function ChatThread({
           isPinnedToEnd.current =
             scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 24
         }}
-        className="flex min-h-0 flex-1 flex-col gap-[var(--hui-space-5)] overflow-y-auto p-[var(--hui-space-5)] outline-none focus-visible:[outline:var(--hui-focus-ring)] focus-visible:outline-offset-[var(--hui-focus-ring-offset-inset)]"
+        // `relative` keeps absolutely positioned content, such as visually hidden
+        // labels, inside this scroller. Without it they extend the page instead.
+        className="relative flex min-h-0 flex-1 flex-col gap-[var(--hui-space-5)] overflow-y-auto p-[var(--hui-space-5)] outline-none focus-visible:[outline:var(--hui-focus-ring)] focus-visible:outline-offset-[var(--hui-focus-ring-offset-inset)]"
       >
         {messageCount === 0 && emptyMessage ? (
           <div className="m-auto text-center text-[var(--hui-color-foreground-base-secondary)] [font-size:var(--hui-font-size-small)] [line-height:var(--hui-line-height-regular)]">
@@ -123,6 +125,11 @@ export type ChatMessageProps = React.ComponentProps<"div"> & {
   role: "user" | "assistant"
   /** Who is speaking, read before the message. Shown above assistant messages. */
   author: string
+  /**
+   * Hides the author and `meta` line from view. It is still read aloud, so a
+   * screen reader can tell who is speaking. A user message always hides it.
+   */
+  hideAuthor?: boolean
   /** A short note beside the author, such as a time or a duration. */
   meta?: string
   /** The files sent with the message, listed above it. */
@@ -146,6 +153,7 @@ export type ChatMessageProps = React.ComponentProps<"div"> & {
 function ChatMessage({
   role,
   author,
+  hideAuthor = false,
   meta,
   attachments = [],
   editText,
@@ -225,7 +233,7 @@ function ChatMessage({
       <p
         className={cn(
           "m-0 flex items-baseline gap-[var(--hui-space-2)] [font-size:var(--hui-font-size-small)] [line-height:var(--hui-line-height-small)]",
-          isUser && "sr-only"
+          (isUser || hideAuthor) && "sr-only"
         )}
       >
         <span className="[font-weight:var(--hui-font-weight-medium)]">{author}</span>

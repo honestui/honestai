@@ -8,5 +8,18 @@ interface SidebarOption {
 
 export const StartedOptions: SidebarOption[] = [
   { name: "Overview", url: "/docs", icon: <HouseIcon /> },
-  { name: "Installation", url: "/docs/installation", icon: <SquareAddonIcon /> },
+  {
+    name: "Installation",
+    url: "/docs/installation",
+    icon: <SquareAddonIcon />,
+  },
+];
+
+export const GenerativeStartedOptions: SidebarOption[] = [
+  { name: "Overview", url: "/docs/generative", icon: <HouseIcon /> },
+  {
+    name: "Installation",
+    url: "/docs/generative/installation",
+    icon: <SquareAddonIcon />,
+  },
 ];

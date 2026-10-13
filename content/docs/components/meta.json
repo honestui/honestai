@@ -3,6 +3,7 @@
   "pages": [
     "prompt-bar",
     "chat-thread",
+    "message-scroller",
     "streaming-text",
     "markdown",
     "context-meter",

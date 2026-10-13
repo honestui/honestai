@@ -6,9 +6,9 @@ const docsRoot = path.join(projectRoot, "content/docs")
 const examplesRoot = path.join(projectRoot, "registry/examples")
 const componentsRoot = path.join(projectRoot, "registry/ai")
 // Every place a `ComponentSource` can read from.
-const sourceFiles = ["ai", "lib", "styles"].flatMap((directory) =>
+const sourceFiles = ["generative-ui", "generative-chat", "generative-server", ...["ai", "lib", "styles"].flatMap((directory) =>
   fs.readdirSync(path.join(projectRoot, "registry", directory)).map((name) => path.parse(name).name)
-)
+)]
 
 function collectFiles(directory) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -30,7 +30,12 @@ function headingSlug(heading) {
 
 function resolveDocPath(pathname) {
   const relativePath = pathname.replace(/^\/docs\/?/, "")
-  return [path.join(docsRoot, `${relativePath}.mdx`), path.join(docsRoot, relativePath, "index.mdx")].find(
+  return [
+    path.join(docsRoot, `${relativePath}.mdx`),
+    path.join(docsRoot, relativePath, "index.mdx"),
+    // Interactive docs such as the playground are App Router pages.
+    path.join(projectRoot, "app/docs", relativePath, "page.tsx"),
+  ].find(
     (candidate) => fs.existsSync(candidate)
   )
 }

@@ -50,6 +50,28 @@ npm install
 npm run dev
 ```
 
+For optional app and playground configuration, copy the environment template:
+
+```bash
+cp .env.example .env.local
+```
+
+Set `NEXT_PUBLIC_APP_URL` to the app's URL. Local development uses Ollama at
+`http://localhost:11434` and needs no API key. In production, setting the
+server-only `GEMINI_API_KEY` enables hosted playground replies;
+`PLAYGROUND_GEMINI_MODEL` optionally overrides the default model, and
+`PLAYGROUND_GEMINI_CONTEXT_TOKENS` sets that model's context window in tokens,
+which turns on the hosted playground's context meter. Without a key,
+the playground uses the visitor's local Ollama. Restart the app after changing
+these values, and keep `.env.local` out of Git.
+
+Get a `GEMINI_API_KEY` from [Google AI Studio](https://aistudio.google.com/apikey).
+The default is `gemini-3.8-flash`, which Google lists with free-tier input and
+output in its [pricing documentation](https://ai.google.dev/gemini-api/docs/pricing).
+Use a free-tier project to avoid paid API usage; setting a model here does not
+control the project's billing tier. Free usage has quotas, and Google may use
+free-tier content to improve its products.
+
 After adding or renaming an example, regenerate the preview index:
 
 ```bash
