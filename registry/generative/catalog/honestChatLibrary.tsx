@@ -5,7 +5,7 @@ import { GeneratedComponent } from "../renderers/generated-component";
 
 import { z } from "zod/v4";
 import type { ComponentGroup } from "../runtime/react/index";
-import { createLibrary, defineComponent } from "../runtime/react/index";
+import { createLibrary, defineComponent, reactive } from "../runtime/react/index";
 
 // Content
 import { Callout } from "./Callout";
@@ -238,13 +238,28 @@ const ChatCard = defineComponent({
     createElement(GeneratedComponent, { name: "Card", props, renderNode }),
 });
 
+// A modal uses the same content contracts as a chat card, without nesting modals.
+const ChatModal = defineComponent({
+  name: "Modal",
+  props: z.object({
+    title: z.string(),
+    open: reactive(z.boolean().optional()),
+    children: z.array(ChatCardChildUnion),
+    size: z.enum(["sm", "md", "lg"]).optional(),
+  }),
+  description:
+    "Dialog for a user-requested secondary task. Bind open to a $boolean initially false; open it from a Button action. Escape and Close dismiss it. Keep primary reply content outside the dialog.",
+  component: ({ props, renderNode }) =>
+    createElement(GeneratedComponent, { name: "Modal", props, renderNode }),
+});
+
 // ── Chat Stack — the unframed root of a generated block, always vertical ──
 
 const ChatStack = defineComponent({
   name: "Stack",
   props: z.object({
     // A Card holds no Card, so frames never nest.
-    children: z.array(z.union([...ChatCardChildUnion.options, ChatCard.ref])),
+    children: z.array(z.union([...ChatCardChildUnion.options, ChatCard.ref, ChatModal.ref])),
   }),
   description:
     "Root of a generated block. Children stack top to bottom with no frame, so the block reads as part of the reply.",
@@ -376,6 +391,7 @@ export const honestaiChatComponentGroups: ComponentGroup[] = [
       "Steps",
       "StepsItem",
       "Carousel",
+      "Modal",
     ],
     notes: [
       "- Stack is the root of every block and adds no frame. Card is an optional framed group inside it.",
@@ -508,6 +524,7 @@ export const honestChatLibrary = createLibrary({
     Steps,
     StepsItem,
     ChatCarousel,
+    ChatModal,
     // Data Display
     TagBlock,
     Tag,

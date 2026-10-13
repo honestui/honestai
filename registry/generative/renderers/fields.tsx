@@ -187,11 +187,16 @@ export function GeneratedField({
         <RadioGroup {...common} value={text(value)} onValueChange={change}>
           {items.map((item, index) => (
             <label key={text(item.value)} className="flex items-center gap-3">
-              <RadioGroupItem id={`${id}-${index}`} value={text(item.value)} />
+              <RadioGroupItem
+                id={`${id}-${index}`}
+                value={text(item.value)}
+                aria-label={text(item.label)}
+                aria-describedby={item.description ? `${id}-${index}-description` : undefined}
+              />
               <span>
                 {text(item.label)}
                 {item.description ? (
-                  <span className="block text-muted-foreground">
+                  <span id={`${id}-${index}-description`} className="block text-muted-foreground">
                     {text(item.description)}
                   </span>
                 ) : null}
@@ -205,8 +210,11 @@ export function GeneratedField({
     case "SwitchGroup":
       control = (
         <fieldset
+          id={id}
           disabled={streaming}
           aria-label={common["aria-label"]}
+          aria-describedby={common["aria-describedby"]}
+          aria-invalid={common["aria-invalid"]}
           className="grid gap-3"
         >
           {items.map((item, index) => {
@@ -215,6 +223,9 @@ export function GeneratedField({
               <label key={text(item.name)} className="flex items-center gap-3">
                 <Control
                   id={`${id}-${index}`}
+                  disabled={streaming}
+                  aria-label={text(item.label ?? item.name)}
+                  aria-describedby={item.description ? `${id}-${index}-description` : undefined}
                   checked={record(value)[text(item.name)] === true}
                   onCheckedChange={(checked) =>
                     change({ ...record(value), [text(item.name)]: checked })
@@ -223,7 +234,7 @@ export function GeneratedField({
                 <span>
                   {text(item.label ?? item.name)}
                   {item.description ? (
-                    <span className="block text-muted-foreground">
+                    <span id={`${id}-${index}-description`} className="block text-muted-foreground">
                       {text(item.description)}
                     </span>
                   ) : null}
@@ -252,6 +263,8 @@ export function GeneratedField({
             {multiple ? (
               <Checkbox
                 id={`${id}-${index}`}
+                aria-label={text(item.title ?? item.label)}
+                aria-describedby={item.subtitle ? `${id}-${index}-description` : undefined}
                 disabled={streaming || item.disabled === true}
                 checked={selected}
                 onCheckedChange={(checked) =>
@@ -266,6 +279,8 @@ export function GeneratedField({
               <RadioGroupItem
                 id={`${id}-${index}`}
                 value={text(item.value)}
+                aria-label={text(item.title ?? item.label)}
+                aria-describedby={item.subtitle ? `${id}-${index}-description` : undefined}
                 disabled={streaming || item.disabled === true}
               />
             )}
@@ -273,7 +288,7 @@ export function GeneratedField({
             <span>
               {text(item.title ?? item.label)}
               {item.subtitle ? (
-                <span className="block text-muted-foreground">
+                <span id={`${id}-${index}-description`} className="block text-muted-foreground">
                   {text(item.subtitle)}
                 </span>
               ) : null}

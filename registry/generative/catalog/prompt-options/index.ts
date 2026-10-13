@@ -111,6 +111,8 @@ formButtons = Buttons([Button("Save", @ToAssistant("Save preferences"), "primary
 ];
 
 export const honestaiAdditionalRules: string[] = [
+  "Use any component registered in this library when it fits the task; examples are not a restricted menu. Follow its exact signature and allowed parent/child contracts. Never invent an unregistered component.",
+  "Use RadioGroup for one answer from a short visible list, including multiple-choice quizzes; CheckBoxGroup for select-all-that-apply questions; Select for a longer single-choice list; SwitchGroup for independent on/off settings; Slider for a bounded numeric value; and DatePicker for dates. Put each input in a labeled FormControl inside Form. Leave quiz answers unselected and send them to the assistant only when the user submits.",
   "When asked about data, generate realistic/plausible data",
   'For grid-like layouts, use Stack with direction "row" and wrap=true. Avoid justify="between" unless you specifically want large gutters.',
   "For forms, define one FormControl reference per field so controls can stream progressively.",
@@ -147,6 +149,7 @@ Generated UI is optional. Choose it when it helps the user compare, understand d
 - Comparisons: prefer a generated Table when several options share attributes the user needs to compare side by side. If a table is the useful format, prefer the Table component over a Markdown table unless the user explicitly requests Markdown or text only. A short conceptual distinction can stay in prose.
 - Charts: prefer a chart for supplied numerical data when trends, differences, or proportions matter, or when the user asks for a chart. A single number or calculation usually needs only prose. Never invent data to justify a chart; label requested sample data as sample data.
 - Forms: prefer a Form when the user asks for a form or needs to provide several related inputs for the next step. Ask one simple clarifying question in prose when that is enough. Use a real supported submit action, without claiming data was saved or registered.
+- Quizzes and questionnaires: prefer a Form with labeled RadioGroup inputs for single-answer multiple-choice questions and CheckBoxGroup inputs for select-all-that-apply. A worksheet explicitly requested as text can stay in Markdown. Leave answers unselected; a submit button sends the chosen values to the assistant for feedback rather than claiming local grading or persistence.
 - Explanations: answer ordinary explanations, definitions, and how-it-works questions in prose unless a component materially improves understanding or the user asks for one.
 
 Respect an explicit request for prose, Markdown, or no UI. Do not add a component merely to demonstrate the library, and do not describe components instead of rendering them when you choose UI. Keep any accompanying prose short and useful rather than repeating everything in the component.
@@ -293,9 +296,23 @@ years = [1991, 1995, 1995]
 followUps = FollowUpBlock([fu1, fu2])
 fu1 = FollowUpItem("Tell me more about Python")
 fu2 = FollowUpItem("Show me a JavaScript comparison")`)}`,
+
+  `Example 7 — Multiple-choice quiz with selectable answers:
+
+Choose an answer for each question, then submit them for feedback.
+
+${block(`root = Stack([quiz])
+quiz = Form("arithmeticQuiz", buttons, [firstQuestion, secondQuestion])
+firstQuestion = FormControl("1. What is 2 + 2?", RadioGroup("sum", sumOptions, null, { required: true }))
+sumOptions = [RadioItem("3", "", "3"), RadioItem("4", "", "4"), RadioItem("5", "", "5")]
+secondQuestion = FormControl("2. What is 3 × 2?", RadioGroup("product", productOptions, null, { required: true }))
+productOptions = [RadioItem("5", "", "5"), RadioItem("6", "", "6"), RadioItem("8", "", "8")]
+buttons = Buttons([Button("Check my answers", @ToAssistant("Check my submitted arithmetic quiz answers and explain any mistakes."), "primary")])`)}`,
 ];
 
 export const honestaiChatAdditionalRules: string[] = [
+  "Use any component registered in this library when it fits the task; examples are not a restricted menu. Follow its exact signature and allowed parent/child contracts. Never invent an unregistered component.",
+  "Use RadioGroup for one answer from a short visible list, including multiple-choice quizzes; CheckBoxGroup for select-all-that-apply questions; Select for a longer single-choice list; SwitchGroup for independent on/off settings; Slider for a bounded numeric value; and DatePicker for dates. Put each input in a labeled FormControl inside Form. Leave quiz answers unselected and send them to the assistant only when the user submits.",
   "When asked about data, generate realistic/plausible data",
   "Write explanations, short lists, plain comparisons and code samples in Markdown, outside any block. Do not put the whole reply in a block, and do not use TextContent or MarkDownRenderer for text that could be Markdown in the reply.",
   "Every block is one complete program: its first line is root = Stack([...]), and every name it uses is defined inside that block. Stack children stack vertically with no frame; Stack takes no layout params.",
@@ -334,7 +351,7 @@ export const honestaiChatAdditionalRules: string[] = [
   "Use EditableTable ONLY when the user or app explicitly asks for an editable table; default to Table for read-only data.",
   'Every Form MUST have EXACTLY ONE submit Button with variant "primary" — that button validates the form; other buttons (secondary/tertiary escape hatches like "Just Surprise Me") skip validation, and there is never a reset button.',
   'Use DatePicker("targetDate", "single") for one target date or deadline, and DatePicker("travelDates", "range") for a start and end date. Both use Honest UI calendars. Never substitute a text Input for a date field.',
-  "Prefer structured inputs (Select, Chips, OptionCards, DatePicker, Slider) over free-text Input, give every FormControl a clear label (and a hint where it prevents mistakes), and keep each field name unique within the response.",
+  "Prefer structured inputs (RadioGroup, CheckBoxGroup, SwitchGroup, Select, Chips, OptionCards, DatePicker, Slider) over free-text Input, give every FormControl a clear label (and a hint where it prevents mistakes), and keep each field name unique within the response.",
   "Validation rules ({ required: true, email: true, minLength: 8, ... }) are enforced with inline errors — use them for genuinely essential fields, but never require a free-text field where leaving it blank is meaningful.",
   "Form inputs work ONLY inside a FormControl within a Form; for tappable suggestion choices OUTSIDE a form, use Buttons whose Button actions are @ToAssistant, never a bare OptionCards or Chips.",
   "Only add Buttons for real actions: form submit, @OpenUrl with a URL from a tool or the user (never fabricated), or a @ToAssistant follow-up. Never add a button for an app action (open, download, export, edit) you cannot perform.",

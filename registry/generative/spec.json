@@ -2,7 +2,7 @@
   "root": "Stack",
   "components": {
     "Card": {
-      "signature": "Card(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | Tabs | Carousel | Stack)[], variant?: \"card\" | \"sunk\" | \"clear\", direction?: \"row\" | \"column\", gap?: \"none\" | \"xs\" | \"s\" | \"m\" | \"l\" | \"xl\" | \"2xl\", align?: \"start\" | \"center\" | \"end\" | \"stretch\" | \"baseline\", justify?: \"start\" | \"center\" | \"end\" | \"between\" | \"around\" | \"evenly\", wrap?: boolean)",
+      "signature": "Card(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | Tabs | Carousel | Stack)[], variant?: \"card\" | \"sunk\" | \"clear\", direction?: \"row\" | \"column\", gap?: \"none\" | \"xs\" | \"s\" | \"m\" | \"l\" | \"xl\" | \"2xl\", align?: \"start\" | \"center\" | \"end\" | \"stretch\" | \"baseline\", justify?: \"start\" | \"center\" | \"end\" | \"between\" | \"around\" | \"evenly\", wrap?: boolean)",
       "description": "Styled container. variant: \"card\" (default, elevated) | \"sunk\" (recessed) | \"clear\" (transparent). Always full width. Accepts all Stack flex params (default: direction \"column\"). Cards flex to share space in row/wrap layouts."
     },
     "CardHeader": {
@@ -114,7 +114,7 @@
       "description": "Form container with fields and explicit action buttons"
     },
     "FormControl": {
-      "signature": "FormControl(label: string, input: Input | TextArea | Select | DatePicker | Slider | CheckBoxGroup | RadioGroup | Chips | OptionCards, hint?: string)",
+      "signature": "FormControl(label: string, input: Input | TextArea | Select | DatePicker | Slider | CheckBoxGroup | SwitchGroup | RadioGroup | Chips | OptionCards, hint?: string)",
       "description": "Field with label, input component, and optional hint text"
     },
     "Label": {
@@ -147,19 +147,19 @@
     },
     "CheckBoxGroup": {
       "signature": "CheckBoxGroup(name: string, items: CheckBoxItem[], rules?: {required?: boolean, email?: boolean, url?: boolean, numeric?: boolean, min?: number, max?: number, minLength?: number, maxLength?: number, pattern?: string}, value?: $binding<Record<string, boolean>>)",
-      "description": ""
+      "description": "Multiple-choice input where zero, one, or several answers can be selected. Wrap in FormControl inside Form."
     },
     "CheckBoxItem": {
       "signature": "CheckBoxItem(label: string, description: string, name: string, defaultChecked?: boolean)",
-      "description": ""
+      "description": "One labeled checkbox option with a unique name and optional initial checked state."
     },
     "RadioGroup": {
       "signature": "RadioGroup(name: string, items: RadioItem[], defaultValue?: string, rules?: {required?: boolean, email?: boolean, url?: boolean, numeric?: boolean, min?: number, max?: number, minLength?: number, maxLength?: number, pattern?: string}, value?: $binding<string>)",
-      "description": ""
+      "description": "Single-choice input for multiple-choice quizzes, surveys, and short visible option lists. Wrap in FormControl inside Form; omit defaultValue when the user should choose an answer."
     },
     "RadioItem": {
       "signature": "RadioItem(label: string, description: string, value: string)",
-      "description": ""
+      "description": "One labeled option in a RadioGroup. Use a stable value for the submitted answer."
     },
     "SwitchGroup": {
       "signature": "SwitchGroup(name: string, items: SwitchItem[], variant?: \"clear\" | \"card\" | \"sunk\", value?: $binding<Record<string, boolean>>)",
@@ -206,7 +206,7 @@
       "description": "Tabbed container"
     },
     "TabItem": {
-      "signature": "TabItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[])",
+      "signature": "TabItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[])",
       "description": "value is unique id, trigger is tab label, content is array of components"
     },
     "Accordion": {
@@ -214,7 +214,7 @@
       "description": "Collapsible sections"
     },
     "AccordionItem": {
-      "signature": "AccordionItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[])",
+      "signature": "AccordionItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[])",
       "description": "value is unique id, trigger is section title"
     },
     "Steps": {
@@ -226,7 +226,7 @@
       "description": "title and details text for one step"
     },
     "Carousel": {
-      "signature": "Carousel(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[][], variant?: \"card\" | \"sunk\")",
+      "signature": "Carousel(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[][], variant?: \"card\" | \"sunk\")",
       "description": "Horizontal scrollable carousel"
     },
     "Separator": {
@@ -326,7 +326,7 @@
       "description": "A grid or carousel of photo-first cards: a full-bleed background image with a tag on top and a bold text panel at the bottom; an optional action makes every card clickable."
     },
     "Modal": {
-      "signature": "Modal(title: string, open?: $binding<boolean>, children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[], size?: \"sm\" | \"md\" | \"lg\")",
+      "signature": "Modal(title: string, open?: $binding<boolean>, children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[], size?: \"sm\" | \"md\" | \"lg\")",
       "description": "Modal dialog. open is a reactive $boolean binding — set to true to open, X/Escape/backdrop auto-closes. Put Form with buttons inside children."
     }
   },
@@ -941,6 +941,9 @@
                 },
                 {
                   "$ref": "#/$defs/Form"
+                },
+                {
+                  "$ref": "#/$defs/Label"
                 },
                 {
                   "$ref": "#/$defs/Buttons"
@@ -1848,6 +1851,9 @@
                 "$ref": "#/$defs/CheckBoxGroup"
               },
               {
+                "$ref": "#/$defs/SwitchGroup"
+              },
+              {
                 "$ref": "#/$defs/RadioGroup"
               },
               {
@@ -2260,7 +2266,8 @@
           "name",
           "items"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "Multiple-choice input where zero, one, or several answers can be selected. Wrap in FormControl inside Form."
       },
       "CheckBoxItem": {
         "type": "object",
@@ -2283,7 +2290,67 @@
           "description",
           "name"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "One labeled checkbox option with a unique name and optional initial checked state."
+      },
+      "SwitchGroup": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/SwitchItem"
+            }
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "clear",
+              "card",
+              "sunk"
+            ]
+          },
+          "value": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "items"
+        ],
+        "additionalProperties": false,
+        "description": "Group of switch toggles"
+      },
+      "SwitchItem": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "defaultChecked": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "description": "Individual switch toggle"
       },
       "RadioGroup": {
         "type": "object",
@@ -2341,7 +2408,8 @@
           "name",
           "items"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "Single-choice input for multiple-choice quizzes, surveys, and short visible option lists. Wrap in FormControl inside Form; omit defaultValue when the user should choose an answer."
       },
       "RadioItem": {
         "type": "object",
@@ -2361,7 +2429,8 @@
           "description",
           "value"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "One labeled option in a RadioGroup. Use a stable value for the submitted answer."
       },
       "Chips": {
         "type": "object",
@@ -2586,6 +2655,19 @@
         ],
         "additionalProperties": false,
         "description": "A single selectable card inside an OptionCards group, with a value, title, optional subtitle and an optional Icon or Image on top."
+      },
+      "Label": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "description": "Text label"
       },
       "IconButton": {
         "type": "object",
@@ -3842,6 +3924,9 @@
                   "$ref": "#/$defs/Form"
                 },
                 {
+                  "$ref": "#/$defs/Label"
+                },
+                {
                   "$ref": "#/$defs/Buttons"
                 },
                 {
@@ -3960,6 +4045,9 @@
                   },
                   {
                     "$ref": "#/$defs/Form"
+                  },
+                  {
+                    "$ref": "#/$defs/Label"
                   },
                   {
                     "$ref": "#/$defs/Buttons"
@@ -4086,78 +4174,6 @@
         "additionalProperties": false,
         "description": "One slice with label and numeric value"
       },
-      "Label": {
-        "type": "object",
-        "properties": {
-          "text": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "text"
-        ],
-        "additionalProperties": false,
-        "description": "Text label"
-      },
-      "SwitchGroup": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/SwitchItem"
-            }
-          },
-          "variant": {
-            "type": "string",
-            "enum": [
-              "clear",
-              "card",
-              "sunk"
-            ]
-          },
-          "value": {
-            "type": "object",
-            "propertyNames": {
-              "type": "string"
-            },
-            "additionalProperties": {
-              "type": "boolean"
-            }
-          }
-        },
-        "required": [
-          "name",
-          "items"
-        ],
-        "additionalProperties": false,
-        "description": "Group of switch toggles"
-      },
-      "SwitchItem": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "defaultChecked": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "name"
-        ],
-        "additionalProperties": false,
-        "description": "Individual switch toggle"
-      },
       "Accordion": {
         "type": "object",
         "properties": {
@@ -4252,6 +4268,9 @@
                 },
                 {
                   "$ref": "#/$defs/Form"
+                },
+                {
+                  "$ref": "#/$defs/Label"
                 },
                 {
                   "$ref": "#/$defs/Buttons"
@@ -4376,6 +4395,9 @@
                 },
                 {
                   "$ref": "#/$defs/Form"
+                },
+                {
+                  "$ref": "#/$defs/Label"
                 },
                 {
                   "$ref": "#/$defs/Buttons"

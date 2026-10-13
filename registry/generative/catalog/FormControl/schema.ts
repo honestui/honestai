@@ -8,6 +8,7 @@ import { Input } from "../Input";
 import { OptionCards } from "../OptionCards";
 import { RadioGroup } from "../RadioGroup";
 import { Select } from "../Select";
+import { SwitchGroup } from "../SwitchGroup";
 import { Slider } from "../Slider";
 import { TextArea } from "../TextArea";
 
@@ -20,6 +21,7 @@ export const FormControlSchema = z.object({
     DatePicker.ref,
     Slider.ref,
     CheckBoxGroup.ref,
+    SwitchGroup.ref,
     RadioGroup.ref,
     Chips.ref,
     OptionCards.ref,

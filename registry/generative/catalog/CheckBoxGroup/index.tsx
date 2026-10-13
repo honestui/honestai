@@ -12,7 +12,7 @@ export { CheckBoxItemSchema } from "./schema";
 export const CheckBoxItem = defineComponent({
   name: "CheckBoxItem",
   props: CheckBoxItemSchema,
-  description: "",
+  description: "One labeled checkbox option with a unique name and optional initial checked state.",
   component: ({ props, renderNode }) =>
     createElement(GeneratedComponent, {
       name: "CheckBoxItem",
@@ -24,7 +24,7 @@ export const CheckBoxItem = defineComponent({
 export const CheckBoxGroup = defineComponent({
   name: "CheckBoxGroup",
   props: createCheckBoxGroupSchema(CheckBoxItem),
-  description: "",
+  description: "Multiple-choice input where zero, one, or several answers can be selected. Wrap in FormControl inside Form.",
   component: ({ props, renderNode }) =>
     createElement(GeneratedComponent, {
       name: "CheckBoxGroup",

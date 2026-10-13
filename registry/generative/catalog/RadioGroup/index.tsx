@@ -14,7 +14,7 @@ export { RadioItemSchema } from "./schema";
 export const RadioItem = defineComponent({
   name: "RadioItem",
   props: RadioItemSchema,
-  description: "",
+  description: "One labeled option in a RadioGroup. Use a stable value for the submitted answer.",
   component: ({ props, renderNode }) =>
     createElement(GeneratedComponent, { name: "RadioItem", props, renderNode }),
 });
@@ -28,7 +28,7 @@ export const RadioGroup = defineComponent({
     rules: rulesSchema,
     value: reactive(z.string().optional()),
   }),
-  description: "",
+  description: "Single-choice input for multiple-choice quizzes, surveys, and short visible option lists. Wrap in FormControl inside Form; omit defaultValue when the user should choose an answer.",
   component: ({ props, renderNode }) =>
     createElement(GeneratedComponent, {
       name: "RadioGroup",

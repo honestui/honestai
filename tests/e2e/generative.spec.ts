@@ -312,3 +312,32 @@ test("generative examples render custom Honest UI components and explain invalid
   const axe = await new AxeBuilder({ page }).include('[data-slot="generative-diagnostics-demo"]').analyze();
   expect(axe.violations.map((item) => item.id)).toEqual([]);
 });
+
+test("generated quiz radios support keyboard selection and submit alongside switches", async ({ page }) => {
+  const preview = await playground(page);
+  await preview.getByRole("textbox", { name: "Honest AI Lang source" }).fill(`root = Stack([quiz])
+quiz = Form("quiz", buttons, [question, preferences])
+question = FormControl("What is 2 + 2?", RadioGroup("answer", options, null, { required: true }))
+options = [RadioItem("3", "", "three"), RadioItem("4", "", "four"), RadioItem("5", "", "five")]
+preferences = FormControl("Feedback preferences", SwitchGroup("feedback", [SwitchItem("Explain mistakes", "Include an explanation", "explanations")]))
+buttons = Buttons([Button("Check answers", @ToAssistant("Check my answers"), "primary")])`);
+  const group = preview.getByRole("radiogroup", { name: "What is 2 + 2?" });
+  await expect(group).toBeVisible();
+  await expect(group.getByRole("radio", { checked: true })).toHaveCount(0);
+  await preview.getByRole("button", { name: "Check answers" }).click();
+  await expect(preview.getByRole("alert")).toBeVisible();
+  await group.getByRole("radio", { name: "3", exact: true }).focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(group.getByRole("radio", { name: "4", exact: true })).toBeChecked();
+  await preview.getByRole("switch", { name: /Explain mistakes/ }).click();
+  await preview.getByRole("button", { name: "Check answers" }).click();
+  await expect(preview.locator("pre")).toContainText('"formState"');
+  const submitted = JSON.parse(await preview.locator("pre").textContent() ?? "{}");
+  expect(submitted.formState.quiz).toEqual({
+    answer: { value: "four" },
+    feedback: { value: { explanations: true } },
+  });
+  await expect(group.getByRole("radio", { name: "4", exact: true })).toBeChecked();
+  const axe = await new AxeBuilder({ page }).include('[data-slot="generative-playground"]').analyze();
+  expect(axe.violations.map((item) => item.id)).toEqual([]);
+});

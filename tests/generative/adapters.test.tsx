@@ -39,7 +39,7 @@ describe("Honest component adapters", () => {
       .examples!.join("\n")
       .matchAll(/^```honestai\n([\s\S]*?)\n```$/gm);
     const programs = [...blocks].map((match) => match[1]);
-    expect(programs).toHaveLength(5);
+    expect(programs).toHaveLength(6);
     for (const program of programs) {
       const result = parser.parse(program);
       expect(result.meta.errors).toEqual([]);
@@ -89,6 +89,34 @@ describe("Honest component adapters", () => {
       expect(result.meta.errors).toEqual([]);
       expect(result.root).not.toBeNull();
     }
+  });
+  it("exposes every application component to the chat model", () => {
+    const application = honestLibrary.toSpec();
+    const chat = honestChatLibrary.toSpec();
+    expect(Object.keys(application.components).filter((name) => !chat.components[name])).toEqual([]);
+  });
+  it("accepts switches as form inputs in both libraries", () => {
+    const program = `root = Stack([form])
+form = Form("preferences", buttons, [field])
+field = FormControl("Feedback", SwitchGroup("feedback", [SwitchItem("Explain mistakes", "", "explanations")]))
+buttons = Buttons([Button("Save preferences", @ToAssistant("Apply my preferences"))])`;
+    for (const library of [honestLibrary, honestChatLibrary]) {
+      const result = createParser(library.toJSONSchema(), "Stack").parse(program);
+      expect(result.meta.errors).toEqual([]);
+      const html = renderToStaticMarkup(<Renderer library={library} response={program} />);
+      expect(html).toContain('role="switch"');
+      expect(html).toContain("Explain mistakes");
+      expect(html).toContain('aria-label="Explain mistakes"');
+    }
+  });
+  it("allows a chat modal to contain chat-specific sections", () => {
+    const program = `root = Stack([dialog])
+$showDialog = false
+dialog = Modal("Details", $showDialog, [sections])
+sections = SectionBlock([SectionItem("intro", "Introduction", [TextContent("Details")])], false)`;
+    const result = createParser(honestChatLibrary.toJSONSchema(), "Stack").parse(program);
+    expect(result.meta.errors).toEqual([]);
+    expect(result.root?.typeName).toBe("Stack");
   });
   it("uses Honest components and disables form controls while streaming", () => {
     const html = renderToStaticMarkup(

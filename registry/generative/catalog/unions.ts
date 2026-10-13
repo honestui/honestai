@@ -31,6 +31,7 @@ import { TagBlock } from "./TagBlock";
 
 import { Buttons } from "./Buttons";
 import { Form } from "./Form";
+import { Label } from "./Label";
 
 import { Steps } from "./Steps";
 
@@ -70,6 +71,7 @@ export const ContentChildUnion = z.union([
   Table.ref,
   TagBlock.ref,
   Form.ref,
+  Label.ref,
   Buttons.ref,
   IconButton.ref,
   Steps.ref,
