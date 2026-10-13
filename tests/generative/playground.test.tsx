@@ -11,7 +11,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it("the hosted playground sends to this site's server and names no local model", async () => {
+it.each(["gemini-3.8-flash", "gpt-6-luna"])("the hosted playground sends %s to this site's server and names no local model", async (model) => {
   const chunk = (delta: object, finish: string | null = null) =>
     `data: ${JSON.stringify({ choices: [{ delta, finish_reason: finish }] })}\n\n`;
   let finishReply!: (response: Response) => void;
@@ -37,10 +37,10 @@ it("the hosted playground sends to this site's server and names no local model",
   const root = createRoot(container);
   await React.act(async () => {
     root.render(
-      <Playground provider={{ kind: "hosted", model: "gemini-3.8-flash" }} />,
+      <Playground provider={{ kind: "hosted", model }} />,
     );
   });
-  expect(container.textContent).toContain("gemini-3.8-flash");
+  expect(container.textContent).toContain(model);
   expect(container.textContent).not.toMatch(/Ollama|local model/i);
 
   const input = container.querySelector(
@@ -62,12 +62,13 @@ it("the hosted playground sends to this site's server and names no local model",
 
   const [url, init] = server.mock.calls[0];
   expect(url).toBe("/api/playground/chat");
+  expect(JSON.parse(init!.body as string).model).toBe(model);
   expect(JSON.parse(init!.body as string).messages).toEqual([
     { role: "user", content: "Hello" },
   ]);
   expect(container.querySelector('[data-slot="loading-state"]')).not.toBeNull();
   expect(container.querySelector('[role="status"]')?.textContent).toContain(
-    "Waiting for gemini-3.8-flash",
+    `Waiting for ${model}`,
   );
   await React.act(async () => finishReply(reply));
   expect(container.querySelector('[data-slot="loading-state"]')).toBeNull();

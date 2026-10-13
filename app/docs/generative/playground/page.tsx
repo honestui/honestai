@@ -21,7 +21,10 @@ export const metadata: Metadata = {
   },
 };
 
+// Override the docs layout's static rendering for runtime provider configuration.
+export const dynamic = "force-dynamic";
+
 export default function PlaygroundPage() {
-  // Read on the server, so the browser never sees which keys exist.
+  // The picker and chat route must use the same runtime provider configuration.
   return <Playground provider={getPlaygroundProvider()} />;
 }

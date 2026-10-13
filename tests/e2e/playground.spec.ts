@@ -312,7 +312,7 @@ test("the wait is announced, then the meter shows the tokens Ollama counted", as
   await page.keyboard.press("Enter");
 
   await expect(
-    playground.locator('[data-slot="thinking-state"]'),
+    playground.locator('[data-slot="loading-state"]'),
   ).toContainText("Waiting for test-model:1b");
   // Nothing has been counted yet, so there is no figure to show.
   await expect(meter).toHaveCount(0);

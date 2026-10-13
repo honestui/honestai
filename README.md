@@ -58,10 +58,17 @@ cp .env.example .env.local
 
 Set `NEXT_PUBLIC_APP_URL` to the app's URL. Local development uses Ollama at
 `http://localhost:11434` and needs no API key. In production, setting the
-server-only `GEMINI_API_KEY` enables hosted playground replies;
+server-only `OPENAI_API_KEY` enables `gpt-6-luna` with the OpenAI logo in the
+model picker. Set `PLAYGROUND_OPENAI_CONTEXT_TOKENS` to enable its context meter.
+OpenAI is the default when its key is configured. Set these values in your
+deployment environment and redeploy; the key stays on the server.
+
+The server-only `GEMINI_API_KEY` also enables hosted playground replies;
 `PLAYGROUND_GEMINI_MODEL` optionally overrides the default model, and
 `PLAYGROUND_GEMINI_CONTEXT_TOKENS` sets that model's context window in tokens,
-which turns on the hosted playground's context meter. Without a key,
+which turns on that model's context meter. With both keys, visitors can switch
+between OpenAI and Google. Requests use only the selected provider; failures
+do not silently switch providers. Without either key,
 the playground uses the visitor's local Ollama. Restart the app after changing
 these values, and keep `.env.local` out of Git.
 

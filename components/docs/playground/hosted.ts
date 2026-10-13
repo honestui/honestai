@@ -9,7 +9,7 @@ import { sseLineIterator } from "@/registry/generative/runtime/headless/stream/a
 
 type UsageChunk = { usage?: { total_tokens?: number } | null };
 
-/** The tokens Google counted for the prompt and the reply, from the stream's last chunk. */
+/** The tokens the provider counted, from the stream's last chunk. */
 async function readTotalTokens(response: Response) {
   let total: number | undefined;
   for await (const line of sseLineIterator(response)) {
@@ -25,7 +25,7 @@ async function readTotalTokens(response: Response) {
   return total;
 }
 
-/** Google's OpenAI-compatible chat stream, with the usage it reports read from a copy of the response. */
+/** An OpenAI-compatible stream, with usage read from a copy of the response. */
 const hostedStream = (
   onContextUsed: (tokens: number) => void,
 ): StreamProtocolAdapter => {
@@ -47,12 +47,15 @@ const hostedStream = (
 /** Replies come from this site's server, which holds the model credentials. */
 export function createHostedLLM({
   onContextUsed,
+  model,
 }: {
   onContextUsed: (tokens: number) => void;
+  model?: string;
 }): ChatLLM {
   return fetchLLM({
     url: "/api/playground/chat",
     streamAdapter: hostedStream(onContextUsed),
     messageFormat: openAIMessageFormat,
+    body: model ? { model } : undefined,
   });
 }

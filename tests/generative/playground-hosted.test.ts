@@ -47,9 +47,28 @@ it.each([
 ])("reads PLAYGROUND_GEMINI_CONTEXT_TOKENS=%j as %j", (value, expected) => {
   vi.stubEnv("NODE_ENV", "production");
   vi.stubEnv("GEMINI_API_KEY", "test-key");
+  vi.stubEnv("OPENAI_API_KEY", "");
   vi.stubEnv("PLAYGROUND_GEMINI_CONTEXT_TOKENS", value);
   expect(getPlaygroundProvider()).toMatchObject({
     kind: "hosted",
     contextTokens: expected,
   });
+});
+
+it("lists configured providers without serializing API keys", () => {
+  vi.stubEnv("NODE_ENV", "production");
+  vi.stubEnv("OPENAI_API_KEY", "private-openai-key");
+  vi.stubEnv("GEMINI_API_KEY", "private-google-key");
+  const provider = getPlaygroundProvider();
+  expect(provider).toMatchObject({
+    kind: "hosted",
+    model: "gpt-6-luna",
+    models: [
+      { model: "gpt-6-luna", provider: "openai" },
+      { model: "gemini-3.8-flash", provider: "google" },
+    ],
+  });
+  expect(JSON.stringify(provider)).not.toContain("private-");
+  vi.stubEnv("NODE_ENV", "development");
+  expect(getPlaygroundProvider()).toEqual({ kind: "ollama" });
 });

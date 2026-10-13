@@ -23,7 +23,7 @@ import {
   MenuRadioItem,
   MenuTrigger,
 } from "@/components/ui/menu";
-import type { PlaygroundProvider } from "@/lib/playground-provider";
+import type { HostedPlaygroundModel, PlaygroundProvider } from "@/lib/playground-provider";
 import { cn } from "@/lib/utils";
 import { ChatMessage } from "@/registry/ai/chat-thread";
 import { ContextMeter } from "@/registry/ai/context-meter";
@@ -657,21 +657,26 @@ function OllamaPlayground() {
 
 /** Replies come from this site's server, which holds the model credentials. */
 function HostedPlayground({
-  model,
+  model: initialModel,
   contextTokens,
+  models,
 }: {
   model: string;
   /** The model's context window. Without it there is no meter. */
   contextTokens?: number;
+  models?: HostedPlaygroundModel[];
 }) {
+  const [model, setModel] = React.useState(initialModel);
+  const selected = models?.find((item) => item.model === model);
+  const contextLimit = selected?.contextTokens ?? (model === initialModel ? contextTokens : undefined);
   const [contextUsed, setContextUsed] = React.useState<number | null>(null);
   const llm = React.useMemo(
-    () => createHostedLLM({ onContextUsed: setContextUsed }),
-    [],
+    () => createHostedLLM({ model, onContextUsed: setContextUsed }),
+    [model],
   );
   const connection = React.useMemo<Connection>(
-    () => ({ status: "ready", models: [{ name: model }] }),
-    [model],
+    () => ({ status: "ready", models: models?.map((item) => ({ name: item.model })) ?? [{ name: initialModel }] }),
+    [models, initialModel],
   );
   return (
     <ChatProvider llm={llm}>
@@ -680,10 +685,14 @@ function HostedPlayground({
         // The server is always the same one, so there is nothing to check again.
         onRecheck={() => {}}
         model={model}
+        onModelChange={(nextModel) => {
+          setModel(nextModel);
+          setContextUsed(null);
+        }}
         context={
-          contextUsed === null || contextTokens === undefined
+          contextUsed === null || contextLimit === undefined
             ? undefined
-            : { used: contextUsed, limit: contextTokens, countedBy: "Google" }
+            : { used: contextUsed, limit: contextLimit, countedBy: selected?.provider === "openai" ? "OpenAI" : "Google" }
         }
         onThreadChange={() => setContextUsed(null)}
       />
@@ -697,6 +706,7 @@ export function Playground({ provider }: { provider: PlaygroundProvider }) {
     <HostedPlayground
       model={provider.model}
       contextTokens={provider.contextTokens}
+      models={provider.models}
     />
   ) : (
     <OllamaPlayground />

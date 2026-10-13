@@ -24,6 +24,7 @@ const hello = { messages: [{ role: "user", content: "Hello" }] };
 beforeEach(() => {
   vi.stubEnv("NODE_ENV", "production");
   vi.stubEnv("GEMINI_API_KEY", "test-key");
+  vi.stubEnv("OPENAI_API_KEY", "");
   vi.stubGlobal("fetch", upstream);
   upstream.mockResolvedValue(
     new Response('data: {"choices":[{"delta":{"content":"Hi"}}]}\n\n'),
@@ -36,6 +37,54 @@ afterEach(() => {
 });
 
 describe("playground chat route", () => {
+  it("defaults to GPT-6 Luna with the server's OpenAI key when both keys are configured", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "test-openai-key");
+    expect((await post(hello)).status).toBe(200);
+    const [url, init] = upstream.mock.calls[0];
+    expect(url).toBe("https://api.openai.com/v1/chat/completions");
+    expect(new Headers(init!.headers).get("authorization")).toBe("Bearer test-openai-key");
+    const sent = JSON.parse(init!.body as string);
+    expect(sent.model).toBe("gpt-6-luna");
+    expect(sent.stream_options).toEqual({ include_usage: true });
+    expect(sent.reasoning_effort).toBe("low");
+    expect(sent.max_completion_tokens).toBe(4000);
+  });
+
+  it("routes the selected Google model even when OpenAI is the default", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "test-openai-key");
+    await post({ ...hello, model: "gemini-3.8-flash" });
+    expect(upstream.mock.calls[0][0]).toContain("generativelanguage.googleapis.com");
+    expect(new Headers(upstream.mock.calls[0][1]!.headers).get("authorization")).toBe("Bearer test-key");
+  });
+
+  it.each(["gpt-6-astra", "unknown-model", 42, { model: "gpt-6-luna" }])("rejects an unconfigured model %j", async (model) => {
+    expect((await post({ ...hello, model })).status).toBe(400);
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
+  it("supports OpenAI without a Google key", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "test-openai-key");
+    vi.stubEnv("GEMINI_API_KEY", "");
+    expect((await post({ ...hello, model: "gpt-6-luna" })).status).toBe(200);
+    expect(upstream.mock.calls[0][0]).toBe("https://api.openai.com/v1/chat/completions");
+  });
+
+  it("does not fall back to Google or expose OpenAI account errors", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "test-openai-key");
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      upstream.mockResolvedValue(new Response("private OpenAI account details", { status: 401 }));
+      const response = await post({ ...hello, model: "gpt-6-luna" });
+      expect(response.status).toBe(502);
+      expect(upstream).toHaveBeenCalledTimes(1);
+      expect(upstream.mock.calls[0][0]).toBe("https://api.openai.com/v1/chat/completions");
+      expect(await response.text()).not.toContain("private");
+      expect(JSON.stringify(logged.mock.calls)).not.toContain("private");
+    } finally {
+      logged.mockRestore();
+    }
+  });
+
   it("streams Google's reply for the configured model with the chat prompt", async () => {
     const response = await post({
       messages: [

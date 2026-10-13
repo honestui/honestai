@@ -3,6 +3,7 @@ import chatSpec from "@/registry/generative/chat-spec.json";
 import { generateSystemPrompt } from "@/registry/generative/runtime/core";
 
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
 // The endpoint is public and spends the site's key, so every request is bounded.
 const MAX_MESSAGES = 40;
@@ -18,7 +19,7 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
 /**
  * Request times by client address. This lives in one server instance's
  * memory, so it slows a single abusive client but is not a spending limit.
- * Use a free-tier Google AI Studio project to avoid paid API usage.
+ * Configure provider-level budget controls separately.
  */
 const recentRequests = new Map<string, number[]>();
 
@@ -88,9 +89,11 @@ export async function POST(request: Request) {
     return refuse(429, "Too many messages. Wait a minute, then send it again.");
   }
 
-  const conversation = readConversation(
-    await request.json().catch(() => null),
-  );
+  const body = await request.json().catch(() => null);
+  const requestedModel = body?.model ?? provider.model;
+  const selected = provider.models?.find((item) => item.model === requestedModel);
+  if (!selected) return refuse(400, "Choose an available playground model.");
+  const conversation = readConversation(body);
   if (!conversation) {
     return refuse(
       400,
@@ -100,14 +103,14 @@ export async function POST(request: Request) {
 
   let upstream: Response;
   try {
-    upstream = await fetch(GEMINI_URL, {
+    upstream = await fetch(selected.provider === "openai" ? OPENAI_URL : GEMINI_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.GEMINI_API_KEY}`,
+        Authorization: `Bearer ${selected.provider === "openai" ? process.env.OPENAI_API_KEY : process.env.GEMINI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: provider.model,
+        model: selected.model,
         stream: true,
         // The last chunk then carries the token counts the context meter shows.
         stream_options: { include_usage: true },
@@ -116,18 +119,18 @@ export async function POST(request: Request) {
         reasoning_effort: "low",
         messages: [{ role: "system", content: systemPrompt }, ...conversation],
       }),
-      // Stopping the reply in the browser stops the request to Google.
+      // Stopping the reply in the browser stops the upstream request.
       signal: request.signal,
     });
   } catch (error) {
     if (request.signal.aborted) return new Response(null, { status: 499 });
-    console.error("Playground: the request to Google failed", error);
+    console.error(`Playground: the request to ${selected.provider} failed`, error instanceof Error ? error.name : "Unknown error");
     return refuse(502, "The model could not be reached. Try again in a moment.");
   }
 
   if (!upstream.ok || !upstream.body) {
     // Provider error bodies can contain account details; log only the status.
-    console.error(`Playground: Google answered ${upstream.status}`);
+    console.error(`Playground: ${selected.provider} answered ${upstream.status}`);
     return upstream.status === 429
       ? refuse(503, "The playground is busy. Try again in a moment.")
       : refuse(502, "The model returned an error. Try again in a moment.");
