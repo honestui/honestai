@@ -276,6 +276,14 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  body,
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+
 html[data-theme-transition="circle-blur"]::view-transition-old(root) {
   animation: none;
   mix-blend-mode: normal;

@@ -64,6 +64,12 @@ export function DocsSidebar({
           >
             Honest UI icons
           </a>
+          <Link
+            className="text-muted-foreground w-fit rounded-sm text-xs outline-none hover:text-foreground hover:underline hover:underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            href="/privacy"
+          >
+            Privacy and analytics
+          </Link>
         </SidebarFooter>
       </nav>
     </Sidebar>

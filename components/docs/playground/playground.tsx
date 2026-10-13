@@ -687,11 +687,6 @@ function HostedPlayground({
             : { used: contextUsed, limit: contextTokens, countedBy: "Google" }
         }
         onThreadChange={() => setContextUsed(null)}
-        footnote={
-          <p className="m-0 text-center text-xs text-muted-foreground">
-            Messages are sent to Google to generate replies. On the free tier, Google may use this content to improve its products.
-          </p>
-        }
       />
     </ChatProvider>
   );

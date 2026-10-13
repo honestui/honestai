@@ -2,6 +2,7 @@ import { JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
+import { SiteAnalytics } from "@/components/site-analytics";
 import { absoluteUrl, SITE_URL } from "@/lib/utils";
 import {
   HONEST_UI_URL,
@@ -173,6 +174,7 @@ export default function RootLayout({
           attribute={["class", "data-theme"]}
         >
           {children}
+          <SiteAnalytics />
         </ThemeProvider>
       </body>
     </html>
