@@ -34,6 +34,11 @@ import { Form } from "./Form";
 import { Label } from "./Label";
 
 import { Steps } from "./Steps";
+import { Diagram } from "./Diagram";
+import { PartsDiagram } from "./PartsDiagram";
+import { Calculator } from "./Calculator";
+import { Quiz } from "./Quiz";
+import { PlaceMap } from "./Map";
 
 import { FollowUpBlock } from "./FollowUpBlock";
 import { ListBlock } from "./ListBlock";
@@ -75,6 +80,11 @@ export const ContentChildUnion = z.union([
   Buttons.ref,
   IconButton.ref,
   Steps.ref,
+  Diagram.ref,
+  PartsDiagram.ref,
+  Calculator.ref,
+  Quiz.ref,
+  PlaceMap.ref,
   InlineHeader.ref,
   EntityList.ref,
   EditableTable.ref,

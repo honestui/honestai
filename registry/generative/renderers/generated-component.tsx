@@ -27,7 +27,9 @@ import {
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Markdown } from "@/registry/ai/markdown";
 import { cn } from "@/lib/utils";
-import { CodeView } from "@/registry/ai/code-view";
+import { ProseCodeBlock } from "@/registry/ai/prose-code-block";
+import { SyntaxLine, useSyntax } from "@/registry/lib/prose-syntax-react";
+import { languageDisplayName } from "@/registry/lib/prose-syntax-shared";
 import { ContextCards } from "@/registry/ai/context-cards";
 import { RecordsTable } from "@/registry/ai/records-table";
 import * as Icons from "honestui/icons";
@@ -44,8 +46,13 @@ import {
 } from "../runtime/react";
 import { FieldLabelContext, GeneratedField } from "./fields";
 import { GeneratedChart } from "./charts";
+import { GeneratedDiagram } from "./diagram";
+import { GeneratedCalculator, GeneratedResult } from "./calculator";
+import { GeneratedQuiz } from "./quiz";
+import { GeneratedPartsDiagram } from "./parts-diagram";
+import { GeneratedMap } from "./map";
 import { GeneratedEditableTable } from "./editable-table";
-import { array, nodeProps, record, safeUrl, text, type Props } from "./shared";
+import { InsideCardContext, array, nodeProps, record, safeUrl, text, type Props } from "./shared";
 export type GeneratedComponentProps = {
   name: string;
   props: Props;
@@ -79,6 +86,10 @@ const virtual = new Set([
   "AccordionItem",
   "SectionItem",
   "StepsItem",
+  "DiagramNode",
+  "QuizQuestion",
+  "DiagramPart",
+  "MapPlace",
 ]);
 type Tone = "neutral" | "info" | "success" | "warning" | "danger";
 const tones: Record<string, Tone> = {
@@ -95,6 +106,19 @@ const toneTokens: Record<Tone, string> = {
   warning: "attention-primary",
   danger: "danger-primary",
 };
+
+// Generated code blocks use the same highlighting as Markdown's fenced code.
+function HighlightedCode({ language, code }: { language: string; code: string }) {
+  const syntax = useSyntax(code, language);
+  return (
+    <ProseCodeBlock
+      label={language.trim() ? languageDisplayName(language) : "Code"}
+      code={code}
+      codeClassName="honest-syntax"
+      renderLine={syntax ? (line, index) => (syntax.lines[index] ? <SyntaxLine tokens={syntax.lines[index]} /> : line) : undefined}
+    />
+  );
+}
 
 /**
  * A tone as a text color. The status hues are too light to read as text on the
@@ -244,7 +268,7 @@ function GeneratedSections({ props, renderNode }: GeneratedComponentProps) {
       <div className="grid gap-4">
         {items.map((item, i) => (
           <section key={i}>
-            <h2>{text(item.trigger)}</h2>
+            <h2 data-slot="section-title" className="m-0 mb-2 text-base font-semibold">{text(item.trigger)}</h2>
             {renderNode(item.content)}
           </section>
         ))}
@@ -388,7 +412,9 @@ export function GeneratedComponent(
           style={{ minWidth: 0, flex: 1 }}
           className={cn(flatCard, p.variant === "sunk" && "bg-muted")}
         >
-          <CardContent style={style}>{children}</CardContent>
+          <CardContent style={style}>
+            <InsideCardContext.Provider value>{children}</InsideCardContext.Provider>
+          </CardContent>
         </Card>
       ) : (
         <div style={style}>{children}</div>
@@ -396,7 +422,8 @@ export function GeneratedComponent(
     }
     case "CardHeader":
       return (
-        <CardHeader>
+        // It renders inside the Card's content, which already has the inset.
+        <CardHeader className="px-0">
           <CardTitle>{text(p.title)}</CardTitle>
           {!!p.subtitle && (
             <CardDescription>{text(p.subtitle)}</CardDescription>
@@ -406,7 +433,8 @@ export function GeneratedComponent(
     case "InlineHeader":
       return (
         <header className="grid gap-1">
-          <h2 className="m-0 text-base font-semibold">{text(p.heading)}</h2>
+          {/* data-slot opts out of the site's page-heading size for bare h2s. */}
+          <h2 data-slot="inline-header-title" className="m-0 text-base font-semibold">{text(p.heading)}</h2>
           {!!p.description && (
             <p className="m-0 text-sm text-muted-foreground">
               {text(p.description)}
@@ -421,7 +449,7 @@ export function GeneratedComponent(
     case "MarkDownRenderer":
       return <Markdown>{text(p.textMarkdown)}</Markdown>;
     case "CodeBlock":
-      return <CodeView filename={text(p.language)} code={text(p.codeString)} />;
+      return <HighlightedCode language={text(p.language)} code={text(p.codeString)} />;
     case "Text":
     case "BoldText":
       return (
@@ -647,6 +675,18 @@ export function GeneratedComponent(
             })}
         </dl>
       );
+    case "Map":
+      return <GeneratedMap props={p} />;
+    case "PartsDiagram":
+      return <GeneratedPartsDiagram props={p} />;
+    case "Quiz":
+      return <GeneratedQuiz props={p} />;
+    case "Calculator":
+      return <GeneratedCalculator props={p} renderNode={render} />;
+    case "Result":
+      return <GeneratedResult props={p} />;
+    case "Diagram":
+      return <GeneratedDiagram props={p} />;
     case "Steps":
       return (
         <ol className="grid gap-4">

@@ -35,7 +35,7 @@ export default function PrivacyPage() {
       <main className="mx-auto max-w-3xl px-5 py-14 sm:px-8 sm:py-20">
         <h1 className="text-4xl font-medium tracking-tight">Privacy</h1>
         <p className="mt-4 text-sm text-[var(--hui-color-foreground-base-secondary)]">
-          Last updated October 12, 2026
+          Last updated October 14, 2026
         </p>
 
         <div className="mt-10 space-y-10 text-base leading-7 text-[var(--hui-color-foreground-base-secondary)]">
@@ -90,6 +90,26 @@ export default function PrivacyPage() {
             </p>
           </section>
 
+          <section aria-labelledby="privacy-maps">
+            <h2
+              className="text-2xl font-medium text-[var(--hui-color-foreground-base-primary)]"
+              id="privacy-maps"
+            >
+              Maps in the playground
+            </h2>
+            <p className="mt-3">
+              When a playground reply contains a map, your browser loads the
+              map from OpenFreeMap and, for places in the United States, aerial
+              imagery from the US Geological Survey. Both receive your IP
+              address the way any website you load does. To place the markers, the Honest AI
+              server looks up the place names in the reply with
+              OpenStreetMap&apos;s Nominatim service. Nominatim receives the
+              place names and your browser&apos;s language, not your IP
+              address. The server keeps each lookup in memory for up to a day
+              so the same place is not looked up twice. Do not ask for a map
+              of a home or other personal address.
+            </p>
+          </section>
           <section aria-labelledby="privacy-storage">
             <h2
               className="text-2xl font-medium text-[var(--hui-color-foreground-base-primary)]"

@@ -23,11 +23,28 @@ import {
   parseStructuredRules,
 } from "../runtime/react";
 import { array, nodeProps, record, text, type Props } from "./shared";
+/**
+ * True inside a Calculator, where results update as inputs change, so each
+ * input checks its rules whenever its value changes rather than on submit.
+ */
+export const LiveValidationContext = React.createContext(false);
+
 export const FieldLabelContext = React.createContext<{
   id: string;
   label: string;
   hintId?: string;
 } | null>(null);
+/**
+ * A slider's thumbs. State holds [n], but a program may declare a bare number
+ * ($amount = 300); with no usable value the thumb starts at min.
+ */
+function sliderValues(value: unknown, min: unknown): number[] {
+  const values = (Array.isArray(value) ? value : [value])
+    .map(Number)
+    .filter(Number.isFinite);
+  return values.length ? values : [Number(min) || 0];
+}
+
 export function GeneratedField({
   name,
   props,
@@ -40,6 +57,7 @@ export function GeneratedField({
   const field = useStateField(text(props.name), props.value);
   const streaming = useIsStreaming();
   const validation = useFormValidation();
+  const live = React.useContext(LiveValidationContext);
   const label = React.useContext(FieldLabelContext);
   const fallbackId = React.useId();
   const items = array(props.items).map(nodeProps);
@@ -78,6 +96,12 @@ export function GeneratedField({
     validation.registerField(field.name, rules, () => value);
     return () => validation.unregisterField(field.name);
   }, [streaming, validation, rules, field.name, value]);
+  // A value can arrive after the field first renders (a declared $variable
+  // the store has not applied yet), so this runs on every change, not once.
+  React.useEffect(() => {
+    if (live && !streaming && validation && rules.length)
+      validation.validateField(field.name, value, rules);
+  }, [live, streaming, validation, rules, field.name, value]);
   const error = validation?.getFieldError(field.name);
   const id = label?.id ?? fallbackId;
   const common = {
@@ -158,8 +182,12 @@ export function GeneratedField({
           min={Number(props.min)}
           max={Number(props.max)}
           step={Number(props.step ?? 1)}
-          value={array(value).map(Number)}
-          onValueChange={change}
+          value={sliderValues(value, props.min)}
+          // A drag reports a bare number; store [n] like every other slider value.
+          onValueChange={(next) => change(Array.isArray(next) ? next : [next])}
+          getAriaLabel={() => common["aria-label"]}
+          // Room for the value bubble, which sits above the thumb, below the label.
+          className="mt-[var(--hui-space-8)]"
           showValue
         />
       );

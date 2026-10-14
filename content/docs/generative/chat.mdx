@@ -101,6 +101,8 @@ A separate `createHonestAIStorage` factory supports the local `/v1` thread and a
 
 The default chat handler continues the conversation for `@ToAssistant` and opens valid HTTP or HTTPS URL actions. Supply `rendererProps.onAction` to take control of action handling; your callback replaces the default handler, so it must handle the actions you want to support.
 
+When an action carries context, as in `@ToAssistant("Explain my quiz", { missed: 2 })`, the default handler sends it to the model with the message. The person sees the message, with the context as a readable list beneath it, rather than raw JSON.
+
 The renderer also accepts a custom library, tools, diagnostics, and state restoration through `rendererProps`. Use the same library contract in your model prompt.
 
 ## Customize the shell

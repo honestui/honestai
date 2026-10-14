@@ -5,10 +5,10 @@ import ReactMarkdown, { type Components, type ExtraProps, type Options } from "r
 import remarkGfm from "remark-gfm"
 
 import { cn } from "@/lib/utils"
-import type { SyntaxPalette } from "@/registry/lib/prose-syntax-shared"
+import { languageDisplayName, type SyntaxPalette } from "@/registry/lib/prose-syntax-shared"
 import { SyntaxLine, useSyntax } from "@/registry/lib/prose-syntax-react"
 
-import { CodeView } from "@/registry/ai/code-view"
+import { ProseCodeBlock } from "@/registry/ai/prose-code-block"
 import { repairMarkdown } from "@/registry/lib/repair-markdown"
 
 export type MarkdownLabels = {
@@ -203,11 +203,12 @@ function MarkdownPre({ children, node }: React.ComponentProps<"pre"> & ExtraProp
 
   const { code, language } = block
   return (
-    <CodeView
-      filename={block.title ?? language ?? labels.code}
+    <ProseCodeBlock
+      // A title is a file name and stays as written; a language shows as people write it.
+      label={block.title ?? (language ? languageDisplayName(language) : labels.code)}
       code={code}
-      data-syntax-palette={syntaxPalette}
-      className={syntaxHighlighting && !renderCodeLine ? "honest-syntax" : undefined}
+      codeProps={{ "data-syntax-palette": syntaxPalette }}
+      codeClassName={syntaxHighlighting && !renderCodeLine ? "honest-syntax" : undefined}
       renderLine={renderCodeLine ? ((text, index) => renderCodeLine(text, language, { index, code })) : syntax ? ((text, index) => syntax.lines[index] ? <SyntaxLine tokens={syntax.lines[index]} /> : text) : undefined}
       actions={renderCodeActions?.(block)}
     />

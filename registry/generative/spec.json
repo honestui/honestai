@@ -2,7 +2,7 @@
   "root": "Stack",
   "components": {
     "Card": {
-      "signature": "Card(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | Tabs | Carousel | Stack)[], variant?: \"card\" | \"sunk\" | \"clear\", direction?: \"row\" | \"column\", gap?: \"none\" | \"xs\" | \"s\" | \"m\" | \"l\" | \"xl\" | \"2xl\", align?: \"start\" | \"center\" | \"end\" | \"stretch\" | \"baseline\", justify?: \"start\" | \"center\" | \"end\" | \"between\" | \"around\" | \"evenly\", wrap?: boolean)",
+      "signature": "Card(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | Diagram | PartsDiagram | Calculator | Quiz | Map | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | Tabs | Carousel | Stack)[], variant?: \"card\" | \"sunk\" | \"clear\", direction?: \"row\" | \"column\", gap?: \"none\" | \"xs\" | \"s\" | \"m\" | \"l\" | \"xl\" | \"2xl\", align?: \"start\" | \"center\" | \"end\" | \"stretch\" | \"baseline\", justify?: \"start\" | \"center\" | \"end\" | \"between\" | \"around\" | \"evenly\", wrap?: boolean)",
       "description": "Styled container. variant: \"card\" (default, elevated) | \"sunk\" (recessed) | \"clear\" (transparent). Always full width. Accepts all Stack flex params (default: direction \"column\"). Cards flex to share space in row/wrap layouts."
     },
     "CardHeader": {
@@ -206,7 +206,7 @@
       "description": "Tabbed container"
     },
     "TabItem": {
-      "signature": "TabItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[])",
+      "signature": "TabItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | Diagram | PartsDiagram | Calculator | Quiz | Map | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[])",
       "description": "value is unique id, trigger is tab label, content is array of components"
     },
     "Accordion": {
@@ -214,7 +214,7 @@
       "description": "Collapsible sections"
     },
     "AccordionItem": {
-      "signature": "AccordionItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[])",
+      "signature": "AccordionItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | Diagram | PartsDiagram | Calculator | Quiz | Map | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[])",
       "description": "value is unique id, trigger is section title"
     },
     "Steps": {
@@ -225,8 +225,48 @@
       "signature": "StepsItem(title: string, details: string)",
       "description": "title and details text for one step"
     },
+    "Diagram": {
+      "signature": "Diagram(nodes: DiagramNode[], arrows?: string[], caption?: string)",
+      "description": "A chain of 2–4 boxes joined by arrows, for how one thing refers to, becomes or flows into the next. arrows[i] labels the arrow from nodes[i] to nodes[i+1]. caption marks illustrative values."
+    },
+    "DiagramNode": {
+      "signature": "DiagramNode(title: string, value?: string, detail?: string)",
+      "description": "One box in a Diagram: title names the thing, value is the literal it holds (shown in monospace), detail is one short line about it"
+    },
+    "PartsDiagram": {
+      "signature": "PartsDiagram(parts: DiagramPart[], arrangement: \"row\" | \"stack\" | \"nested\", caption?: string)",
+      "description": "The labeled parts of one thing. \"row\": parts side by side, in order (2–8, e.g. the pieces of a URL or the fields of a header). \"stack\": layers, top first (2–7, e.g. network layers). \"nested\": each part inside the one before, outermost first (2–5, e.g. the CSS box model)."
+    },
+    "DiagramPart": {
+      "signature": "DiagramPart(label: string, value?: string, detail?: string, size?: number)",
+      "description": "One part: label names it, value is the literal it holds (shown in monospace), detail is one short line on what it does, size is its relative width in a row (such as bytes)."
+    },
+    "Calculator": {
+      "signature": "Calculator(inputs: FormControl[], results: Result[], formula: string, actions?: Buttons)",
+      "description": "Inputs bound to $variables beside Results that recompute as the user changes them, with no submit button. formula states how the results are calculated and every assumption, in plain words. actions is an optional Buttons row under the inputs, such as a button that reruns a simulation."
+    },
+    "Result": {
+      "signature": "Result(label: string, value: number, format?: \"number\" | \"currency\" | \"percent\", detail?: string, currency?: string, decimals?: number)",
+      "description": "One live answer in a Calculator. value is an expression over the inputs' $variables. format: \"number\" (default) | \"currency\" (with an ISO currency code, default \"USD\") | \"percent\" (pass the percentage: 5 shows 5%). Currency drops cents from 1,000 up unless decimals is set. The first Result is shown largest."
+    },
+    "Quiz": {
+      "signature": "Quiz(questions: QuizQuestion[])",
+      "description": "Multiple-choice questions with known answers, shown one at a time. The user can change answers until they submit at the end; then the browser scores them and shows each right answer with its explanation, Try again, and an offer to explain missed questions."
+    },
+    "QuizQuestion": {
+      "signature": "QuizQuestion(question: string, options: string[], answer: string, explanation?: string)",
+      "description": "One single-answer question. answer must be the exact text of one option. explanation says why that answer is right, in one or two sentences."
+    },
+    "Map": {
+      "signature": "Map(places: MapPlace[], kind: \"route\" | \"points\", caption?: string)",
+      "description": "A map of real places that the app looks up by name; you never supply coordinates. \"route\" numbers the stops in order (no roads are drawn); \"points\" marks places in no particular order. The places are also listed under the map."
+    },
+    "MapPlace": {
+      "signature": "MapPlace(name: string, query?: string, note?: string)",
+      "description": "One place. name is shown to the reader; query is what the app searches for: the name, then city or region and country (e.g. \"Thompson Library, Columbus, Ohio, USA\"), with no campus or institution part; it defaults to name; note is one short line. Never coordinates."
+    },
     "Carousel": {
-      "signature": "Carousel(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[][], variant?: \"card\" | \"sunk\")",
+      "signature": "Carousel(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | Diagram | PartsDiagram | Calculator | Quiz | Map | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[][], variant?: \"card\" | \"sunk\")",
       "description": "Horizontal scrollable carousel"
     },
     "Separator": {
@@ -326,7 +366,7 @@
       "description": "A grid or carousel of photo-first cards: a full-bleed background image with a tag on top and a bold text panel at the bottom; an optional action makes every card clickable."
     },
     "Modal": {
-      "signature": "Modal(title: string, open?: $binding<boolean>, children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[], size?: \"sm\" | \"md\" | \"lg\")",
+      "signature": "Modal(title: string, open?: $binding<boolean>, children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | Diagram | PartsDiagram | Calculator | Quiz | Map | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock)[], size?: \"sm\" | \"md\" | \"lg\")",
       "description": "Modal dialog. open is a reactive $boolean binding — set to true to open, X/Escape/backdrop auto-closes. Put Form with buttons inside children."
     }
   },
@@ -353,6 +393,50 @@
         "- Modal: Modal(\"Title\", $showModal, [content]) — $showModal is boolean, X/Escape auto-closes. Put Form with its own buttons inside children.",
         "- Use Tabs for alternative views (chart types, data sections) — no $variable needed",
         "- Shared filter across Tabs: same $days binding in Query args works across all TabItems"
+      ]
+    },
+    {
+      "name": "Maps",
+      "components": [
+        "Map",
+        "MapPlace"
+      ],
+      "notes": [
+        "- Map([p1, p2], \"route\", caption) with p1 = MapPlace(\"Moab\", \"Moab, Utah, USA\", \"Base for Arches\"). The app finds each place by its query; never write coordinates."
+      ]
+    },
+    {
+      "name": "Quizzes",
+      "components": [
+        "Quiz",
+        "QuizQuestion"
+      ],
+      "notes": [
+        "- Quiz([q1, q2]) with q1 = QuizQuestion(\"What is 2 + 2?\", [\"3\", \"4\", \"5\"], \"4\", \"Two pairs make four.\"). answer is the exact text of the right option."
+      ]
+    },
+    {
+      "name": "Calculators",
+      "components": [
+        "Calculator",
+        "Result"
+      ],
+      "notes": [
+        "- Calculator(inputs, results, formula): each input is a FormControl whose control binds a $variable as its last argument; each Result value is an expression over those $variables, so results recompute as the user edits.",
+        "- A single-thumb Slider holds [n]; arithmetic reads it as n, so $amount * 12 works."
+      ]
+    },
+    {
+      "name": "Diagrams",
+      "components": [
+        "Diagram",
+        "DiagramNode",
+        "PartsDiagram",
+        "DiagramPart"
+      ],
+      "notes": [
+        "- Diagram draws a chain of DiagramNode boxes joined by arrows; arrows[i] labels the arrow from nodes[i] to nodes[i+1].",
+        "- PartsDiagram(parts, arrangement, caption) labels the parts of one thing: \"row\" side by side, \"stack\" top first, \"nested\" outermost first. DiagramPart(label, value, detail, size)."
       ]
     },
     {
@@ -532,6 +616,24 @@
       ]
     }
   ],
+  "functions": {
+    "Pow": {
+      "signature": "Pow(base: number | string, exponent: number | string) → number",
+      "description": "base raised to exponent, e.g. compound growth (1 + rate) ^ years"
+    },
+    "Format": {
+      "signature": "Format(number?: number | string, format?: \"number\" | \"currency\" | \"percent\", decimals?: number | string, currency?: string) → string",
+      "description": "A number as text in the reader's locale: \"number\" (default), \"currency\" (code defaults to \"USD\") or \"percent\" (5 shows 5%). Shows \"—\" when the number cannot be calculated."
+    },
+    "Range": {
+      "signature": "Range(start: number | string, end: number | string, step?: number | string) → number[]",
+      "description": "Whole numbers from start to end inclusive, by step (default 1), at most 10000, so bound any input that sets end to 10000. Use with @Each for one row or label per year, or with @Sum to count simulated trials."
+    },
+    "Random": {
+      "signature": "Random(seed: any, min?: number | string, max?: number | string) → number",
+      "description": "A repeatable random draw: the same seed always gives the same number. With min and max, a whole number from min to max inclusive; without them, a fraction from 0 up to 1. Draw again by changing the seed (a button with @Set($run, $run + 1)); for many draws use a list seed such as [$run, t, \"car\"]."
+    }
+  },
   "schema": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
@@ -704,6 +806,36 @@
       "StepsItem": {
         "$ref": "#/$defs/StepsItem"
       },
+      "Diagram": {
+        "$ref": "#/$defs/Diagram"
+      },
+      "DiagramNode": {
+        "$ref": "#/$defs/DiagramNode"
+      },
+      "PartsDiagram": {
+        "$ref": "#/$defs/PartsDiagram"
+      },
+      "DiagramPart": {
+        "$ref": "#/$defs/DiagramPart"
+      },
+      "Calculator": {
+        "$ref": "#/$defs/Calculator"
+      },
+      "Result": {
+        "$ref": "#/$defs/Result"
+      },
+      "Quiz": {
+        "$ref": "#/$defs/Quiz"
+      },
+      "QuizQuestion": {
+        "$ref": "#/$defs/QuizQuestion"
+      },
+      "Map": {
+        "$ref": "#/$defs/Map"
+      },
+      "MapPlace": {
+        "$ref": "#/$defs/MapPlace"
+      },
       "Carousel": {
         "$ref": "#/$defs/Carousel"
       },
@@ -840,6 +972,16 @@
       "AccordionItem",
       "Steps",
       "StepsItem",
+      "Diagram",
+      "DiagramNode",
+      "PartsDiagram",
+      "DiagramPart",
+      "Calculator",
+      "Result",
+      "Quiz",
+      "QuizQuestion",
+      "Map",
+      "MapPlace",
       "Carousel",
       "Separator",
       "TagBlock",
@@ -953,6 +1095,21 @@
                 },
                 {
                   "$ref": "#/$defs/Steps"
+                },
+                {
+                  "$ref": "#/$defs/Diagram"
+                },
+                {
+                  "$ref": "#/$defs/PartsDiagram"
+                },
+                {
+                  "$ref": "#/$defs/Calculator"
+                },
+                {
+                  "$ref": "#/$defs/Quiz"
+                },
+                {
+                  "$ref": "#/$defs/Map"
                 },
                 {
                   "$ref": "#/$defs/InlineHeader"
@@ -2746,6 +2903,253 @@
         "additionalProperties": false,
         "description": "title and details text for one step"
       },
+      "Diagram": {
+        "type": "object",
+        "properties": {
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/DiagramNode"
+            }
+          },
+          "arrows": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "caption": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "nodes"
+        ],
+        "additionalProperties": false,
+        "description": "A chain of 2–4 boxes joined by arrows, for how one thing refers to, becomes or flows into the next. arrows[i] labels the arrow from nodes[i] to nodes[i+1]. caption marks illustrative values."
+      },
+      "DiagramNode": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false,
+        "description": "One box in a Diagram: title names the thing, value is the literal it holds (shown in monospace), detail is one short line about it"
+      },
+      "PartsDiagram": {
+        "type": "object",
+        "properties": {
+          "parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/DiagramPart"
+            }
+          },
+          "arrangement": {
+            "type": "string",
+            "enum": [
+              "row",
+              "stack",
+              "nested"
+            ]
+          },
+          "caption": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "parts",
+          "arrangement"
+        ],
+        "additionalProperties": false,
+        "description": "The labeled parts of one thing. \"row\": parts side by side, in order (2–8, e.g. the pieces of a URL or the fields of a header). \"stack\": layers, top first (2–7, e.g. network layers). \"nested\": each part inside the one before, outermost first (2–5, e.g. the CSS box model)."
+      },
+      "DiagramPart": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "label"
+        ],
+        "additionalProperties": false,
+        "description": "One part: label names it, value is the literal it holds (shown in monospace), detail is one short line on what it does, size is its relative width in a row (such as bytes)."
+      },
+      "Calculator": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FormControl"
+            }
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Result"
+            }
+          },
+          "formula": {
+            "type": "string"
+          },
+          "actions": {
+            "$ref": "#/$defs/Buttons"
+          }
+        },
+        "required": [
+          "inputs",
+          "results",
+          "formula"
+        ],
+        "additionalProperties": false,
+        "description": "Inputs bound to $variables beside Results that recompute as the user changes them, with no submit button. formula states how the results are calculated and every assumption, in plain words. actions is an optional Buttons row under the inputs, such as a button that reruns a simulation."
+      },
+      "Result": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "number",
+              "currency",
+              "percent"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "decimals": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "label",
+          "value"
+        ],
+        "additionalProperties": false,
+        "description": "One live answer in a Calculator. value is an expression over the inputs' $variables. format: \"number\" (default) | \"currency\" (with an ISO currency code, default \"USD\") | \"percent\" (pass the percentage: 5 shows 5%). Currency drops cents from 1,000 up unless decimals is set. The first Result is shown largest."
+      },
+      "Quiz": {
+        "type": "object",
+        "properties": {
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/QuizQuestion"
+            }
+          }
+        },
+        "required": [
+          "questions"
+        ],
+        "additionalProperties": false,
+        "description": "Multiple-choice questions with known answers, shown one at a time. The user can change answers until they submit at the end; then the browser scores them and shows each right answer with its explanation, Try again, and an offer to explain missed questions."
+      },
+      "QuizQuestion": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "answer": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "options",
+          "answer"
+        ],
+        "additionalProperties": false,
+        "description": "One single-answer question. answer must be the exact text of one option. explanation says why that answer is right, in one or two sentences."
+      },
+      "Map": {
+        "type": "object",
+        "properties": {
+          "places": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MapPlace"
+            }
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "route",
+              "points"
+            ]
+          },
+          "caption": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "places",
+          "kind"
+        ],
+        "additionalProperties": false,
+        "description": "A map of real places that the app looks up by name; you never supply coordinates. \"route\" numbers the stops in order (no roads are drawn); \"points\" marks places in no particular order. The places are also listed under the map."
+      },
+      "MapPlace": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "description": "One place. name is shown to the reader; query is what the app searches for: the name, then city or region and country (e.g. \"Thompson Library, Columbus, Ohio, USA\"), with no campus or institution part; it defaults to name; note is one short line. Never coordinates."
+      },
       "InlineHeader": {
         "type": "object",
         "properties": {
@@ -3936,6 +4340,21 @@
                   "$ref": "#/$defs/Steps"
                 },
                 {
+                  "$ref": "#/$defs/Diagram"
+                },
+                {
+                  "$ref": "#/$defs/PartsDiagram"
+                },
+                {
+                  "$ref": "#/$defs/Calculator"
+                },
+                {
+                  "$ref": "#/$defs/Quiz"
+                },
+                {
+                  "$ref": "#/$defs/Map"
+                },
+                {
                   "$ref": "#/$defs/InlineHeader"
                 },
                 {
@@ -4057,6 +4476,21 @@
                   },
                   {
                     "$ref": "#/$defs/Steps"
+                  },
+                  {
+                    "$ref": "#/$defs/Diagram"
+                  },
+                  {
+                    "$ref": "#/$defs/PartsDiagram"
+                  },
+                  {
+                    "$ref": "#/$defs/Calculator"
+                  },
+                  {
+                    "$ref": "#/$defs/Quiz"
+                  },
+                  {
+                    "$ref": "#/$defs/Map"
                   },
                   {
                     "$ref": "#/$defs/InlineHeader"
@@ -4282,6 +4716,21 @@
                   "$ref": "#/$defs/Steps"
                 },
                 {
+                  "$ref": "#/$defs/Diagram"
+                },
+                {
+                  "$ref": "#/$defs/PartsDiagram"
+                },
+                {
+                  "$ref": "#/$defs/Calculator"
+                },
+                {
+                  "$ref": "#/$defs/Quiz"
+                },
+                {
+                  "$ref": "#/$defs/Map"
+                },
+                {
                   "$ref": "#/$defs/InlineHeader"
                 },
                 {
@@ -4409,6 +4858,21 @@
                   "$ref": "#/$defs/Steps"
                 },
                 {
+                  "$ref": "#/$defs/Diagram"
+                },
+                {
+                  "$ref": "#/$defs/PartsDiagram"
+                },
+                {
+                  "$ref": "#/$defs/Calculator"
+                },
+                {
+                  "$ref": "#/$defs/Quiz"
+                },
+                {
+                  "$ref": "#/$defs/Map"
+                },
+                {
                   "$ref": "#/$defs/InlineHeader"
                 },
                 {
@@ -4450,6 +4914,182 @@
         ],
         "additionalProperties": false,
         "description": "Modal dialog. open is a reactive $boolean binding — set to true to open, X/Escape/backdrop auto-closes. Put Form with buttons inside children."
+      }
+    },
+    "functions": {
+      "Pow": {
+        "description": "base raised to exponent, e.g. compound growth (1 + rate) ^ years",
+        "params": {
+          "type": "object",
+          "properties": {
+            "base": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "exponent": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "required": [
+            "base",
+            "exponent"
+          ],
+          "additionalProperties": false
+        },
+        "returns": {
+          "type": "number"
+        }
+      },
+      "Format": {
+        "description": "A number as text in the reader's locale: \"number\" (default), \"currency\" (code defaults to \"USD\") or \"percent\" (5 shows 5%). Shows \"—\" when the number cannot be calculated.",
+        "params": {
+          "type": "object",
+          "properties": {
+            "number": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "number",
+                "currency",
+                "percent"
+              ]
+            },
+            "decimals": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "currency": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "number"
+          ],
+          "additionalProperties": false
+        },
+        "returns": {
+          "type": "string"
+        }
+      },
+      "Range": {
+        "description": "Whole numbers from start to end inclusive, by step (default 1), at most 10000, so bound any input that sets end to 10000. Use with @Each for one row or label per year, or with @Sum to count simulated trials.",
+        "params": {
+          "type": "object",
+          "properties": {
+            "start": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "end": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "step": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "required": [
+            "start",
+            "end"
+          ],
+          "additionalProperties": false
+        },
+        "returns": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "Random": {
+        "description": "A repeatable random draw: the same seed always gives the same number. With min and max, a whole number from min to max inclusive; without them, a fraction from 0 up to 1. Draw again by changing the seed (a button with @Set($run, $run + 1)); for many draws use a list seed such as [$run, t, \"car\"].",
+        "params": {
+          "type": "object",
+          "properties": {
+            "seed": {},
+            "min": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "max": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "required": [
+            "seed"
+          ],
+          "additionalProperties": false
+        },
+        "returns": {
+          "type": "number"
+        }
       }
     }
   }

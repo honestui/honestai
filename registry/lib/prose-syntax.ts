@@ -2,7 +2,7 @@ import { createHighlighterCore } from "shiki/core"
 import { createOnigurumaEngine } from "shiki/engine/oniguruma"
 import type { GrammarState, HighlighterCore, LanguageInput } from "shiki/core"
 
-import { syntaxRoles, syntaxRoleScopes, plainResult, renderTokens } from "@/registry/lib/prose-syntax-shared"
+import { syntaxRoles, syntaxRoleScopes, normalizeLanguage, plainResult, renderTokens } from "@/registry/lib/prose-syntax-shared"
 import type { SyntaxToken, SyntaxResult, SyntaxOptions, SyntaxDiagnostic } from "@/registry/lib/prose-syntax-shared"
 export * from "@/registry/lib/prose-syntax-shared"
 export type HighlighterOptions = {
@@ -24,11 +24,19 @@ export const languageLoaders = {
   python: () => import("shiki/langs/python.mjs"),
   sql: () => import("shiki/langs/sql.mjs"),
   yaml: () => import("shiki/langs/yaml.mjs"),
-}
-const aliases: Record<string, string> = { js: "javascript", ts: "typescript", sh: "bash", shell: "bash", py: "python", yml: "yaml", md: "markdown", text: "plaintext", txt: "plaintext" }
-export function normalizeLanguage(language = "plaintext") {
-  const value = language.trim().toLowerCase()
-  return Object.hasOwn(aliases, value) ? aliases[value] : value
+  java: () => import("shiki/langs/java.mjs"),
+  c: () => import("shiki/langs/c.mjs"),
+  cpp: () => import("shiki/langs/cpp.mjs"),
+  csharp: () => import("shiki/langs/csharp.mjs"),
+  go: () => import("shiki/langs/go.mjs"),
+  rust: () => import("shiki/langs/rust.mjs"),
+  php: () => import("shiki/langs/php.mjs"),
+  ruby: () => import("shiki/langs/ruby.mjs"),
+  kotlin: () => import("shiki/langs/kotlin.mjs"),
+  swift: () => import("shiki/langs/swift.mjs"),
+  diff: () => import("shiki/langs/diff.mjs"),
+  toml: () => import("shiki/langs/toml.mjs"),
+  dockerfile: () => import("shiki/langs/dockerfile.mjs"),
 }
 // Unique sentinel colors encode roles; actual colors belong exclusively to CSS.
 const scopes = syntaxRoles.map(role => syntaxRoleScopes[role])

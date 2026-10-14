@@ -20,7 +20,7 @@ import { safeUrl } from "./renderers/shared";
 import { useChatStore } from "./runtime/headless/store/ChatContext";
 import { Renderer, type RendererProps } from "./runtime/react";
 import { honestChatLibrary } from "./index";
-import { UserMessageContent } from "./user-message";
+import { CONTEXT_KEY, UserMessageContent } from "./user-message";
 export { UserMessageContent } from "./user-message";
 export * from "./runtime/headless";
 export type GenerativeChatProps = Omit<ChatProviderProps, "children"> & {
@@ -119,15 +119,22 @@ function GeneratedBlock({
         isStreaming={streaming}
         onAction={(event) => {
           if (rendererProps?.onAction) rendererProps.onAction(event);
-          else if (event.type === "continue_conversation")
+          else if (event.type === "continue_conversation") {
+            // @ToAssistant's context travels with the form state, under a key
+            // no form or $variable can have, so the model receives it too.
+            const payload = {
+              ...event.formState,
+              ...(event.params.context !== undefined
+                ? { [CONTEXT_KEY]: event.params.context }
+                : {}),
+            };
             void thread.processMessage({
               role: "user",
               content:
                 event.humanFriendlyMessage +
-                (event.formState && Object.keys(event.formState).length > 0
-                  ? "\n" + JSON.stringify(event.formState)
-                  : ""),
+                (Object.keys(payload).length > 0 ? "\n" + JSON.stringify(payload) : ""),
             });
+          }
           else if (event.type === "open_url") {
             const url = safeUrl(event.params.url);
             if (url) window.open(url, "_blank", "noopener,noreferrer");

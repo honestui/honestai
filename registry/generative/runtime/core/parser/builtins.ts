@@ -10,6 +10,7 @@ import {
 } from "../functions";
 import { actionRef, tagSchemaId } from "../signature";
 import type { ActionStep, CallDef, ParamMap } from "./types";
+import { isElementNode } from "./types";
 
 /** Resolve a field path on an object. Supports dot-paths: "state.name" → obj.state.name */
 function resolveField(obj: any, path: string): unknown {
@@ -30,6 +31,16 @@ function toNumber(val: unknown): number {
     return isNaN(n) ? 0 : n;
   }
   if (typeof val === "boolean") return val ? 1 : 0;
+  // A single-thumb Slider holds [value]; arithmetic should read that value.
+  if (Array.isArray(val) && val.length === 1) return toNumber(val[0]);
+  if (isElementNode(val)) {
+    // A Result exists to hold one number, and a model naturally reuses it
+    // (wins = Result(...), then wins / $games), so it counts as its value.
+    if (val.typeName === "Result") return toNumber(val.props.value);
+    // Any other component is not a number. NaN, unlike 0, shows as "can't be
+    // calculated" instead of passing for a real result such as "0%".
+    return Number.NaN;
+  }
   return 0;
 }
 

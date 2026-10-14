@@ -360,3 +360,233 @@ test("submitted values stay readable on narrow screens and retain the model payl
   expect(axe.violations.map((item) => item.id)).toEqual([]);
   await submission.screenshot({ path: "/tmp/honest-submitted-message.png" });
 });
+
+test("code in replies is highlighted, in Markdown fences and generated code blocks", async ({
+  page,
+}) => {
+  await mockOllama(
+    page,
+    [
+      "A Java loop:",
+      "",
+      "```java",
+      "for (int i = 0; i < 5; i++) {",
+      "    System.out.println(i);",
+      "}",
+      "```",
+      "",
+      "```honestai",
+      'root = CodeBlock("cpp", "int main() { return 0; }")',
+      "```",
+    ].join("\n"),
+  );
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt" }).fill("explain for loops in java");
+  await page.keyboard.press("Enter");
+
+  const blocks = playground.locator('[data-slot="prose-code-block"]');
+  await expect(blocks).toHaveCount(2);
+  const java = blocks.filter({ hasText: "System.out" });
+  const cpp = blocks.filter({ hasText: "int main" });
+  // Languages show as people write them.
+  await expect(java.locator("figcaption")).toContainText("Java");
+  await expect(cpp.locator("figcaption")).toContainText("C++");
+  await expect(java.locator(".prose-syntax-keyword", { hasText: "for" })).toBeVisible();
+  await expect(java.locator(".prose-syntax-constant", { hasText: "5" })).toBeVisible();
+  await expect(cpp.locator(".prose-syntax-type", { hasText: "int" }).or(cpp.locator(".prose-syntax-keyword", { hasText: "int" })).first()).toBeVisible();
+  await expect(cpp.locator(".prose-syntax-function", { hasText: "main" })).toBeVisible();
+  // Highlighting must not change the text people copy.
+  await expect(java.locator("pre")).toContainText("System.out.println(i);");
+});
+
+test("a Diagram sits side by side when there is room and stacks when there is not", async ({ page }) => {
+  await mockOllama(page, [
+    "A pointer holds an address.",
+    "",
+    "```honestai",
+    "root = Stack([diagram])",
+    'diagram = Diagram([pointer, target], ["points to"], "Example addresses for illustration")',
+    'pointer = DiagramNode("Pointer p", "0x100", "Holds the address of x")',
+    'target = DiagramNode("Variable x", "10", "Stored at address 0x100")',
+    "```",
+  ].join("\n"));
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt" }).fill("Explain pointers in C");
+  await page.keyboard.press("Enter");
+  const figure = playground.locator("figure");
+  await expect(figure.locator("figcaption")).toHaveText("Example addresses for illustration");
+  const boxes = figure.locator("ol > li:not([aria-hidden])");
+  await expect(boxes).toHaveCount(2);
+  const top = async (index: number) => (await boxes.nth(index).boundingBox())!.y;
+  expect(Math.abs((await top(0)) - (await top(1)))).toBeLessThan(1);
+  const axe = await new AxeBuilder({ page }).include('[data-slot="playground"] figure').analyze();
+  expect(axe.violations.map(item => item.id)).toEqual([]);
+
+  await page.setViewportSize({ width: 360, height: 800 });
+  await expect.poll(async () => (await top(1)) - (await top(0))).toBeGreaterThan(40);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+test("a Calculator recomputes from the keyboard and withholds results while an input is incomplete", async ({ page }) => {
+  await mockOllama(page, [
+    "Adjust the inputs to see the result update.",
+    "",
+    "```honestai",
+    "root = Stack([calc, growth])",
+    "$monthly = [300]",
+    '$years = "10"',
+    'calc = Calculator([fcMonthly, fcYears], [saved], "Saved = monthly deposit × 12 × years, with no interest.")',
+    'fcMonthly = FormControl("Monthly deposit ($)", Slider("monthly", "continuous", 50, 2000, 50, [300], "Monthly deposit", null, $monthly))',
+    'fcYears = FormControl("Years", Input("years", "10", "number", { required: true, min: 1 }, $years))',
+    'saved = Result("Saved", $monthly * 12 * $years, "currency")',
+    'growth = BarChart(@Each(@Range(1, $years), "y", "Year " + y), [Series("Saved ($)", @Each(@Range(1, $years), "y", $monthly * 12 * y))])',
+    "```",
+  ].join("\n"));
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt" }).fill("How much will I save?");
+  await page.keyboard.press("Enter");
+  const result = playground.locator("dl dd").first();
+  await expect(result).toHaveText("$36,000");
+  await expect(playground.locator(".recharts-wrapper, [data-chart]").first()).toBeVisible();
+
+  const slider = playground.getByRole("slider", { name: "Monthly deposit ($)" });
+  await slider.focus();
+  for (let step = 0; step < 4; step++) await page.keyboard.press("ArrowRight");
+  await expect(result).toHaveText("$60,000");
+
+  // A pointer drag reports a bare number; the thumb must survive it.
+  const track = (await playground.locator('[data-slot="slider-control"]').boundingBox())!;
+  await page.mouse.move(track.x + track.width * 0.25, track.y + track.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(track.x + track.width * 0.6, track.y + track.height / 2, { steps: 5 });
+  await page.mouse.up();
+  await expect(playground.locator('[data-slot="slider-thumb"]')).toHaveCount(1);
+  await expect(result).not.toHaveText("$60,000");
+
+  const axe = await new AxeBuilder({ page }).include('[data-slot="playground"]').analyze();
+  expect(axe.violations.map(item => item.id)).toEqual([]);
+
+  await playground.getByRole("spinbutton", { name: "Years" }).fill("");
+  await expect(result).toHaveText("—");
+  await expect(playground.getByText("Complete the inputs to see this result.")).toBeVisible();
+  await expect(playground.getByText("This field is required")).toBeVisible();
+});
+
+test("a Map numbers the stops it finds and keeps every place in a list", async ({ page }) => {
+  await mockOllama(page, [
+    "Here are the stops in order.",
+    "",
+    "```honestai",
+    "root = Stack([trip])",
+    'trip = Map([denver, moab, nowhere], "route", "Stops in order. No roads are drawn.")',
+    'denver = MapPlace("Denver", "Denver, Colorado, USA")',
+    'moab = MapPlace("Moab", "Moab, Utah, USA", "Overnight")',
+    'nowhere = MapPlace("Lost Lake", "Lost Lake, Nowhere")',
+    "```",
+  ].join("\n"));
+  const found: Record<string, [number, number, string]> = {
+    "Denver, Colorado, USA": [39.7392, -104.9903, "Denver, Colorado, United States"],
+    "Moab, Utah, USA": [38.5733, -109.5498, "Moab, Grand County, Utah, United States"],
+  };
+  // No third-party traffic in tests: places and the style are local stand-ins.
+  await page.route("**/api/playground/geocode", async (route) => {
+    const place = found[JSON.parse(route.request().postData()!).query];
+    await route.fulfill({ json: { place: place ? { lat: place[0], lon: place[1], label: place[2] } : null } });
+  });
+  await page.route("https://tiles.openfreemap.org/**", (route) =>
+    route.fulfill({
+      json: { version: 8, sources: {}, layers: [{ id: "land", type: "background", paint: { "background-color": "#e9e9e6" } }] },
+    }),
+  );
+  // A stand-in imagery tile, so the satellite view needs no outside server.
+  const tile = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+    "base64",
+  );
+  await page.route("https://basemap.nationalmap.gov/**", (route) =>
+    route.fulfill({ contentType: "image/png", body: tile }),
+  );
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt" }).fill("Plan a trip");
+  await page.keyboard.press("Enter");
+
+  const map = playground.getByRole("region", { name: "Map of 2 places. The same places are listed below." });
+  await expect(map.locator("canvas")).toBeVisible();
+  await expect(map.locator(".maplibregl-marker")).toHaveText(["1", "2"]);
+  const stops = playground.locator("figure ol > li");
+  await expect(stops).toHaveCount(3);
+  await expect(stops.nth(1)).toContainText("Matched: Moab, Grand County, Utah, United States");
+  await expect(stops.nth(2)).toContainText("Not found, so it isn't on the map.");
+  await expect(map.getByRole("button", { name: "Zoom in" })).toBeVisible();
+
+  // Imagery covers every place, so the map opens on it, and the reader can switch.
+  const satellite = playground.getByRole("button", { name: "Satellite" });
+  await expect(satellite).toHaveAttribute("aria-pressed", "true");
+  await playground.getByRole("button", { name: "Map", exact: true }).click();
+  await expect(playground.getByRole("button", { name: "Map", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(satellite).toHaveAttribute("aria-pressed", "false");
+
+  const axe = await new AxeBuilder({ page }).include('[data-slot="playground"] figure').analyze();
+  expect(axe.violations.map((item) => item.id)).toEqual([]);
+});
+
+test("a Quiz is answered from the keyboard, one question at a time, and scored on submit", async ({ page }) => {
+  await mockOllama(page, [
+    "```honestai",
+    "root = Stack([quiz])",
+    "quiz = Quiz([q1, q2])",
+    'q1 = QuizQuestion("What is 2 + 2?", ["3", "4", "5"], "4", "Two pairs make four.")',
+    'q2 = QuizQuestion("What is 3 × 3?", ["6", "9"], "9")',
+    "```",
+  ].join("\n"));
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt" }).fill("Quiz me");
+  await page.keyboard.press("Enter");
+
+  await playground.getByRole("radio", { name: "3" }).focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(playground.getByRole("radio", { name: "4" })).toBeChecked();
+  // Nothing is marked until the end.
+  await expect(playground.getByText("Correct.")).toHaveCount(0);
+  let axe = await new AxeBuilder({ page }).include('[data-slot="playground"]').analyze();
+  expect(axe.violations.map((item) => item.id)).toEqual([]);
+
+  await playground.getByRole("button", { name: "Next" }).click();
+  await expect(playground.getByRole("heading", { name: /Question 2 of 2/ })).toBeFocused();
+  await playground.getByRole("radio", { name: "6" }).click();
+  await playground.getByRole("button", { name: "Submit answers" }).click();
+  await expect(playground.getByRole("heading", { name: "1 of 2 correct" })).toBeFocused();
+  await expect(playground.locator("p", { hasText: "Correct. Two pairs make four." })).toBeVisible();
+  await expect(playground.locator("p", { hasText: "Not quite. The answer is 9." })).toBeVisible();
+  axe = await new AxeBuilder({ page }).include('[data-slot="playground"]').analyze();
+  expect(axe.violations.map((item) => item.id)).toEqual([]);
+});
+
+test("a PartsDiagram row is one bar when wide and lines when narrow", async ({ page }) => {
+  await mockOllama(page, [
+    "```honestai",
+    "root = Stack([url])",
+    'url = PartsDiagram([DiagramPart("Scheme", "https://"), DiagramPart("Host", "example.com", null, 2), DiagramPart("Path", "/docs")], "row")',
+    "```",
+  ].join("\n"));
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt" }).fill("Parts of a URL");
+  await page.keyboard.press("Enter");
+  const parts = playground.locator("figure ol > li");
+  await expect(parts).toHaveCount(3);
+  const top = async (index: number) => (await parts.nth(index).boundingBox())!.y;
+  expect(Math.abs((await top(0)) - (await top(2)))).toBeLessThan(1);
+  await page.setViewportSize({ width: 360, height: 800 });
+  await expect.poll(async () => (await top(1)) - (await top(0))).toBeGreaterThan(20);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});

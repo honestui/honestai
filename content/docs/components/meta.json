@@ -6,6 +6,7 @@
     "message-scroller",
     "streaming-text",
     "markdown",
+    "prose-code-block",
     "context-meter",
     "thinking-state",
     "loading-state",

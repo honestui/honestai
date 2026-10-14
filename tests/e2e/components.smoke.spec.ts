@@ -496,9 +496,9 @@ test.describe("Component docs previews, third set", () => {
     await expect(markdown.locator("strong")).toHaveText("before")
     await expect(markdown.getByRole("row")).toHaveCount(3)
     await expect(markdown.getByRole("listitem")).toHaveCount(2)
-    const code = markdown.locator('[data-slot="code-view"]')
+    const code = markdown.locator('[data-slot="prose-code-block"]')
     await expect(code).toContainText("return roundTotal(total)")
-    await expect(code.getByRole("button", { name: "Copy" })).toBeVisible()
+    await expect(code.getByRole("button", { name: "Copy code" })).toBeVisible()
 
     await expectNoAxeViolations(page)
   })
@@ -540,7 +540,7 @@ test.describe("Component docs previews, third set", () => {
     const preview = await mountPreview(page, "markdown-add-ons", "markdown")
     await expect(preview.locator(".katex")).toHaveCount(2)
     await expect(preview).toContainText("$5")
-    const code = preview.locator('[data-slot="code-view"]')
+    const code = preview.locator('[data-slot="prose-code-block"]')
     await expect(code).toContainText("export.ts")
     await expect(code.locator('.prose-syntax-keyword').first()).toBeVisible()
     await code.getByRole("button", { name: "Download" }).focus()
@@ -833,7 +833,7 @@ test.describe("Site and registry", () => {
     const names = catalog.items.map((item: { name: string }) => item.name)
 
     expect(names).toContain("prompt-bar")
-    expect(catalog.items.filter((item: { type: string }) => item.type === "registry:component")).toHaveLength(24)
+    expect(catalog.items.filter((item: { type: string }) => item.type === "registry:component")).toHaveLength(26)
     expect(catalog.items).toEqual(expect.arrayContaining([
       { name: "prose", type: "registry:file" },
       { name: "repair-markdown", type: "registry:lib" },
@@ -847,10 +847,11 @@ test.describe("Site and registry", () => {
     const item = await (await request.get("/r/markdown.json")).json()
 
     expect(item.dependencies).toEqual(["react-markdown", "remark-gfm"])
-    expect(item.registryDependencies).toHaveLength(3)
-    expect(item.registryDependencies[0]).toMatch(/\/r\/code-view\.json$/)
-    expect(item.registryDependencies[0]).not.toContain("www.honestui.com")
-    expect(item.files[0].content).toContain("@/components/ai/code-view")
+    // The code frame, Prose, repair, and the three syntax files the highlighter needs.
+    expect(item.registryDependencies).toHaveLength(6)
+    expect(item.registryDependencies.some((dependency: string) => /\/r\/prose-code-block\.json$/.test(dependency))).toBe(true)
+    expect(item.registryDependencies.every((dependency: string) => !dependency.includes("www.honestui.com"))).toBe(true)
+    expect(item.files[0].content).toContain("@/components/ai/prose-code-block")
     expect(item.files[0].content).toContain("@/lib/repair-markdown")
     expect(item.registryDependencies).toEqual(expect.arrayContaining([
       expect.stringMatching(/\/r\/repair-markdown\.json$/),

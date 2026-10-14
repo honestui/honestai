@@ -6,7 +6,7 @@ const root = path.resolve("registry/generative");
 const pkg = JSON.parse(await readFile("package.json", "utf8"));
 const packages = new Set([
   "react", "react-dom", "zod", "zustand", "openai", "ai", "eve",
-  "@ag-ui/core", "@langchain/core", "echarts", "honestui", "date-fns", "next-themes", "react-day-picker",
+  "@ag-ui/core", "@langchain/core", "echarts", "honestui", "date-fns", "next-themes", "react-day-picker", "maplibre-gl",
 ]);
 const failures = [];
 const packageName = (specifier) => specifier.startsWith("@")

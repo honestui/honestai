@@ -23,10 +23,16 @@ test("Markdown holds component data until a matching closing fence arrives", () 
 test("Markdown preserves invalid component data as code and ignores inherited renderers", () => {
   const blocks = { widget: () => { throw new Error("Invalid data") } }
   const html = renderToStaticMarkup(<Markdown blocks={blocks}>{"```widget\ninvalid\n```"}</Markdown>)
-  expect(html).toContain('data-slot="code-view"')
+  expect(html).toContain('data-slot="prose-code-block"')
   expect(html).toContain("invalid")
   const inherited = renderToStaticMarkup(<Markdown blocks={blocks}>{"```constructor\n{}\n```"}</Markdown>)
-  expect(inherited).toContain('data-slot="code-view"')
+  expect(inherited).toContain('data-slot="prose-code-block"')
+})
+
+test("Markdown names a code block by its language as people write it", () => {
+  const html = renderToStaticMarkup(<Markdown>{"```cpp\nint main() {}\n```\n\n```elixir\nIO.puts 1\n```"}</Markdown>)
+  expect(html).toContain(">C++<")
+  expect(html).toContain(">elixir<")
 })
 
 test("Markdown passes filename metadata, the full code, and line indices to adapters", () => {
@@ -39,6 +45,8 @@ test("Markdown passes filename metadata, the full code, and line indices to adap
     >{"```ts title=\"export.ts\"\nconst a = 1\nconst b = 2\n```"}</Markdown>
   )
   expect(html).toContain("export.ts")
+  // A title is a file name, so it is not renamed after its language.
+  expect(html).not.toContain(">TypeScript<")
   expect(html).toContain("<button>Open</button>")
   expect(actions).toEqual([{ code: "const a = 1\nconst b = 2", language: "ts", title: "export.ts" }])
   expect(lines).toEqual([

@@ -3,6 +3,9 @@
 import { Markdown } from "@/registry/ai/markdown";
 
 type Entry = [string, unknown];
+
+/** Where a sent message carries @ToAssistant's context; no form or $variable has this name. */
+export const CONTEXT_KEY = "@context";
 type Submission = { introduction: string; forms: { name: string; entries: Entry[] }[] };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -27,6 +30,10 @@ function readSubmission(content: string): Submission | null {
   const forms: Submission["forms"] = [];
   const directEntries: Entry[] = [];
   for (const [name, fields] of Object.entries(payload)) {
+    if (name === CONTEXT_KEY) {
+      directEntries.push(["Details", fields]);
+      continue;
+    }
     // Actions outside a Form carry standalone fields and reactive $variables.
     if (/^\$[A-Za-z_]\w*$/.test(name)) {
       directEntries.push([name.slice(1), fields]);

@@ -234,3 +234,49 @@ it("shows readable submitted values while sending the original form data", async
   expect(outgoing.content).toBe('Save goal\n{"goal":{"amount":{"value":"250"}}}');
   await unmount();
 });
+
+it("renders a Diagram as an ordered list that names each arrow", async () => {
+  const { reply, unmount } = await renderReply(
+    [
+      "A pointer holds an address.",
+      "",
+      "```honestai",
+      "root = Stack([diagram])",
+      'diagram = Diagram([pointer, target], ["points to"], "Example addresses for illustration")',
+      'pointer = DiagramNode("Pointer p", "0x100", "Holds the address of x")',
+      'target = DiagramNode("Variable x", "10", "Stored at address 0x100")',
+      "```",
+    ].join("\n"),
+  );
+  const figure = reply.querySelector("figure")!;
+  expect(figure.querySelector("figcaption")?.textContent).toBe(
+    "Example addresses for illustration",
+  );
+  // The drawn connector is hidden; each box carries its own relationship.
+  const boxes = figure.querySelectorAll("ol > li:not([aria-hidden])");
+  expect(boxes).toHaveLength(2);
+  expect(boxes[0].textContent).toContain("0x100");
+  expect(boxes[0].querySelector(".sr-only")?.textContent).toBe(
+    "points to Variable x.",
+  );
+  expect(boxes[1].querySelector(".sr-only")).toBeNull();
+  expect(reply.querySelector('[role="alert"]')).toBeNull();
+  await unmount();
+});
+
+it("says when a finished program left a bracket open, instead of dropping what follows", async () => {
+  const { reply, unmount } = await renderReply(
+    [
+      "```honestai",
+      "root = Stack([intro, tbl])",
+      'intro = TextContent("Counts below.")',
+      'counts = @Each([1, 2], "t", @Sum(@Each([1, 2, 3], "r", t * r))',
+      'tbl = Table([Col("Count", counts)])',
+      "```",
+    ].join("\n"),
+  );
+  expect(reply.querySelector('[role="alert"]')?.textContent).toContain(
+    "ends with a bracket or quote left open",
+  );
+  await unmount();
+});

@@ -172,6 +172,7 @@ export type HonestAIErrorCode =
   | "render-error"
   | "parse-exception"
   | "parse-failed"
+  | "incomplete"
   | "tool-not-found"
   | "tool-error"
   | "mcp-error";

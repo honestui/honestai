@@ -33,6 +33,7 @@ const COMPONENT_ICONS = {
   "artifact-panel": LayoutTwoColumnIcon,
   "chat-thread": BubbleChatIcon,
   "code-view": CommandLineIcon,
+  "prose-code-block": CommandLineIcon,
   "context-cards": Layers01Icon,
   "context-meter": DashboardSpeed01Icon,
   "diff-table": ArrowDataTransferHorizontalIcon,

@@ -51,6 +51,9 @@ export function GeneratedChart({
       .filter(Boolean)
       .join(" — "),
   };
+  // No categories yet (a reply mid-stream, or a calculator range that is empty
+  // while its inputs are incomplete): an empty plot frame says nothing.
+  if (name !== "ScatterChart" && labels.length === 0 && !loading) return null;
   if (name === "RadarChart" || name === "RadialChart")
     return <SpecializedChart name={name} props={props} />;
   if (name === "PieChart") {

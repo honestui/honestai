@@ -51,6 +51,7 @@ export interface PromptSpec extends BaseSpec {
   /** List the built-in functions (@Count, @Sum, ...). Default: true if toolCalls or bindings. */
   builtinFunctions?: boolean;
   preamble?: string;
+
   /** General examples (static/layout patterns). Both `examples` and `toolExamples` are included when present. */
   examples?: string[];
   /** Tool-specific examples (Query/Mutation patterns). Both `examples` and `toolExamples` are included when present. */

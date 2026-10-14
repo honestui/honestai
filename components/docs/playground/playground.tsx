@@ -30,7 +30,7 @@ import { ContextMeter } from "@/registry/ai/context-meter";
 import { MessageScroller } from "@/registry/ai/message-scroller";
 import { PromptBar } from "@/registry/ai/prompt-bar";
 import { LoadingState } from "@/registry/ai/loading-state";
-import { honestChatLibrary } from "@/registry/generative";
+import { MapServicesContext, honestChatLibrary } from "@/registry/generative";
 import { honestChatPromptOptions } from "@/registry/generative/catalog";
 import {
   AssistantResponse,
@@ -42,6 +42,7 @@ import {
 import { useChatStore } from "@/registry/generative/runtime/headless/store/ChatContext";
 
 import { createHostedLLM } from "./hosted";
+import { playgroundMapServices } from "./maps";
 import { ModelIcon } from "./model-icon";
 import {
   CONTEXT_TOKENS,
@@ -698,13 +699,17 @@ function HostedPlayground({
 
 /** A chat whose replies are Markdown with generated UI inside. */
 export function Playground({ provider }: { provider: PlaygroundProvider }) {
-  return provider.kind === "hosted" ? (
-    <HostedPlayground
-      model={provider.model}
-      contextTokens={provider.contextTokens}
-      models={provider.models}
-    />
-  ) : (
-    <OllamaPlayground />
+  return (
+    <MapServicesContext.Provider value={playgroundMapServices}>
+      {provider.kind === "hosted" ? (
+        <HostedPlayground
+          model={provider.model}
+          contextTokens={provider.contextTokens}
+          models={provider.models}
+        />
+      ) : (
+        <OllamaPlayground />
+      )}
+    </MapServicesContext.Provider>
   );
 }

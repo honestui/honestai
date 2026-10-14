@@ -36,3 +36,6 @@ AGENTS.md
 # Generated syntax package
 /packages/prose-syntax/dist/
 /packages/prose-syntax/*.tgz
+
+# Copied from node_modules on install; see scripts/copy-maplibre-worker.mjs
+/public/vendor/maplibre-gl/

@@ -28,6 +28,29 @@ export type SyntaxResult = { lines: SyntaxToken[][]; highlighted: boolean }
 export type SyntaxDiagnostic = { reason: "unknown-language" | "load-failed" | "too-large" | "timeout" | "worker-failed"; language?: string }
 export type SyntaxOptions = { language?: string; session?: string }
 
+// Short names people write in fences, and the grammar each one means.
+const aliases: Record<string, string> = { js: "javascript", ts: "typescript", sh: "bash", shell: "bash", zsh: "bash", py: "python", yml: "yaml", md: "markdown", text: "plaintext", txt: "plaintext", "c++": "cpp", cc: "cpp", h: "c", hpp: "cpp", cs: "csharp", "c#": "csharp", golang: "go", rs: "rust", rb: "ruby", kt: "kotlin", kts: "kotlin", patch: "diff", docker: "dockerfile" }
+export function normalizeLanguage(language = "plaintext") {
+  const value = language.trim().toLowerCase()
+  return Object.hasOwn(aliases, value) ? aliases[value] : value
+}
+
+// How people write each language's name. Shell aliases keep their own name, since `zsh` is not Bash.
+const displayNames: Record<string, string> = {
+  javascript: "JavaScript", typescript: "TypeScript", jsx: "JSX", tsx: "TSX", html: "HTML", css: "CSS", json: "JSON",
+  markdown: "Markdown", bash: "Bash", sh: "Shell", shell: "Shell", zsh: "Zsh", python: "Python", sql: "SQL", yaml: "YAML",
+  java: "Java", c: "C", cpp: "C++", csharp: "C#", go: "Go", rust: "Rust", php: "PHP", ruby: "Ruby", kotlin: "Kotlin",
+  swift: "Swift", diff: "Diff", toml: "TOML", dockerfile: "Dockerfile", plaintext: "Text",
+}
+
+/** A fence's language as people write it, such as "C++" for `cpp`. Unknown languages are returned as written. */
+export function languageDisplayName(language: string) {
+  const value = language.trim().toLowerCase()
+  if (Object.hasOwn(displayNames, value)) return displayNames[value]
+  const canonical = normalizeLanguage(value)
+  return Object.hasOwn(displayNames, canonical) ? displayNames[canonical] : language.trim()
+}
+
 export function plainResult(code: string): SyntaxResult {
   return { lines: code.split("\n").map(text => [{ text, role: "plain" }]), highlighted: false }
 }

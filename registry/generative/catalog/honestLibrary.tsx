@@ -86,6 +86,12 @@ import { Carousel } from "./Carousel";
 import { Separator } from "./Separator";
 import { Stack } from "./Stack";
 import { Steps, StepsItem } from "./Steps";
+import { Diagram, DiagramNode } from "./Diagram";
+import { DiagramPart, PartsDiagram } from "./PartsDiagram";
+import { Calculator, Result } from "./Calculator";
+import { Quiz, QuizQuestion } from "./Quiz";
+import { MapPlace, PlaceMap } from "./Map";
+import { calculationFunctions } from "./functions";
 import { TabItem, Tabs } from "./Tabs";
 
 // Data Display
@@ -122,6 +128,36 @@ export const honestaiComponentGroups: ComponentGroup[] = [
       '- Modal: Modal("Title", $showModal, [content]) — $showModal is boolean, X/Escape auto-closes. Put Form with its own buttons inside children.',
       "- Use Tabs for alternative views (chart types, data sections) — no $variable needed",
       "- Shared filter across Tabs: same $days binding in Query args works across all TabItems",
+    ],
+  },
+  {
+    name: "Maps",
+    components: ["Map", "MapPlace"],
+    notes: [
+      '- Map([p1, p2], "route", caption) with p1 = MapPlace("Moab", "Moab, Utah, USA", "Base for Arches"). The app finds each place by its query; never write coordinates.',
+    ],
+  },
+  {
+    name: "Quizzes",
+    components: ["Quiz", "QuizQuestion"],
+    notes: [
+      '- Quiz([q1, q2]) with q1 = QuizQuestion("What is 2 + 2?", ["3", "4", "5"], "4", "Two pairs make four."). answer is the exact text of the right option.',
+    ],
+  },
+  {
+    name: "Calculators",
+    components: ["Calculator", "Result"],
+    notes: [
+      "- Calculator(inputs, results, formula): each input is a FormControl whose control binds a $variable as its last argument; each Result value is an expression over those $variables, so results recompute as the user edits.",
+      "- A single-thumb Slider holds [n]; arithmetic reads it as n, so $amount * 12 works.",
+    ],
+  },
+  {
+    name: "Diagrams",
+    components: ["Diagram", "DiagramNode", "PartsDiagram", "DiagramPart"],
+    notes: [
+      "- Diagram draws a chain of DiagramNode boxes joined by arrows; arrows[i] labels the arrow from nodes[i] to nodes[i+1].",
+      '- PartsDiagram(parts, arrangement, caption) labels the parts of one thing: "row" side by side, "stack" top first, "nested" outermost first. DiagramPart(label, value, detail, size).',
     ],
   },
   {
@@ -295,6 +331,7 @@ export {
 // ── Library ──
 
 export const honestLibrary = createLibrary({
+  functions: calculationFunctions,
   root: "Stack",
   componentGroups: honestaiComponentGroups,
   components: [
@@ -363,6 +400,19 @@ export const honestLibrary = createLibrary({
     AccordionItem,
     Steps,
     StepsItem,
+    Diagram,
+    DiagramNode,
+    PartsDiagram,
+    DiagramPart,
+    // Calculators
+    Calculator,
+    Result,
+    // Quizzes
+    Quiz,
+    QuizQuestion,
+    // Maps
+    PlaceMap,
+    MapPlace,
     Carousel,
     Separator,
     // Data Display

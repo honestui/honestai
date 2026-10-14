@@ -1,7 +1,7 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
-import { createHighlighter } from "../registry/lib/prose-syntax"
+import { createHighlighter, languageDisplayName } from "../registry/lib/prose-syntax"
 import { createSyntaxClient } from "../registry/lib/prose-syntax-client"
 import { codeMirrorRoleTags, decodeSemanticTokens, semanticTokenRoles } from "../registry/lib/prose-syntax-codemirror"
 import { Text } from "@codemirror/state"
@@ -194,6 +194,41 @@ test("the Monaco theme uses literal, valid colors for every rule", () => {
       assert.equal(theme.rules.find(rule => rule.token === "parameter")?.foreground, syntaxPaletteColors[palette][mode].parameter.slice(1))
     }
   }
+})
+
+test("common chat languages and their aliases highlight", async () => {
+  const highlighter = createHighlighter()
+  try {
+    const samples: Record<string, [string, string]> = {
+      java: ["for (int i = 0; i < 5; i++) {}", "for"],
+      "c++": ["int main() { return 0; }", "return"],
+      cs: ["public class A {}", "public"],
+      golang: ["func main() {}", "func"],
+      rs: ["fn main() {}", "fn"],
+      rb: ["def greet; end", "def"],
+      kt: ["fun main() {}", "fun"],
+      swift: ["let x = 1", "let"],
+      php: ["<?php function f() {} ?>", "function"],
+      c: ["return 0;", "return"],
+    }
+    for (const [language, [code, keyword]] of Object.entries(samples)) {
+      const result = await highlighter.highlight(code, { language })
+      assert.ok(result.highlighted, `${language} highlighted`)
+      const roles = result.lines.flat().filter(token => token.text.trim() === keyword).map(token => token.role)
+      assert.ok(roles.includes("keyword"), `${language}: ${keyword} is ${roles.join(", ") || "missing"}`)
+    }
+  } finally {
+    highlighter.dispose()
+  }
+})
+
+test("languages show as people write them; unknown ones stay as written", () => {
+  const expected: Record<string, string> = {
+    java: "Java", JAVA: "Java", cpp: "C++", "c++": "C++", cs: "C#", ts: "TypeScript", tsx: "TSX", js: "JavaScript",
+    py: "Python", golang: "Go", rs: "Rust", sh: "Shell", zsh: "Zsh", bash: "Bash", yml: "YAML", json: "JSON", " sql ": "SQL",
+    elixir: "elixir", constructor: "constructor",
+  }
+  for (const [input, name] of Object.entries(expected)) assert.equal(languageDisplayName(input), name, input)
 })
 
 test("multiline lexical context survives append and language changes", async () => {

@@ -57,6 +57,14 @@ import { Buttons } from "./Buttons";
 
 import { Steps, StepsItem } from "./Steps";
 
+// Diagrams
+import { Diagram, DiagramNode } from "./Diagram";
+import { DiagramPart, PartsDiagram } from "./PartsDiagram";
+import { Calculator, Result } from "./Calculator";
+import { Quiz, QuizQuestion } from "./Quiz";
+import { MapPlace, PlaceMap } from "./Map";
+import { calculationFunctions } from "./functions";
+
 // Data Display
 import { Col, Table } from "./Table";
 import { Tag } from "./Tag";
@@ -310,6 +318,37 @@ export const honestaiChatComponentGroups: ComponentGroup[] = [
     ],
   },
   {
+    name: "Maps",
+    components: ["Map", "MapPlace"],
+    notes: [
+      '- Map([p1, p2], "route", caption) with p1 = MapPlace("Moab", "Moab, Utah, USA", "Base for Arches"). The app finds each place by its query; never write coordinates.',
+    ],
+  },
+  {
+    name: "Quizzes",
+    components: ["Quiz", "QuizQuestion"],
+    notes: [
+      '- Quiz([q1, q2]) with q1 = QuizQuestion("What is 2 + 2?", ["3", "4", "5"], "4", "Two pairs make four."). answer is the exact text of the right option.',
+    ],
+  },
+  {
+    name: "Calculators",
+    components: ["Calculator", "Result"],
+    notes: [
+      "- Calculator(inputs, results, formula): each input is a FormControl whose control binds a $variable as its last argument; each Result value is an expression over those $variables, so results recompute as the user edits.",
+      "- A single-thumb Slider holds [n]; arithmetic reads it as n, so $amount * 12 works.",
+    ],
+  },
+  {
+    name: "Diagrams",
+    components: ["Diagram", "DiagramNode", "PartsDiagram", "DiagramPart"],
+    notes: [
+      "- Diagram draws a chain of DiagramNode boxes joined by arrows; arrows[i] labels the arrow from nodes[i] to nodes[i+1].",
+      '- PartsDiagram(parts, arrangement, caption) labels the parts of one thing: "row" side by side, "stack" top first, "nested" outermost first. DiagramPart(label, value, detail, size).',
+      '- Example: d = Diagram([n1, n2], ["points to"], "Example addresses for illustration")  n1 = DiagramNode("Pointer p", "0x100", "Address stored")  n2 = DiagramNode("Variable x", "10", "Value stored at 0x100")',
+    ],
+  },
+  {
     name: "Charts (1D)",
     components: ["PieChart", "RadialChart", "SingleStackedBarChart", "Slice"],
   },
@@ -452,6 +491,7 @@ export {
 // ── Library ──
 
 export const honestChatLibrary = createLibrary({
+  functions: calculationFunctions,
   root: "Stack",
   componentGroups: honestaiChatComponentGroups,
   components: [
@@ -480,6 +520,20 @@ export const honestChatLibrary = createLibrary({
     RadarChart,
     HorizontalBarChart,
     Series,
+    // Diagrams
+    Diagram,
+    DiagramNode,
+    PartsDiagram,
+    DiagramPart,
+    // Calculators
+    Calculator,
+    Result,
+    // Quizzes
+    Quiz,
+    QuizQuestion,
+    // Maps
+    PlaceMap,
+    MapPlace,
     // Charts (1D)
     PieChart,
     RadialChart,

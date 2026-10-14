@@ -17,6 +17,17 @@ await build({
   platform: "node",
   format: "esm",
   packages: "external",
+  plugins: [
+    {
+      // The map renderer imports MapLibre's stylesheet. The specs only read the
+      // libraries, so styles are empty here rather than loaded by Node.
+      name: "empty-css",
+      setup(build) {
+        build.onResolve({ filter: /\.css$/ }, (args) => ({ path: args.path, namespace: "empty-css" }));
+        build.onLoad({ filter: /.*/, namespace: "empty-css" }, () => ({ contents: "", loader: "js" }));
+      },
+    },
+  ],
 });
 const { honestLibrary, honestChatLibrary, honestChatPromptOptions } =
   await import(pathToFileURL(outfile));

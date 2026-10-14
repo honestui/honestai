@@ -83,7 +83,14 @@ export function parseExpression(tokens: Token[]): ASTNode {
     // String literal
     if (tok.t === T.Str) {
       adv();
-      return { k: "Str", v: tok.v as string };
+      // Adjacent literals join, as in Python and C, so text split across
+      // lines ("first part " "second part") stays one argument.
+      let value = tok.v as string;
+      while (cur().t === T.Str) {
+        value += cur().v as string;
+        adv();
+      }
+      return { k: "Str", v: value };
     }
 
     // Number literal

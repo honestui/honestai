@@ -76,6 +76,18 @@ export function useHonestAIErrors({
       });
     }
 
+    // The stream has ended, so an open bracket or quote will never close.
+    // Without this, everything after it would vanish without a word.
+    if (response && result?.meta.incomplete) {
+      errors.push({
+        source: "parser",
+        code: "incomplete",
+        message:
+          "The generated program ends with a bracket or quote left open, so the parts after it are missing.",
+        hint: "Close every (, [, { and quote. Count the closing parentheses of nested calls such as @Each(..., @Sum(@Each(...))).",
+      });
+    }
+
     if (result?.meta.errors.length) {
       errors.push(
         ...enrichErrors(

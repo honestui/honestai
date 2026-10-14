@@ -11,7 +11,7 @@ lastModified: "2026-10-13"
 
 Models write Markdown, and they deliver it in pieces. Rendered as it arrives, half-written syntax flashes on screen as stray asterisks and backticks until its other half shows up. Markdown renders the text you have so far the way it will read once it is whole.
 
-Pass the Markdown source as a string. Set `isStreaming` while more text is on the way. A fenced code block becomes a [Code View](/docs/components/code-view), so it has a copy button and line numbers.
+Pass the Markdown source as a string. Set `isStreaming` while more text is on the way. A fenced code block becomes a [Prose Code Block](/docs/components/prose-code-block): its language and a copy button in a frame, with the code highlighted.
 
 Markdown parses text and requests nothing. HTML in the source is shown as text, not run. An image is shown as a link, because loading an image sends a request to a URL the model chose.
 
@@ -23,13 +23,13 @@ A fence can also become one of your components. See [Blocks](#blocks).
 
 <Anatomy title="Markdown">
   <AnatomyItem name="Text" description="Headings, paragraphs, lists, quotes, links, and inline code" />
-  <AnatomyItem name="Code block" description="A Code View, titled with the block's language" />
+  <AnatomyItem name="Code block" description="A Prose Code Block, titled with the block's language" />
   <AnatomyItem name="Table" description="A table inside a region that scrolls sideways" />
   <AnatomyItem name="Block" description="A fenced block drawn by a component you map to its language" />
   <AnatomyItem name="Caret" description="Marks the end of the text while it streams" />
 </Anatomy>
 
-Installing `markdown` brings three registry items with it: [Code View](/docs/components/code-view), [Prose](/docs/prose), and `repair-markdown`, the function behind `isStreaming`. It also installs `react-markdown` and `remark-gfm`.
+Installing `markdown` brings these registry items with it: [Prose Code Block](/docs/components/prose-code-block), [Prose](/docs/prose), [Honest Prose Syntax](/docs/prose-syntax), and `repair-markdown`, the function behind `isStreaming`. It also installs `react-markdown` and `remark-gfm`.
 
 ## Behavior
 
@@ -60,15 +60,15 @@ Inside a [Streaming Text](/docs/components/streaming-text), Markdown's caret rep
 
 ### Code blocks
 
-A fenced block renders as a Code View. Its title is the first of these the fence has:
+A fenced block renders as a Prose Code Block. Its title is the first of these the fence has:
 
-1. A title after the language, written `title="export.ts"` or `filename="export.ts"`.
-2. The language.
+1. A title after the language, written `title="export.ts"` or `filename="export.ts"`, shown as written.
+2. The language, as people write it: `cpp` shows as "C++" and `ts` as "TypeScript". A language Markdown does not know shows as the fence wrote it.
 3. "Code".
 
 Markdown highlights fenced code automatically with Honest Prose Syntax. Set `syntaxHighlighting={false}` to disable it, or pass `renderCodeLine` to use your own highlighter. It receives the line, the language, and the line's index with the whole block, for a highlighter that reads across lines. See [Syntax highlighting](#syntax-highlighting) for setup and compatibility.
 
-`renderCodeActions` adds controls to a code block's header, before Copy. It receives the block's code, language, and title. Return a button for each action, and only for an action your application handles.
+`renderCodeActions` adds controls to a code block's frame, before Copy. It receives the block's code, language, and title. Return a button for each action, and only for an action your application handles.
 
 ### Blocks
 
@@ -100,7 +100,7 @@ const blocks = {
 The model wrote the text, so check it before you draw it. Three rules keep a block truthful:
 
 - **While it arrives, it is held back.** With `isStreaming`, a block whose closing fence has not arrived shows "Waiting for the rest of this block…" instead. Your function is not called with half of its data.
-- **When it does not fit, it is shown as code.** If your function throws, as a schema's `parse` does, Markdown shows the fence's text in a Code View. Nothing is lost, and nothing untrue is drawn. An error thrown later, while a component you returned renders, is not caught.
+- **When it does not fit, it is shown as code.** If your function throws, as a schema's `parse` does, Markdown shows the fence's text as a code block. Nothing is lost, and nothing untrue is drawn. An error thrown later, while a component you returned renders, is not caught.
 - **It keeps its own styles.** A block is wrapped in `not-prose`, so the text styles do not reach into it.
 
 Markdown does not tell the model which blocks exist. Describe each block's language and data in your prompt.
@@ -224,7 +224,7 @@ The preview has been checked with a keyboard and with axe. It has not been check
 
 <Step>Add the items it is built from.</Step>
 
-<CliBlock commands={["@honestai/code-view", "@honestai/prose", "@honestai/repair-markdown"]} />
+<CliBlock commands={["@honestai/prose-code-block", "@honestai/prose", "@honestai/prose-syntax-react", "@honestai/repair-markdown"]} />
 
 <Step>Install the parser.</Step>
 
@@ -297,7 +297,7 @@ A `flowchart` fence drawn as a [Flowchart](/docs/components/flowchart). While th
 
 ### Math, highlighting, a title, and an action
 
-Both add-ons, a code block titled by its fence, and a Download action in its header.
+Both add-ons, a code block titled by its fence, and a Download action in its frame.
 
 <ComponentPreview name="markdown-add-ons" previewClassName="h-auto min-h-[420px]" />
 
@@ -315,7 +315,7 @@ Accepts native div props beyond those listed.
 | `syntaxPalette` | `"violet" \| "graphite"` | `"violet"` | Token palette for built-in highlighting. |
 | `syntaxHighlighting` | boolean | `true` | Use built-in syntax highlighting. |
 | `renderCodeLine` | `(text: string, language: string \| undefined, line: MarkdownCodeLine) => ReactNode` | None | Colors one line of a code block. |
-| `renderCodeActions` | `(block: MarkdownCodeBlock) => ReactNode` | None | Controls for a code block's header, before Copy. |
+| `renderCodeActions` | `(block: MarkdownCodeBlock) => ReactNode` | None | Controls for a code block's frame, before Copy. |
 | `components` | `Components` from `react-markdown` | None | Replaces how an element is rendered. |
 | `remarkPlugins` | Plugin list | None | Parser plugins, run after GitHub Flavored Markdown. |
 | `rehypePlugins` | Plugin list | None | Tree plugins, run before the caret is placed. |

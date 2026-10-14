@@ -2,11 +2,11 @@
   "root": "Stack",
   "components": {
     "Stack": {
-      "signature": "Stack(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock | SectionBlock | Tabs | Carousel | Card | Modal)[])",
+      "signature": "Stack(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | Diagram | PartsDiagram | Calculator | Quiz | Map | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock | SectionBlock | Tabs | Carousel | Card | Modal)[])",
       "description": "Root of a generated block. Children stack top to bottom with no frame, so the block reads as part of the reply."
     },
     "Card": {
-      "signature": "Card(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock | SectionBlock | Tabs | Carousel)[], sources?: {title: string, sourceName?: string, url: string}[])",
+      "signature": "Card(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | Diagram | PartsDiagram | Calculator | Quiz | Map | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock | SectionBlock | Tabs | Carousel)[], sources?: {title: string, sourceName?: string, url: string}[])",
       "description": "Framed group for content that must stand apart from the conversation, such as a form or a summary the user acts on. Optional: most blocks need no Card. Children stack top to bottom. Optional sources ([{ title, sourceName, url }]) render as a Sources list at the bottom of the card."
     },
     "CardHeader": {
@@ -80,6 +80,46 @@
     "Series": {
       "signature": "Series(category: string, values: number[])",
       "description": "One data series"
+    },
+    "Diagram": {
+      "signature": "Diagram(nodes: DiagramNode[], arrows?: string[], caption?: string)",
+      "description": "A chain of 2–4 boxes joined by arrows, for how one thing refers to, becomes or flows into the next. arrows[i] labels the arrow from nodes[i] to nodes[i+1]. caption marks illustrative values."
+    },
+    "DiagramNode": {
+      "signature": "DiagramNode(title: string, value?: string, detail?: string)",
+      "description": "One box in a Diagram: title names the thing, value is the literal it holds (shown in monospace), detail is one short line about it"
+    },
+    "PartsDiagram": {
+      "signature": "PartsDiagram(parts: DiagramPart[], arrangement: \"row\" | \"stack\" | \"nested\", caption?: string)",
+      "description": "The labeled parts of one thing. \"row\": parts side by side, in order (2–8, e.g. the pieces of a URL or the fields of a header). \"stack\": layers, top first (2–7, e.g. network layers). \"nested\": each part inside the one before, outermost first (2–5, e.g. the CSS box model)."
+    },
+    "DiagramPart": {
+      "signature": "DiagramPart(label: string, value?: string, detail?: string, size?: number)",
+      "description": "One part: label names it, value is the literal it holds (shown in monospace), detail is one short line on what it does, size is its relative width in a row (such as bytes)."
+    },
+    "Calculator": {
+      "signature": "Calculator(inputs: FormControl[], results: Result[], formula: string, actions?: Buttons)",
+      "description": "Inputs bound to $variables beside Results that recompute as the user changes them, with no submit button. formula states how the results are calculated and every assumption, in plain words. actions is an optional Buttons row under the inputs, such as a button that reruns a simulation."
+    },
+    "Result": {
+      "signature": "Result(label: string, value: number, format?: \"number\" | \"currency\" | \"percent\", detail?: string, currency?: string, decimals?: number)",
+      "description": "One live answer in a Calculator. value is an expression over the inputs' $variables. format: \"number\" (default) | \"currency\" (with an ISO currency code, default \"USD\") | \"percent\" (pass the percentage: 5 shows 5%). Currency drops cents from 1,000 up unless decimals is set. The first Result is shown largest."
+    },
+    "Quiz": {
+      "signature": "Quiz(questions: QuizQuestion[])",
+      "description": "Multiple-choice questions with known answers, shown one at a time. The user can change answers until they submit at the end; then the browser scores them and shows each right answer with its explanation, Try again, and an offer to explain missed questions."
+    },
+    "QuizQuestion": {
+      "signature": "QuizQuestion(question: string, options: string[], answer: string, explanation?: string)",
+      "description": "One single-answer question. answer must be the exact text of one option. explanation says why that answer is right, in one or two sentences."
+    },
+    "Map": {
+      "signature": "Map(places: MapPlace[], kind: \"route\" | \"points\", caption?: string)",
+      "description": "A map of real places that the app looks up by name; you never supply coordinates. \"route\" numbers the stops in order (no roads are drawn); \"points\" marks places in no particular order. The places are also listed under the map."
+    },
+    "MapPlace": {
+      "signature": "MapPlace(name: string, query?: string, note?: string)",
+      "description": "One place. name is shown to the reader; query is what the app searches for: the name, then city or region and country (e.g. \"Thompson Library, Columbus, Ohio, USA\"), with no campus or institution part; it defaults to name; note is one short line. Never coordinates."
     },
     "PieChart": {
       "signature": "PieChart(labels: string[], values: number[], variant?: \"pie\" | \"donut\", appearance?: \"circular\" | \"semiCircular\")",
@@ -198,7 +238,7 @@
       "description": "Collapsible accordion sections. Auto-opens sections as they stream in. Use SectionItem for each section."
     },
     "SectionItem": {
-      "signature": "SectionItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock | Tabs | Accordion)[])",
+      "signature": "SectionItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | Diagram | PartsDiagram | Calculator | Quiz | Map | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock | Tabs | Accordion)[])",
       "description": "Section with a label and collapsible content — used inside SectionBlock"
     },
     "Tabs": {
@@ -206,7 +246,7 @@
       "description": "Tabbed container"
     },
     "TabItem": {
-      "signature": "TabItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock | Accordion)[])",
+      "signature": "TabItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | Diagram | PartsDiagram | Calculator | Quiz | Map | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock | Accordion)[])",
       "description": "value is unique id, trigger is tab label, content is array of components"
     },
     "Accordion": {
@@ -214,7 +254,7 @@
       "description": "Collapsible sections"
     },
     "AccordionItem": {
-      "signature": "AccordionItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock)[])",
+      "signature": "AccordionItem(value: string, trigger: string, content: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | Diagram | PartsDiagram | Calculator | Quiz | Map | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock)[])",
       "description": "value is unique id, trigger is section title"
     },
     "Steps": {
@@ -226,11 +266,11 @@
       "description": "title and details text for one step"
     },
     "Carousel": {
-      "signature": "Carousel(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock)[][], variant?: \"card\" | \"sunk\")",
+      "signature": "Carousel(children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | Diagram | PartsDiagram | Calculator | Quiz | Map | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock)[][], variant?: \"card\" | \"sunk\")",
       "description": "Horizontal scrollable carousel"
     },
     "Modal": {
-      "signature": "Modal(title: string, open?: $binding<boolean>, children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock | SectionBlock | Tabs | Carousel)[], size?: \"sm\" | \"md\" | \"lg\")",
+      "signature": "Modal(title: string, open?: $binding<boolean>, children: (TextContent | MarkDownRenderer | CardHeader | Callout | TextCallout | CodeBlock | Image | ImageBlock | ImageGallery | Separator | HorizontalBarChart | RadarChart | PieChart | RadialChart | SingleStackedBarChart | ScatterChart | AreaChart | BarChart | LineChart | Table | TagBlock | Form | Label | Buttons | IconButton | Steps | Diagram | PartsDiagram | Calculator | Quiz | Map | InlineHeader | EntityList | EditableTable | SnippetCardBlock | OverviewCardBlock | ContextCardBlock | CompositeCardBlock | VisualCardBlock | ListBlock | FollowUpBlock | SectionBlock | Tabs | Carousel)[], size?: \"sm\" | \"md\" | \"lg\")",
       "description": "Dialog for a user-requested secondary task. Bind open to a $boolean initially false; open it from a Button action. Escape and Close dismiss it. Keep primary reply content outside the dialog."
     },
     "TagBlock": {
@@ -391,6 +431,51 @@
       ]
     },
     {
+      "name": "Maps",
+      "components": [
+        "Map",
+        "MapPlace"
+      ],
+      "notes": [
+        "- Map([p1, p2], \"route\", caption) with p1 = MapPlace(\"Moab\", \"Moab, Utah, USA\", \"Base for Arches\"). The app finds each place by its query; never write coordinates."
+      ]
+    },
+    {
+      "name": "Quizzes",
+      "components": [
+        "Quiz",
+        "QuizQuestion"
+      ],
+      "notes": [
+        "- Quiz([q1, q2]) with q1 = QuizQuestion(\"What is 2 + 2?\", [\"3\", \"4\", \"5\"], \"4\", \"Two pairs make four.\"). answer is the exact text of the right option."
+      ]
+    },
+    {
+      "name": "Calculators",
+      "components": [
+        "Calculator",
+        "Result"
+      ],
+      "notes": [
+        "- Calculator(inputs, results, formula): each input is a FormControl whose control binds a $variable as its last argument; each Result value is an expression over those $variables, so results recompute as the user edits.",
+        "- A single-thumb Slider holds [n]; arithmetic reads it as n, so $amount * 12 works."
+      ]
+    },
+    {
+      "name": "Diagrams",
+      "components": [
+        "Diagram",
+        "DiagramNode",
+        "PartsDiagram",
+        "DiagramPart"
+      ],
+      "notes": [
+        "- Diagram draws a chain of DiagramNode boxes joined by arrows; arrows[i] labels the arrow from nodes[i] to nodes[i+1].",
+        "- PartsDiagram(parts, arrangement, caption) labels the parts of one thing: \"row\" side by side, \"stack\" top first, \"nested\" outermost first. DiagramPart(label, value, detail, size).",
+        "- Example: d = Diagram([n1, n2], [\"points to\"], \"Example addresses for illustration\")  n1 = DiagramNode(\"Pointer p\", \"0x100\", \"Address stored\")  n2 = DiagramNode(\"Variable x\", \"10\", \"Value stored at 0x100\")"
+      ]
+    },
+    {
       "name": "Charts (1D)",
       "components": [
         "PieChart",
@@ -548,6 +633,24 @@
       ]
     }
   ],
+  "functions": {
+    "Pow": {
+      "signature": "Pow(base: number | string, exponent: number | string) → number",
+      "description": "base raised to exponent, e.g. compound growth (1 + rate) ^ years"
+    },
+    "Format": {
+      "signature": "Format(number?: number | string, format?: \"number\" | \"currency\" | \"percent\", decimals?: number | string, currency?: string) → string",
+      "description": "A number as text in the reader's locale: \"number\" (default), \"currency\" (code defaults to \"USD\") or \"percent\" (5 shows 5%). Shows \"—\" when the number cannot be calculated."
+    },
+    "Range": {
+      "signature": "Range(start: number | string, end: number | string, step?: number | string) → number[]",
+      "description": "Whole numbers from start to end inclusive, by step (default 1), at most 10000, so bound any input that sets end to 10000. Use with @Each for one row or label per year, or with @Sum to count simulated trials."
+    },
+    "Random": {
+      "signature": "Random(seed: any, min?: number | string, max?: number | string) → number",
+      "description": "A repeatable random draw: the same seed always gives the same number. With min and max, a whole number from min to max inclusive; without them, a fraction from 0 up to 1. Draw again by changing the seed (a button with @Set($run, $run + 1)); for many draws use a list seed such as [$run, t, \"car\"]."
+    }
+  },
   "schema": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
@@ -611,6 +714,36 @@
       },
       "Series": {
         "$ref": "#/$defs/Series"
+      },
+      "Diagram": {
+        "$ref": "#/$defs/Diagram"
+      },
+      "DiagramNode": {
+        "$ref": "#/$defs/DiagramNode"
+      },
+      "PartsDiagram": {
+        "$ref": "#/$defs/PartsDiagram"
+      },
+      "DiagramPart": {
+        "$ref": "#/$defs/DiagramPart"
+      },
+      "Calculator": {
+        "$ref": "#/$defs/Calculator"
+      },
+      "Result": {
+        "$ref": "#/$defs/Result"
+      },
+      "Quiz": {
+        "$ref": "#/$defs/Quiz"
+      },
+      "QuizQuestion": {
+        "$ref": "#/$defs/QuizQuestion"
+      },
+      "Map": {
+        "$ref": "#/$defs/Map"
+      },
+      "MapPlace": {
+        "$ref": "#/$defs/MapPlace"
       },
       "PieChart": {
         "$ref": "#/$defs/PieChart"
@@ -832,6 +965,16 @@
       "RadarChart",
       "HorizontalBarChart",
       "Series",
+      "Diagram",
+      "DiagramNode",
+      "PartsDiagram",
+      "DiagramPart",
+      "Calculator",
+      "Result",
+      "Quiz",
+      "QuizQuestion",
+      "Map",
+      "MapPlace",
       "PieChart",
       "RadialChart",
       "SingleStackedBarChart",
@@ -985,6 +1128,21 @@
                 },
                 {
                   "$ref": "#/$defs/Steps"
+                },
+                {
+                  "$ref": "#/$defs/Diagram"
+                },
+                {
+                  "$ref": "#/$defs/PartsDiagram"
+                },
+                {
+                  "$ref": "#/$defs/Calculator"
+                },
+                {
+                  "$ref": "#/$defs/Quiz"
+                },
+                {
+                  "$ref": "#/$defs/Map"
                 },
                 {
                   "$ref": "#/$defs/InlineHeader"
@@ -2739,6 +2897,253 @@
         "additionalProperties": false,
         "description": "title and details text for one step"
       },
+      "Diagram": {
+        "type": "object",
+        "properties": {
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/DiagramNode"
+            }
+          },
+          "arrows": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "caption": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "nodes"
+        ],
+        "additionalProperties": false,
+        "description": "A chain of 2–4 boxes joined by arrows, for how one thing refers to, becomes or flows into the next. arrows[i] labels the arrow from nodes[i] to nodes[i+1]. caption marks illustrative values."
+      },
+      "DiagramNode": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false,
+        "description": "One box in a Diagram: title names the thing, value is the literal it holds (shown in monospace), detail is one short line about it"
+      },
+      "PartsDiagram": {
+        "type": "object",
+        "properties": {
+          "parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/DiagramPart"
+            }
+          },
+          "arrangement": {
+            "type": "string",
+            "enum": [
+              "row",
+              "stack",
+              "nested"
+            ]
+          },
+          "caption": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "parts",
+          "arrangement"
+        ],
+        "additionalProperties": false,
+        "description": "The labeled parts of one thing. \"row\": parts side by side, in order (2–8, e.g. the pieces of a URL or the fields of a header). \"stack\": layers, top first (2–7, e.g. network layers). \"nested\": each part inside the one before, outermost first (2–5, e.g. the CSS box model)."
+      },
+      "DiagramPart": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "label"
+        ],
+        "additionalProperties": false,
+        "description": "One part: label names it, value is the literal it holds (shown in monospace), detail is one short line on what it does, size is its relative width in a row (such as bytes)."
+      },
+      "Calculator": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FormControl"
+            }
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Result"
+            }
+          },
+          "formula": {
+            "type": "string"
+          },
+          "actions": {
+            "$ref": "#/$defs/Buttons"
+          }
+        },
+        "required": [
+          "inputs",
+          "results",
+          "formula"
+        ],
+        "additionalProperties": false,
+        "description": "Inputs bound to $variables beside Results that recompute as the user changes them, with no submit button. formula states how the results are calculated and every assumption, in plain words. actions is an optional Buttons row under the inputs, such as a button that reruns a simulation."
+      },
+      "Result": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "number",
+              "currency",
+              "percent"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "decimals": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "label",
+          "value"
+        ],
+        "additionalProperties": false,
+        "description": "One live answer in a Calculator. value is an expression over the inputs' $variables. format: \"number\" (default) | \"currency\" (with an ISO currency code, default \"USD\") | \"percent\" (pass the percentage: 5 shows 5%). Currency drops cents from 1,000 up unless decimals is set. The first Result is shown largest."
+      },
+      "Quiz": {
+        "type": "object",
+        "properties": {
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/QuizQuestion"
+            }
+          }
+        },
+        "required": [
+          "questions"
+        ],
+        "additionalProperties": false,
+        "description": "Multiple-choice questions with known answers, shown one at a time. The user can change answers until they submit at the end; then the browser scores them and shows each right answer with its explanation, Try again, and an offer to explain missed questions."
+      },
+      "QuizQuestion": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "answer": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "options",
+          "answer"
+        ],
+        "additionalProperties": false,
+        "description": "One single-answer question. answer must be the exact text of one option. explanation says why that answer is right, in one or two sentences."
+      },
+      "Map": {
+        "type": "object",
+        "properties": {
+          "places": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MapPlace"
+            }
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "route",
+              "points"
+            ]
+          },
+          "caption": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "places",
+          "kind"
+        ],
+        "additionalProperties": false,
+        "description": "A map of real places that the app looks up by name; you never supply coordinates. \"route\" numbers the stops in order (no roads are drawn); \"points\" marks places in no particular order. The places are also listed under the map."
+      },
+      "MapPlace": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "description": "One place. name is shown to the reader; query is what the app searches for: the name, then city or region and country (e.g. \"Thompson Library, Columbus, Ohio, USA\"), with no campus or institution part; it defaults to name; note is one short line. Never coordinates."
+      },
       "InlineHeader": {
         "type": "object",
         "properties": {
@@ -3961,6 +4366,21 @@
                   "$ref": "#/$defs/Steps"
                 },
                 {
+                  "$ref": "#/$defs/Diagram"
+                },
+                {
+                  "$ref": "#/$defs/PartsDiagram"
+                },
+                {
+                  "$ref": "#/$defs/Calculator"
+                },
+                {
+                  "$ref": "#/$defs/Quiz"
+                },
+                {
+                  "$ref": "#/$defs/Map"
+                },
+                {
                   "$ref": "#/$defs/InlineHeader"
                 },
                 {
@@ -4116,6 +4536,21 @@
                   "$ref": "#/$defs/Steps"
                 },
                 {
+                  "$ref": "#/$defs/Diagram"
+                },
+                {
+                  "$ref": "#/$defs/PartsDiagram"
+                },
+                {
+                  "$ref": "#/$defs/Calculator"
+                },
+                {
+                  "$ref": "#/$defs/Quiz"
+                },
+                {
+                  "$ref": "#/$defs/Map"
+                },
+                {
                   "$ref": "#/$defs/InlineHeader"
                 },
                 {
@@ -4268,6 +4703,21 @@
                   "$ref": "#/$defs/Steps"
                 },
                 {
+                  "$ref": "#/$defs/Diagram"
+                },
+                {
+                  "$ref": "#/$defs/PartsDiagram"
+                },
+                {
+                  "$ref": "#/$defs/Calculator"
+                },
+                {
+                  "$ref": "#/$defs/Quiz"
+                },
+                {
+                  "$ref": "#/$defs/Map"
+                },
+                {
                   "$ref": "#/$defs/InlineHeader"
                 },
                 {
@@ -4395,6 +4845,21 @@
                   },
                   {
                     "$ref": "#/$defs/Steps"
+                  },
+                  {
+                    "$ref": "#/$defs/Diagram"
+                  },
+                  {
+                    "$ref": "#/$defs/PartsDiagram"
+                  },
+                  {
+                    "$ref": "#/$defs/Calculator"
+                  },
+                  {
+                    "$ref": "#/$defs/Quiz"
+                  },
+                  {
+                    "$ref": "#/$defs/Map"
                   },
                   {
                     "$ref": "#/$defs/InlineHeader"
@@ -4528,6 +4993,21 @@
                 },
                 {
                   "$ref": "#/$defs/Steps"
+                },
+                {
+                  "$ref": "#/$defs/Diagram"
+                },
+                {
+                  "$ref": "#/$defs/PartsDiagram"
+                },
+                {
+                  "$ref": "#/$defs/Calculator"
+                },
+                {
+                  "$ref": "#/$defs/Quiz"
+                },
+                {
+                  "$ref": "#/$defs/Map"
                 },
                 {
                   "$ref": "#/$defs/InlineHeader"
@@ -4692,6 +5172,21 @@
                   "$ref": "#/$defs/Steps"
                 },
                 {
+                  "$ref": "#/$defs/Diagram"
+                },
+                {
+                  "$ref": "#/$defs/PartsDiagram"
+                },
+                {
+                  "$ref": "#/$defs/Calculator"
+                },
+                {
+                  "$ref": "#/$defs/Quiz"
+                },
+                {
+                  "$ref": "#/$defs/Map"
+                },
+                {
                   "$ref": "#/$defs/InlineHeader"
                 },
                 {
@@ -4766,9 +5261,186 @@
         "additionalProperties": false,
         "description": "One slice with label and numeric value"
       }
+    },
+    "functions": {
+      "Pow": {
+        "description": "base raised to exponent, e.g. compound growth (1 + rate) ^ years",
+        "params": {
+          "type": "object",
+          "properties": {
+            "base": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "exponent": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "required": [
+            "base",
+            "exponent"
+          ],
+          "additionalProperties": false
+        },
+        "returns": {
+          "type": "number"
+        }
+      },
+      "Format": {
+        "description": "A number as text in the reader's locale: \"number\" (default), \"currency\" (code defaults to \"USD\") or \"percent\" (5 shows 5%). Shows \"—\" when the number cannot be calculated.",
+        "params": {
+          "type": "object",
+          "properties": {
+            "number": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "number",
+                "currency",
+                "percent"
+              ]
+            },
+            "decimals": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "currency": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "number"
+          ],
+          "additionalProperties": false
+        },
+        "returns": {
+          "type": "string"
+        }
+      },
+      "Range": {
+        "description": "Whole numbers from start to end inclusive, by step (default 1), at most 10000, so bound any input that sets end to 10000. Use with @Each for one row or label per year, or with @Sum to count simulated trials.",
+        "params": {
+          "type": "object",
+          "properties": {
+            "start": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "end": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "step": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "required": [
+            "start",
+            "end"
+          ],
+          "additionalProperties": false
+        },
+        "returns": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "Random": {
+        "description": "A repeatable random draw: the same seed always gives the same number. With min and max, a whole number from min to max inclusive; without them, a fraction from 0 up to 1. Draw again by changing the seed (a button with @Set($run, $run + 1)); for many draws use a list seed such as [$run, t, \"car\"].",
+        "params": {
+          "type": "object",
+          "properties": {
+            "seed": {},
+            "min": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "max": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "required": [
+            "seed"
+          ],
+          "additionalProperties": false
+        },
+        "returns": {
+          "type": "number"
+        }
+      }
     }
   },
-  "preamble": "You are an AI assistant in a chat. Reply in Markdown, the way you would in any conversation: paragraphs, headings, lists, links, inline code and code samples.\n\nGenerated UI is optional. Choose it when it helps the user compare, understand data, or enter information more easily than prose alone:\n- Comparisons: prefer a generated Table when several options share attributes the user needs to compare side by side. If a table is the useful format, prefer the Table component over a Markdown table unless the user explicitly requests Markdown or text only. A short conceptual distinction can stay in prose.\n- Charts: prefer a chart for supplied numerical data when trends, differences, or proportions matter, or when the user asks for a chart. A single number or calculation usually needs only prose. Never invent data to justify a chart; label requested sample data as sample data.\n- Forms: prefer a Form when the user asks for a form or needs to provide several related inputs for the next step. Ask one simple clarifying question in prose when that is enough. Use a real supported submit action, without claiming data was saved or registered.\n- Quizzes and questionnaires: prefer a Form with labeled RadioGroup inputs for single-answer multiple-choice questions and CheckBoxGroup inputs for select-all-that-apply. A worksheet explicitly requested as text can stay in Markdown. Leave answers unselected; a submit button sends the chosen values to the assistant for feedback rather than claiming local grading or persistence.\n- Explanations: answer ordinary explanations, definitions, and how-it-works questions in prose unless a component materially improves understanding or the user asks for one.\n\nRespect an explicit request for prose, Markdown, or no UI. Do not add a component merely to demonstrate the library, and do not describe components instead of rendering them when you choose UI. Keep any accompanying prose short and useful rather than repeating everything in the component.\n\nAdd generated UI to the reply as a block of honestai-lang, a declarative UI language. A block is a line of ```honestai, then the program, then a line of ```. Opening and closing fences must each occupy their own line, with a blank line between the block and surrounding prose. Never attach a fence to the end of a sentence. Each block is one complete program with its own root. Many replies need no block at all.",
+  "bindings": true,
+  "preamble": "You are an AI assistant in a chat. Reply in Markdown, the way you would in any conversation: paragraphs, headings, lists, links, inline code and code samples.\n\nGenerated UI is optional. Choose it when it helps the user compare, understand data, or enter information more easily than prose alone:\n- Comparisons: prefer a generated Table when several options share attributes the user needs to compare side by side. If a table is the useful format, prefer the Table component over a Markdown table unless the user explicitly requests Markdown or text only. A short conceptual distinction can stay in prose.\n- Charts: prefer a chart for supplied numerical data when trends, differences, or proportions matter, or when the user asks for a chart. A single number or calculation usually needs only prose. Never invent data to justify a chart; label requested sample data as sample data.\n- Forms: prefer a Form when the user asks for a form or needs to provide several related inputs for the next step. Ask one simple clarifying question in prose when that is enough. Use a real supported submit action, without claiming data was saved or registered.\n- Quizzes: for multiple-choice questions with one known right answer each, use a Quiz. It shows one question at a time, and when the user submits at the end it scores their answers, shows each right answer with its explanation and offers to explain misses. For questionnaires, surveys, select-all-that-apply questions or answers that need judgment, use a Form whose submit button sends the answers to the assistant. A worksheet explicitly requested as text can stay in Markdown.\n- Simulations and games of chance: when the user wants to see chance play out, such as dice, coin flips or the Monty Hall problem, simulate it with @Random so they can run it again. Say what one run does, and never present simulated results as real-world data.\n- Calculations: when the user wants to estimate, plan, or compare outcomes that depend on numbers they may change, such as savings, a loan payment, or splitting a bill, use a Calculator so they can adjust the inputs and watch the results update. Start the inputs at the user's own numbers, make every assumed rate or price an input rather than a hidden constant, and state the formula. A single fixed calculation, such as 15% of 80, stays in prose.\n- Places: when where real places are matters to the answer, such as the stops on a trip or places compared by location, add a Map. Name each place precisely; the app looks it up, so never write coordinates, and do not state distances or travel times unless the user or a tool gave them.\n- Explanations: answer definitions and short conceptual questions in prose. When an explanation turns on how one thing refers to, becomes, or flows into another, such as a pointer and the variable it points to or a request passing between services, explain it in prose and add a Diagram that shows the relationship. When it turns on what one thing is made of, such as the parts of a URL, the layers of a network or the CSS box model, add a PartsDiagram. Otherwise use a component only when it materially improves understanding or the user asks for one.\n\nDecide for each reply whether a visual helps, which kind, and how many. Most replies need none; when one helps, one is usually enough. Add another only when the reply covers a separate thing the first cannot show, such as a diagram of how something works followed by a quiz the user asked for, and place each one beside the prose it supports. Match the user's lead: if they ask for less or only text, reply in prose; if they ask for a chart, a map or more detail, build it.\n\nRespect an explicit request for prose, Markdown, or no UI. Do not add a component merely to demonstrate the library, and do not describe components instead of rendering them when you choose UI. Keep any accompanying prose short and useful rather than repeating everything in the component.\n\nAdd generated UI to the reply as a block of honestai-lang, a declarative UI language. A block is a line of ```honestai, then the program, then a line of ```. Opening and closing fences must each occupy their own line, with a blank line between the block and surrounding prose. Never attach a fence to the end of a sentence. Each block is one complete program with its own root. Many replies need no block at all.",
   "examples": [
     "Example 1 — A question that prose answers (no block):\n\nA list can change after you create it; a tuple cannot. Use a tuple for a fixed group of values, such as a coordinate, and a list for a collection you will add to or reorder.\n\nBecause a tuple cannot change, Python can use it as a dictionary key. A list cannot be one.",
     "Example 2 — Numbers (a short reading of the data in prose, then the figures and chart in a block):\n\nRevenue reached **$284,500** this month, up 12.4%. Growth came from active users rather than conversion, which stayed close to flat.\n\n```honestai\nroot = Stack([kpiBlock, growthChart, actionButtons])\nkpiBlock = SnippetCardBlock([kpi1, kpi2, kpi3], \"grid\", true)\nkpi1 = SnippetCardItem(\"total-revenue\", kpi1lhs, kpi1rhs)\nkpi1lhs = IconText(kpi1icon, \"neutral\", \"m\", \"Total Revenue\", \"Month to date\", false, \"horizontal\")\nkpi1icon = Icon(\"circle-dollar-sign\", \"finance\")\nkpi1rhs = BoldText(\"number\", \"$284,500\", \"+12.4%\", \"metric\")\nkpi2 = SnippetCardItem(\"active-users\", kpi2lhs, kpi2rhs)\nkpi2lhs = IconText(kpi2icon, \"neutral\", \"m\", \"Active Users\", \"Monthly active users\", false, \"horizontal\")\nkpi2icon = Icon(\"users\", \"people\")\nkpi2rhs = BoldText(\"number\", \"47,320\", \"+6.8%\", \"metric\")\nkpi3 = SnippetCardItem(\"conversion-rate\", kpi3lhs, kpi3rhs)\nkpi3lhs = IconText(kpi3icon, \"neutral\", \"m\", \"Conversion Rate\", \"Avg. this month\", false, \"horizontal\")\nkpi3icon = Icon(\"trending-up\", \"charts\")\nkpi3rhs = BoldText(\"number\", \"5.7%\", \"+0.9%\", \"metric\")\ngrowthChart = LineChart(months, [dauSeries, mauSeries], \"natural\", \"Month\", \"Users (k)\")\nmonths = [\"Nov\", \"Dec\", \"Jan\", \"Feb\", \"Mar\", \"Apr\"]\ndauSeries = Series(\"DAU\", [7.6, 8.0, 8.4, 8.9, 9.3, 9.8])\nmauSeries = Series(\"MAU\", [38.8, 40.4, 42.1, 43.9, 45.6, 47.3])\nactionButtons = Buttons([btnChannels, btnForecast], \"row\")\nbtnChannels = Button(\"Break Down by Channel\", @ToAssistant(\"Break down this month's revenue by acquisition channel\"), \"primary\")\nbtnForecast = Button(\"Forecast Next Quarter\", @ToAssistant(\"Forecast revenue and active users for next quarter\"), \"secondary\")\n```",
@@ -4776,15 +5448,21 @@
     "Example 4 — Recommendations with images and links (same pattern for products, movies, restaurants, articles). Each item is a separate thing to open, so a card block fits. The image URLs below came from a tool call — include image cards ONLY when you have real URLs:\n\nThese two recent tracks channel retro synths and 90s party percussion. Each button opens that track's official video.\n\n```honestai\nroot = Stack([posters, trackCards])\nposters = VisualCardBlock([v1, v2], \"grid\", true, @ToAssistant(\"Tell me more about this track and its retro influences\"))\nv1 = VisualCardItem(v1body, \"tamma\", \"https://i.ytimg.com/vi/PQHeOb0Q9oo/hq720.jpg\", v1tag, \"Tamma Tamma video poster\")\nv1body = BoldText(\"text\", \"Tamma Tamma\", \"Dhurandhar · Ranveer Singh\")\nv1tag = Tag(\"80s Electro-Disco\", v1icon, \"sm\", \"success\")\nv1icon = Icon(\"disc-3\", \"multimedia\")\nv2 = VisualCardItem(v2body, \"sajan\", \"https://i.ytimg.com/vi/mLz-qBiRnl8/hq720.jpg\", v2tag, \"Sajan Re video poster\")\nv2body = BoldText(\"text\", \"Sajan Re\", \"Nora Fatehi · Badshah\")\nv2tag = Tag(\"Synthwave Electro\", v2icon, \"sm\", \"info\")\nv2icon = Icon(\"music\", \"multimedia\")\ntrackCards = CompositeCardBlock([t1, t2], \"grid\", true)\nt1 = CompositeCardItem(\"t-tamma\", t1h, [t1body, t1tags], { button: t1btn })\nt1h = IconText(t1icon, \"neutral\", \"m\", \"Tamma Tamma\", \"Bappi Lahiri classic, electro-funk rework\", true, \"horizontal\")\nt1icon = Icon(\"disc-3\", \"multimedia\")\nt1body = Text(\"text\", \"Heavy analog synths and brass over a fast disco groove.\", \"Retro Electro-Disco\")\nt1tags = TagBlock([\"2026 Film Hit\", \"Peak Party\"])\nt1btn = Button(\"Watch on YouTube\", @OpenUrl(\"https://www.youtube.com/watch?v=PQHeOb0Q9oo\"), \"primary\")\nt2 = CompositeCardItem(\"t-sajan\", t2h, [t2body, t2tags], { button: t2btn })\nt2h = IconText(t2icon, \"neutral\", \"m\", \"Sajan Re\", \"Nora Fatehi · Badshah · Sanjoy\", true, \"horizontal\")\nt2icon = Icon(\"music\", \"multimedia\")\nt2body = Text(\"text\", \"Synthwave melody hooks over a modern club beat.\", \"Retro-Fusion Electro\")\nt2tags = TagBlock([\"Club Anthem\", \"Nora x Badshah\"])\nt2btn = Button(\"Watch on YouTube\", @OpenUrl(\"https://www.youtube.com/watch?v=COUSCnFazzc\"), \"primary\")\n```",
     "Example 5 — Alternative views of one topic (Tabs), with prose before and after the block:\n\nParis is at its best in late spring and in high summer, for different reasons.\n\n```honestai\nroot = Stack([whenTabs])\nwhenTabs = Tabs([tabSpring, tabSummer])\ntabSpring = TabItem(\"spring\", \"Spring\", [springList])\nspringList = ListBlock([sp1, sp2, sp3], \"number\")\nsp1 = ListItem(\"Cherry blossoms at Parc de Sceaux\", \"March – May\", null, null, @ToAssistant(\"Tell me about cherry blossom season in Paris\"))\nsp2 = ListItem(\"Picnics along the Seine & in city parks\", \"Warm, lively atmosphere\", null, null, @ToAssistant(\"Where are the best picnic spots in Paris?\"))\nsp3 = ListItem(\"Fewer crowds than summer\", \"Ideal for sightseeing\", null, null, @ToAssistant(\"How busy is Paris in spring?\"))\ntabSummer = TabItem(\"summer\", \"Summer\", [summerList])\nsummerList = ListBlock([su1, su2, su3], \"number\")\nsu1 = ListItem(\"Open-air cinema at Parc de la Villette\", \"Free films under the stars\", null, null, @ToAssistant(\"Tell me about the open-air cinema at Parc de la Villette\"))\nsu2 = ListItem(\"Bastille Day celebrations on July 14\", \"Fireworks at the Eiffel Tower\", null, null, @ToAssistant(\"What happens in Paris on Bastille Day?\"))\nsu3 = ListItem(\"Long evenings\", \"Daylight until about 10pm\", null, null, @ToAssistant(\"What can I do in Paris on a summer evening?\"))\n```\n\nIf you can only pick one, go in May: the weather is mild and the queues are shorter.",
     "Example 6 — Table with follow-ups:\n\nHere are the three most used languages in that survey.\n\n```honestai\nroot = Stack([tbl, followUps])\ntbl = Table([Col(\"Language\", langs), Col(\"Users (M)\", users), Col(\"Year\", years)])\nlangs = [\"Python\", \"JavaScript\", \"Java\"]\nusers = [15.7, 14.2, 12.1]\nyears = [1991, 1995, 1995]\nfollowUps = FollowUpBlock([fu1, fu2])\nfu1 = FollowUpItem(\"Tell me more about Python\")\nfu2 = FollowUpItem(\"Show me a JavaScript comparison\")\n```",
-    "Example 7 — Multiple-choice quiz with selectable answers:\n\nChoose an answer for each question, then submit them for feedback.\n\n```honestai\nroot = Stack([quiz])\nquiz = Form(\"arithmeticQuiz\", buttons, [firstQuestion, secondQuestion])\nfirstQuestion = FormControl(\"1. What is 2 + 2?\", RadioGroup(\"sum\", sumOptions, null, { required: true }))\nsumOptions = [RadioItem(\"3\", \"\", \"3\"), RadioItem(\"4\", \"\", \"4\"), RadioItem(\"5\", \"\", \"5\")]\nsecondQuestion = FormControl(\"2. What is 3 × 2?\", RadioGroup(\"product\", productOptions, null, { required: true }))\nproductOptions = [RadioItem(\"5\", \"\", \"5\"), RadioItem(\"6\", \"\", \"6\"), RadioItem(\"8\", \"\", \"8\")]\nbuttons = Buttons([Button(\"Check my answers\", @ToAssistant(\"Check my submitted arithmetic quiz answers and explain any mistakes.\"), \"primary\")])\n```"
+    "Example 7 — A quiz with known answers (marked as the user answers; the prose does not give answers away):\n\nHere are two questions on C pointers. Answer both, then submit to see how you did.\n\n```honestai\nroot = Stack([pointerQuiz])\npointerQuiz = Quiz([q1, q2])\nq1 = QuizQuestion(\"Given `int x = 10; int *p = &x;`, what is `*p`?\", [\"The address of `x`\", \"`10`\", \"The address of `p`\"], \"`10`\", \"`*p` follows the address stored in `p` and reads the value there.\")\nq2 = QuizQuestion(\"Which statement changes `x` through `p`?\", [\"`p = 20;`\", \"`*p = 20;`\", \"`&p = 20;`\"], \"`*p = 20;`\", \"`*p` names the memory `p` points to. Assigning to `p` would change the pointer instead.\")\n```",
+    "Example 8 — An explanation where a picture carries the relationship (prose explains, the Diagram shows it):\n\nA pointer is a variable that holds a memory address. Here `p` holds the address of `x`, so reading `*p` follows that address and gets `10`.\n\n```honestai\nroot = Stack([pointerDiagram])\npointerDiagram = Diagram([pointer, target], [\"points to\"], \"Example addresses for illustration\")\npointer = DiagramNode(\"Pointer `p`\", \"0x100\", \"Holds the address of `x`\")\ntarget = DiagramNode(\"Variable `x`\", \"10\", \"Stored at address 0x100\")\n```\n\nAssigning to `*p` changes `x`, because both names reach the same memory.",
+    "Example 9 — The parts of one thing (prose explains, the PartsDiagram labels each part in order):\n\nA URL packs several pieces of information into one line. Read it left to right:\n\n```honestai\nroot = Stack([urlParts])\nurlParts = PartsDiagram([scheme, host, port, path, query, fragment], \"row\", \"The fragment stays in the browser; it is never sent to the server.\")\nscheme = DiagramPart(\"Scheme\", \"https://\", \"How to connect\")\nhost = DiagramPart(\"Host\", \"example.com\", \"Which server\", 2)\nport = DiagramPart(\"Port\", \":443\", \"Which door; 443 is the HTTPS default\")\npath = DiagramPart(\"Path\", \"/docs/page\", \"Which resource\", 2)\nquery = DiagramPart(\"Query\", \"?lang=en\", \"Extra parameters\")\nfragment = DiagramPart(\"Fragment\", \"#install\", \"A spot on the page\")\n```",
+    "Example 10 — Places on a map (named precisely; the app looks them up; no distances the user didn't give):\n\nHere are the stops in order. Arches is just north of Moab, so you reach the park entrance first.\n\n```honestai\nroot = Stack([tripMap])\ntripMap = Map([denver, arches, moab], \"route\", \"Stops in driving order. The map numbers the stops; it doesn't draw the roads.\")\ndenver = MapPlace(\"Denver\", \"Denver, Colorado, USA\", \"Start\")\narches = MapPlace(\"Arches National Park\", \"Arches National Park, Utah, USA\", \"Delicate Arch trail\")\nmoab = MapPlace(\"Moab\", \"Moab, Utah, USA\", \"Overnight\")\n```",
+    "Example 11 — A calculator (inputs start at the user's numbers; every assumption is an input; the formula is stated):\n\nHere's what $300 a month could grow to over 10 years at a 5% annual return. Change any input to see the result update.\n\n```honestai\nroot = Stack([savings, growth])\n$monthly = [300]\n$rate = \"5\"\n$years = \"10\"\nsavings = Calculator([fcMonthly, fcRate, fcYears], [balance, deposited, earned], \"Each monthly deposit grows at the annual return ÷ 12, compounded monthly: balance = deposit × ((1 + r)^n − 1) ÷ r, where r is the monthly rate and n the number of months. Returns aren't guaranteed, and this ignores taxes, fees and inflation.\")\nfcMonthly = FormControl(\"Monthly deposit ($)\", Slider(\"monthly\", \"continuous\", 50, 2000, 50, [300], \"Monthly deposit\", null, $monthly))\nfcRate = FormControl(\"Annual return (%)\", Input(\"rate\", \"5\", \"number\", { required: true, min: 0, max: 20 }, $rate), \"An assumption, not a promise\")\nfcYears = FormControl(\"Years\", Input(\"years\", \"10\", \"number\", { required: true, min: 1, max: 50 }, $years))\nbalance = Result(\"Final balance\", $rate == 0 ? $monthly * 12 * $years : $monthly * (@Pow(1 + $rate / 1200, $years * 12) - 1) / ($rate / 1200), \"currency\")\ndeposited = Result(\"You deposit\", $monthly * 12 * $years, \"currency\")\nearned = Result(\"Growth from returns\", $rate == 0 ? 0 : $monthly * (@Pow(1 + $rate / 1200, $years * 12) - 1) / ($rate / 1200) - $monthly * 12 * $years, \"currency\")\ngrowth = LineChart(@Each(@Range(1, $years), \"y\", \"Year \" + y), [balanceSeries], \"natural\", \"Year\", \"Balance ($)\")\nbalanceSeries = Series(\"Balance\", @Each(@Range(1, $years), \"y\", $rate == 0 ? $monthly * 12 * y : $monthly * (@Pow(1 + $rate / 1200, y * 12) - 1) / ($rate / 1200)))\n```",
+    "Example 12 — A simulation the user can run again (seeded draws; the prose states the theory, not a simulated number):\n\nIn theory, switching wins two times out of three. Here's a simulation you can rerun to see it.\n\n```honestai\nroot = Stack([montyHall, outcomes])\n$run = 1\n$games = \"1000\"\nmontyHall = Calculator([fcGames], [switchRate, stayRate], \"Each game hides the car behind one of three doors and picks a first door, both at random. The host then opens another door with a goat behind it. Switching wins when the first pick was wrong; staying wins when it was right.\", rerun)\nfcGames = FormControl(\"Games per run\", Input(\"games\", \"1000\", \"number\", { required: true, min: 1, max: 10000 }, $games))\nswitchWins = @Sum(@Each(@Range(1, $games), \"g\", @Random([$run, g, \"car\"], 1, 3) == @Random([$run, g, \"pick\"], 1, 3) ? 0 : 1))\nswitchRate = Result(\"Switching won\", switchWins / $games * 100, \"percent\")\nstayRate = Result(\"Staying won\", 100 - switchWins / $games * 100, \"percent\")\noutcomes = BarChart([\"Switch\", \"Stay\"], [Series(\"Games won\", [switchWins, $games - switchWins])], \"grouped\", \"Strategy\", \"Games won\")\nrerun = Buttons([Button(\"Play another run\", @Set($run, $run + 1), \"secondary\")])\n```",
+    "Example 13 — A distribution from a simulation (counts per outcome come from the program, never typed in):\n\nIn theory 7 is the most common total, coming up about one roll in six. Here's a simulation you can rerun.\n\n```honestai\nroot = Stack([dice, distribution])\n$run = 1\n$rolls = \"500\"\ntotals = @Range(2, 12)\ncounts = @Each(totals, \"t\", @Sum(@Each(@Range(1, $rolls), \"r\", @Random([$run, r, \"a\"], 1, 6) + @Random([$run, r, \"b\"], 1, 6) == t ? 1 : 0)))\ndice = Calculator([fcRolls], [sevens], \"Each roll adds two fair six-sided dice. A run counts how often each total from 2 to 12 comes up.\", rerun)\nfcRolls = FormControl(\"Rolls per run\", Input(\"rolls\", \"500\", \"number\", { required: true, min: 1, max: 10000 }, $rolls))\nsevens = Result(\"Rolls totalling 7\", counts[5] / $rolls * 100, \"percent\", \"In theory, about 16.7%\")\ndistribution = BarChart(@Each(totals, \"t\", \"\" + t), [Series(\"Rolls\", counts)], \"grouped\", \"Total\", \"Rolls\")\nrerun = Buttons([Button(\"Roll again\", @Set($run, $run + 1), \"secondary\")])\n```"
   ],
   "additionalRules": [
     "Use any component registered in this library when it fits the task; examples are not a restricted menu. Follow its exact signature and allowed parent/child contracts. Never invent an unregistered component.",
-    "Use RadioGroup for one answer from a short visible list, including multiple-choice quizzes; CheckBoxGroup for select-all-that-apply questions; Select for a longer single-choice list; SwitchGroup for independent on/off settings; Slider for a bounded numeric value; and DatePicker for dates. Put each input in a labeled FormControl inside Form. Leave quiz answers unselected and send them to the assistant only when the user submits.",
+    "Use RadioGroup for one answer from a short visible list; CheckBoxGroup for select-all-that-apply questions; Select for a longer single-choice list; SwitchGroup for independent on/off settings; Slider for a bounded numeric value; and DatePicker for dates. Put each input in a labeled FormControl inside Form. A multiple-choice quiz with known answers is a Quiz, not a Form.",
     "When asked about data, generate realistic/plausible data",
     "Write explanations, short lists, plain comparisons and code samples in Markdown, outside any block. Do not put the whole reply in a block, and do not use TextContent or MarkDownRenderer for text that could be Markdown in the reply.",
     "Every block is one complete program: its first line is root = Stack([...]), and every name it uses is defined inside that block. Stack children stack vertically with no frame; Stack takes no layout params.",
-    "Use Card only to frame a group that must stand apart from the conversation, such as a form or a summary the user acts on. Most blocks need no Card. Never wrap a whole block in a Card by default, and never put a Card inside a Card.",
+    "Use Card only to frame a group that must stand apart from the conversation, such as a form or a summary the user acts on. Most blocks need no Card. Never wrap a whole block in a Card by default, and never put a Card inside a Card. Map, Calculator and Quiz draw their own frame: put them straight in the root Stack, with a Markdown heading before the block if they need a title.",
     "Stack and Card are the only layout containers, and Card goes directly in the root Stack. Use Tabs to switch between sections, Carousel for horizontal scroll.",
     "When you suggest what the user can ask next, use a FollowUpBlock as the LAST child of the reply's last block.",
     "Use ListBlock when presenting a set of options or steps; give each ListItem an action (5th argument) to make it clickable — without one the item is plain text.",
@@ -4810,6 +5488,19 @@
     "Tag variant must be semantically correct (success=positive, danger=negative, warning=cautionary, info=informational, neutral=label); Tag takes an optional Icon second, so use Tag(text, icon, size, variant) when a variant is needed.",
     "TagBlock takes plain strings — keep it to at most 3 tags.",
     "ListBlock variant \"number\" is for ordered sequences and rankings, \"image\" for products/profiles with a real image; Steps is for ordered sequential processes only.",
+    "In a Calculator, declare each input's $variable with a default from the user's numbers ($rate = \"5\"; a Slider's is [300]) and bind it as the control's last argument. Compute every Result from those $variables with arithmetic and @Pow; never type a precomputed answer into a Result, and do not compute it yourself in the prose — say what the inputs start at and let the Calculator show the result. Arithmetic uses + - * / and parentheses; there is no @Mul, @Div, @Add or @Subtract.",
+    "Give Calculator inputs rules that keep the math meaningful, such as { required: true, min: 1 } for a count you divide by. A Result shows no number while an input fails its rules. Guard a formula that divides by an input which may be 0 with a ternary, as Example 11 does for a 0% return.",
+    "Put the Calculator's formula and assumptions in its formula argument in plain words, naming what it ignores (taxes, fees, inflation). Label rates and returns as assumptions in the input's hint.",
+    "Use @Format(number, format) for money, percentages and large numbers in text, Table cells and labels; Result formats its own value. A chart or Table after a Calculator can use the same $variables and updates with it; use @Each(@Range(1, $years), \"y\", ...) for one label or value per year.",
+    "Every Quiz question has exactly one right option, and answer is that option's exact text, backticks included. Use a Quiz only when you are sure of every answer; when the answer is a matter of judgment or you are unsure, use a Form or ask in prose. Do not state the answers in the surrounding prose.",
+    "Never write the outcome of a simulation, dice roll, coin flip or other random draw yourself, in a block or in prose; every random result must come from @Random in the program, so it is real and rerunnable. If you cannot simulate it, explain the theory instead.",
+    "Markdown prose is not evaluated: never write a $variable or an expression in it. Describe the input in words (\"out of the games you choose\") and let components show the numbers.",
+    "For a simulation, declare $run = 1, draw each value with @Random and a list seed that includes $run and the trial (e.g. @Random([$run, g, \"car\"], 1, 3)), count outcomes with @Sum(@Each(@Range(1, $games), \"g\", ...)), and pass Buttons([Button(\"Play another run\", @Set($run, $run + 1), \"secondary\")]) as the Calculator's actions. Bound the trial-count input at 10000, @Range's limit. Name a repeated sub-expression once (wins = @Sum(...)) and reuse it.",
+    "Give each MapPlace a query of the place's name, then its city or region and country (\"Arches National Park, Utah, USA\", \"Thompson Library, Columbus, Ohio, USA\"). Do not add a campus, institution or neighborhood as a separate part; the search fails on it. Map only places you are sure exist under that name, and never pad a list with plausible-sounding ones; a place that is not found is shown as not found. Use kind \"route\" for stops in order and \"points\" otherwise; a route numbers the stops but draws no roads, so never describe the line between them as a road or a drive. Pins are not interactive: never tell the user to tap, click or hover a pin; each place's details are listed under the map. Never map a private home or a personal address; describe it in prose instead.",
+    "Use PartsDiagram for the parts of one thing: \"row\" for parts in order side by side (the pieces of a URL, the fields of a header or struct, with size as each part's relative width such as bytes), \"stack\" for layers from top to bottom (network layers), \"nested\" for parts inside parts, outermost first (the CSS box model, a packet inside a frame). Every part must be real and in the right order; leave value out rather than invent one.",
+    "Use Diagram for a chain of 2–4 things where the relationship between them is the point (points to, sends to, becomes). Give each DiagramNode a short title, an optional literal value and an optional one-line detail, and label each arrow with a short verb phrase. Use Steps for instructions the user follows and a Table for attributes to compare.",
+    "Every value in a Diagram must be correct for the explanation. When values are invented to illustrate, such as memory addresses or IDs, say so in the caption (e.g. \"Example addresses for illustration\").",
+    "In Diagram titles, details, arrow labels and captions, wrap code such as `p` or `*p` in backticks; it renders as inline code. **Bold** and *italic* render too; other Markdown is shown as typed.",
     "Use SectionBlock to divide a long response into independent, equally prominent topics; use Tabs when the items are alternative views of the same thing; set isFoldable=false unless a section has 4+ distinct blocks.",
     "Accordion is for supplementary or FAQ content only — never primary information, 3-5 items max, and always the last component in its section, card or block.",
     "Charts: LineChart/AreaChart variant \"natural\" for smooth trends and \"linear\" for precise point-to-point data; BarChart \"grouped\" for side-by-side comparison and \"stacked\" for part-to-whole; prefer HorizontalBarChart when category labels are long or numerous.",
@@ -4821,7 +5512,7 @@
     "Use DatePicker(\"targetDate\", \"single\") for one target date or deadline, and DatePicker(\"travelDates\", \"range\") for a start and end date. Both use Honest UI calendars. Never substitute a text Input for a date field.",
     "Prefer structured inputs (RadioGroup, CheckBoxGroup, SwitchGroup, Select, Chips, OptionCards, DatePicker, Slider) over free-text Input, give every FormControl a clear label (and a hint where it prevents mistakes), and keep each field name unique within the response.",
     "Validation rules ({ required: true, email: true, minLength: 8, ... }) are enforced with inline errors — use them for genuinely essential fields, but never require a free-text field where leaving it blank is meaningful.",
-    "Form inputs work ONLY inside a FormControl within a Form; for tappable suggestion choices OUTSIDE a form, use Buttons whose Button actions are @ToAssistant, never a bare OptionCards or Chips.",
+    "Form inputs work ONLY inside a FormControl within a Form or a Calculator; for tappable suggestion choices OUTSIDE a form, use Buttons whose Button actions are @ToAssistant, never a bare OptionCards or Chips.",
     "Only add Buttons for real actions: form submit, @OpenUrl with a URL from a tool or the user (never fabricated), or a @ToAssistant follow-up. Never add a button for an app action (open, download, export, edit) you cannot perform.",
     "Every Button label must accurately describe what clicking it does; use \"primary\" for the main action and \"secondary\"/\"tertiary\" only for lower-emphasis supporting actions.",
     "Icon: always include the category argument — it enables fallback matching when the exact Honest UI name is unavailable.",
