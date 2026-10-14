@@ -28,13 +28,13 @@ import { cn } from "@/lib/utils";
 import { ChatMessage } from "@/registry/ai/chat-thread";
 import { ContextMeter } from "@/registry/ai/context-meter";
 import { MessageScroller } from "@/registry/ai/message-scroller";
-import { Markdown } from "@/registry/ai/markdown";
 import { PromptBar } from "@/registry/ai/prompt-bar";
 import { LoadingState } from "@/registry/ai/loading-state";
 import { honestChatLibrary } from "@/registry/generative";
 import { honestChatPromptOptions } from "@/registry/generative/catalog";
 import {
   AssistantResponse,
+  UserMessageContent,
   ChatProvider,
   useThread,
   useThreadList,
@@ -563,11 +563,7 @@ function Conversation({
                     </div>
                   ) : (
                     <div data-slot="message-content">
-                      <Markdown>
-                        {typeof message.content === "string"
-                          ? message.content
-                          : ""}
-                      </Markdown>
+                      <UserMessageContent content={typeof message.content === "string" ? message.content : ""} />
                     </div>
                   )}
                 </ChatMessage>

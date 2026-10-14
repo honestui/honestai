@@ -20,6 +20,8 @@ import { safeUrl } from "./renderers/shared";
 import { useChatStore } from "./runtime/headless/store/ChatContext";
 import { Renderer, type RendererProps } from "./runtime/react";
 import { honestChatLibrary } from "./index";
+import { UserMessageContent } from "./user-message";
+export { UserMessageContent } from "./user-message";
 export * from "./runtime/headless";
 export type GenerativeChatProps = Omit<ChatProviderProps, "children"> & {
   label?: string;
@@ -345,9 +347,7 @@ function Conversation({
                     rendererProps={rendererProps}
                   />
                 ) : (
-                  <Markdown>
-                    {typeof message.content === "string" ? message.content : ""}
-                  </Markdown>
+                  <UserMessageContent content={typeof message.content === "string" ? message.content : ""} />
                 )}
               </ChatMessage>
             ))}

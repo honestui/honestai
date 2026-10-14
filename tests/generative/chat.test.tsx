@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import {
   EventType,
   GenerativeChat,
@@ -75,8 +75,10 @@ async function renderReply(text: string) {
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
+  const llm = replyWith(text);
+  const send = vi.spyOn(llm, "send");
   await React.act(async () => {
-    root.render(<GenerativeChat llm={replyWith(text)} />);
+    root.render(<GenerativeChat llm={llm} />);
   });
   const input = container.querySelector(
     'textarea[aria-label="Prompt"]',
@@ -95,7 +97,7 @@ async function renderReply(text: string) {
   });
   // The second message is the assistant's.
   const reply = container.querySelectorAll('[data-slot="chat-message"]')[1];
-  return { reply, unmount: () => React.act(async () => root.unmount()) };
+  return { reply, send, unmount: () => React.act(async () => root.unmount()) };
 }
 
 it("renders a reply as Markdown and only its fenced block as components", async () => {
@@ -208,8 +210,8 @@ it("sends a generated button's message without an empty form payload", async () 
   await unmount();
 });
 
-it("keeps populated form values when a generated form sends a message", async () => {
-  const { reply, unmount } = await renderReply([
+it("shows readable submitted values while sending the original form data", async () => {
+  const { reply, send, unmount } = await renderReply([
     "root = Stack([form])",
     'form = Form("goal", buttons, [field])',
     'buttons = Buttons([Button("Save goal", @ToAssistant("Save goal"))])',
@@ -225,6 +227,10 @@ it("keeps populated form values when a generated form sends a message", async ()
   await React.act(async () => reply.querySelector<HTMLButtonElement>("button")!.click());
   const sent = [...transcript.querySelectorAll('[data-role="user"]')].at(-1)!;
   expect(sent.textContent).toContain("Save goal");
-  expect(sent.textContent).toContain('"amount":{"value":"250"}');
+  expect(sent.querySelector("dt")?.textContent).toBe("Amount");
+  expect(sent.querySelector("dd")?.textContent).toBe("250");
+  expect(sent.textContent).not.toContain('"value"');
+  const outgoing = send.mock.calls.at(-1)![0].messages.filter((message) => message.role === "user").at(-1)!;
+  expect(outgoing.content).toBe('Save goal\n{"goal":{"amount":{"value":"250"}}}');
   await unmount();
 });

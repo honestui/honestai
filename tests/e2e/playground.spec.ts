@@ -18,7 +18,7 @@ const reply = [
 ].join("\n");
 
 /** Stands in for a local Ollama, so the suite needs no model. */
-async function mockOllama(page: Page) {
+async function mockOllama(page: Page, responseText = reply) {
   await page.route(`${OLLAMA}/api/tags`, (route) =>
     route.fulfill({
       headers: cors,
@@ -39,8 +39,8 @@ async function mockOllama(page: Page) {
       headers: { ...cors, "content-type": "application/x-ndjson" },
       body:
         [
-          { message: { role: "assistant", content: reply.slice(0, 40) } },
-          { message: { role: "assistant", content: reply.slice(40) } },
+          { message: { role: "assistant", content: responseText.slice(0, 40) } },
+          { message: { role: "assistant", content: responseText.slice(40) } },
           { message: { role: "assistant", content: "" }, done: true },
         ]
           .map((chunk) => JSON.stringify(chunk))
@@ -329,4 +329,34 @@ test("the wait is announced, then the meter shows the tokens Ollama counted", as
 
   await playground.getByRole("button", { name: "New chat" }).click();
   await expect(meter).toHaveCount(0);
+});
+
+
+test("submitted values stay readable on narrow screens and retain the model payload", async ({ page }) => {
+  const quiz = [
+    "Choose an answer.", "", "```honestai",
+    "root = Stack([form])",
+    'form = Form("quiz", Buttons([Button("Submit answers", @ToAssistant("Check my submitted answers"))]), [FormControl("What is 2 + 2?", RadioGroup("q1", [RadioItem("3", "", "3"), RadioItem("4", "", "4")]))])',
+    "```",
+  ].join("\n");
+  await mockOllama(page, quiz);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt", exact: true }).fill("Give me a quiz");
+  await page.keyboard.press("Enter");
+  await playground.getByRole("radio", { name: "4", exact: true }).click();
+  const outgoing = page.waitForRequest(`${OLLAMA}/api/chat`);
+  await playground.getByRole("button", { name: "Submit answers", exact: true }).click();
+  expect((await outgoing).postDataJSON().messages.at(-1).content).toBe(
+    'Check my submitted answers\n{"quiz":{"q1":{"value":"4"}}}',
+  );
+  const submission = playground.locator('[data-slot="submitted-message"]');
+  await expect(submission.locator("dt")).toHaveText("Q1");
+  await expect(submission.locator("dd")).toHaveText("4");
+  await expect(submission).not.toContainText('"value"');
+  expect(await submission.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+  const axe = await new AxeBuilder({ page }).include('[data-slot="submitted-message"]').analyze();
+  expect(axe.violations.map((item) => item.id)).toEqual([]);
+  await submission.screenshot({ path: "/tmp/honest-submitted-message.png" });
 });

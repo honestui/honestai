@@ -18,7 +18,7 @@ const bundles: Record<
   },
   "generative-chat": {
     directories: ["runtime/headless"],
-    files: ["chat.tsx", "LICENSE"],
+    files: ["chat.tsx", "user-message.tsx", "LICENSE"],
     dependencies: ["generative-ui"],
   },
   "generative-server": {

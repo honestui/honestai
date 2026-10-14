@@ -79,7 +79,7 @@ describe("Honest component adapters", () => {
       ...container.querySelectorAll("button"),
     ].map((button) => button.className);
     expect(save).toContain("background-accent-emphasis");
-    expect(preview).toContain("border-[var(--hui-color-border-accent-emphasis)]");
+    expect(preview).toContain("border-[var(--hui-color-border-base-tertiary)]");
     expect(remove).toContain("border-[var(--hui-color-border-danger-emphasis)]");
   });
   it("parses every local playground sample against the real library", () => {
