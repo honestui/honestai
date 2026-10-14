@@ -2,7 +2,7 @@ export const installMethods = ["npm", "yarn", "bun", "pnpm", "shadcn"] as const;
 
 export type InstallMethod = (typeof installMethods)[number];
 
-/** Where Honest AI serves its registry. The Honest UI CLI installs from it by URL. */
+/** Direct URLs remain available for registry clients such as shadcn. */
 export const AI_REGISTRY_URL = "https://ai.honestui.com/r";
 
 const AI_PREFIX = "@honestai/";
@@ -15,13 +15,15 @@ const honestUiCliCommands: Record<Exclude<InstallMethod, "shadcn">, string> = {
 };
 
 /**
- * Items written as `@honestai/name` come from this site's registry and are
- * installed by URL. Any other name is an Honest UI item, which the Honest UI
- * CLI resolves by name.
+ * Honest UI ships these items and resolves them by name. Other registry
+ * clients still install Honest AI items from this site's URLs.
  */
 export function getComponentInstallCommand(method: InstallMethod, items: string[]) {
   const targets = items.map((item) => {
-    if (item.startsWith(AI_PREFIX)) return `${AI_REGISTRY_URL}/${item.slice(AI_PREFIX.length)}.json`;
+    if (item.startsWith(AI_PREFIX)) {
+      const name = item.slice(AI_PREFIX.length);
+      return method === "shadcn" ? `${AI_REGISTRY_URL}/${name}.json` : name;
+    }
     const name = item.replace(/^@honestui\//, "");
     return method === "shadcn" ? `@honestui/${name}` : name;
   });

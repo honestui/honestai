@@ -10,10 +10,31 @@ From a project initialized with Honest UI:
 
 ```bash
 npx honestui@latest init
-npx honestui@latest add https://ai.honestui.com/r/prompt-bar.json
+npx honestui@latest add prompt-bar
 ```
 
-The CLI copies the component into `components/ai` and adds the Honest UI components it imports.
+The CLI copies the component into `components/ai` and adds the Honest UI components it imports. Short names require the Honest UI release containing this integration; older CLI versions can use `https://ai.honestui.com/r/prompt-bar.json`.
+
+## Package imports
+
+The integrated Honest UI package also exposes compiled components and libraries:
+
+```tsx
+import { PromptBar } from "honestui/ai/prompt-bar"
+import { SyntaxCode } from "honestui/syntax/react"
+import { Renderer, honestLibrary } from "honestui/genui"
+import { GenerativeChat } from "honestui/genui/chat"
+import { proseTailwind, repairMarkdown } from "honestui/prose"
+
+import "honestui/theme.css"
+import "honestui/ai.css"
+import "honestui/prose.css"
+import "honestui/syntax.css"
+```
+
+Use `data-style="modern"`, `data-theme="light"`, and the matching `light` class on your root element with the standalone theme. Switch both the theme attribute and class to `dark` for dark mode. Apps initialized by the CLI can keep their existing theme. `honestui/ai.css` supplies compiled component utilities; prose and syntax styles can be used independently. Server prompt, parser, validation, and spec helpers live in `honestui/genui/server`; provider adapters have separate `/openai`, `/vercel`, and `/langgraph` entry points.
+
+Run `npm run honestui:sync` to update the checked-in source and registry snapshot in the sibling `honestui/package/honestui` directory. Use `--target=/absolute/package/path` with the script for another checkout. `npm run honestui:check` detects source drift; Honest UI's release checks verify the snapshot and packed exports without requiring this repository to be present.
 
 ## Markdown starter
 

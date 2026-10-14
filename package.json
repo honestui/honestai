@@ -33,7 +33,10 @@
     "syntax:check": "node scripts/generate-syntax-tailwind.mjs --check && node scripts/generate-syntax-palettes.mjs --check",
     "syntax:build": "node scripts/build-prose-syntax.mjs",
     "test:syntax": "esbuild tests/prose-syntax.test.ts --bundle --platform=node --format=esm --packages=external --outfile=.next/tests/prose-syntax.test.mjs && node --test .next/tests/prose-syntax.test.mjs",
-    "syntax:verify": "node scripts/verify-prose-syntax.mjs"
+    "syntax:verify": "node scripts/verify-prose-syntax.mjs",
+    "honestui:sync": "node scripts/sync-honestui.mjs",
+    "honestui:check": "node scripts/sync-honestui.mjs --check",
+    "honestui:verify": "node scripts/verify-honestui-package.mjs"
   },
   "dependencies": {
     "@ag-ui/core": "^0.0.53",
