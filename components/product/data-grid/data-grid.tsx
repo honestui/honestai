@@ -1158,6 +1158,7 @@ export function DataGridTable({ className }: { className?: string }) {
                         className={cn(
                           "px-[var(--hui-space-4)] py-0 outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--hui-color-border-accent-emphasis)]",
                           getAlignmentClass(meta.align),
+                          (meta.type === "number" || meta.type === "currency") && "tabular-nums",
                           getResponsiveClass(meta.hideBelow),
                           getPinnedBoundaryClass(cell.column),
                           cell.column.getIsResizing() &&

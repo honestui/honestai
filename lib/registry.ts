@@ -21,7 +21,10 @@ const locations = [
  * importing the file, so this cannot be read from its imports.
  */
 const styleDependencies: Record<string, string[]> = {
-  markdown: ["prose"],
+  markdown: ["prose", "prose-syntax-theme"],
+  "prose-syntax-react": ["prose-syntax-theme"],
+  "prose-syntax-codemirror": ["prose-syntax-theme"],
+  "prose-syntax-client": ["prose-syntax-worker"],
   "streaming-text": ["prose"],
 };
 
@@ -29,6 +32,7 @@ const styleDependencies: Record<string, string[]> = {
 // dependency even in package managers that isolate transitive dependencies.
 const packageDependencies: Record<string, string[]> = {
   "markdown-math": ["katex"],
+
 };
 
 export type RegistryItem = {
@@ -67,7 +71,7 @@ export async function getRegistryItem(name: string): Promise<RegistryItem | null
       return {
         name,
         type: location.type,
-        dependencies: [...new Set([...dependencies, ...(packageDependencies[name] ?? [])])].sort(),
+        dependencies: [...new Set([...dependencies, ...(packageDependencies[name] ?? [])])].map(dependency => name === "prose-syntax" && dependency === "shiki" ? "shiki@4.3.1" : dependency).sort(),
         honestUiDependencies,
         localDependencies: [...localDependencies, ...(styleDependencies[name] ?? [])].sort(),
         files: [

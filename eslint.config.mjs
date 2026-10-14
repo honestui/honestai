@@ -47,7 +47,7 @@ const eslintConfig = defineConfig([
     files: ["registry/generative/runtime/**/*.test.{ts,tsx}"],
     rules: { "react-hooks/rules-of-hooks": "off" },
   },
-  globalIgnores([".next/**", ".source/**", "out/**", "build/**", "next-env.d.ts"]),
+  globalIgnores(["packages/prose-syntax/dist/**", "test-results/**", "playwright-report/**", ".next/**", ".source/**", "out/**", "build/**", "next-env.d.ts"]),
 ]);
 
 export default eslintConfig;

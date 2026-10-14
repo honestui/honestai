@@ -61,9 +61,6 @@ export const defaultRecordsTableLabels: RecordsTableLabels = {
   progress: (done, total) => `${done} of ${total} generated cells done`,
 }
 
-// Table's own header color is too light for small text, so these headers use the secondary foreground.
-const headText = "text-[var(--hui-color-foreground-base-secondary)]!"
-
 export type RecordsTableProps = {
   /** Names the table for screen readers. */
   label: string
@@ -100,12 +97,12 @@ function RecordsTable({
 
   return (
     <div data-slot="records-table" className={cn("flex w-full min-w-0 flex-col gap-[var(--hui-space-3)]", className)}>
-      <Table aria-label={label}>
+      <Table variant="surface" aria-label={label}>
         <TableHeader>
           <TableRow>
             {columns.map((column) => (
-              <TableHead key={column.id} scope="col" className={headText}>
-                <span className="inline-flex items-center gap-[var(--hui-space-2)]">
+              <TableHead key={column.id} scope="col">
+                <span className="flex items-center gap-[var(--hui-space-2)]">
                   {column.isGenerated && (
                     <>
                       <SparklesIcon aria-hidden="true" className="size-3.5 shrink-0" />

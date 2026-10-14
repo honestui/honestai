@@ -4,6 +4,8 @@ import * as React from "react"
 import { createPortal } from "react-dom"
 import { ChevronRight } from "honestui/icons"
 
+import ProseSyntaxDemo from "@/registry/examples/prose-syntax-demo"
+
 import { proseTailwind, proseTailwindClasses } from "@/registry/lib/prose-tailwind"
 
 import { Button } from "@/components/ui/button"
@@ -31,9 +33,12 @@ const presets: Record<string, Values> = {
 }
 
 const colorControls = [
+  { name: "--prose-syntax-keyword", label: "Syntax keywords" },
+  { name: "--prose-syntax-string", label: "Syntax strings" },
+  { name: "--prose-syntax-comment", label: "Syntax comments" },
   { name: "--prose-color", label: "Text color" },
   { name: "--prose-muted", label: "Quote and caption color" },
-  { name: "--prose-surface", label: "Code background" },
+  { name: "--prose-surface", label: "Code block frame" },
   { name: "--prose-rule", label: "Table and divider color" },
   { name: "--prose-rule-strong", label: "Quote rule color" },
 ] as const
@@ -222,6 +227,8 @@ export default function ProseDemo() {
               </tr>
             </tbody>
           </table>
+          <h2>Code that belongs in the document</h2>
+          <ProseSyntaxDemo tailwind={format === "tailwind"} />
         </article>
       </div>
     </>

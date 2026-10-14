@@ -66,7 +66,7 @@ A fenced block renders as a Code View. Its title is the first of these the fence
 2. The language.
 3. "Code".
 
-Markdown does not highlight syntax. Pass `renderCodeLine` to color each line with the highlighter you already have. It receives the line, the language, and the line's index with the whole block, for a highlighter that reads across lines. [Syntax highlighting](#syntax-highlighting) has one built on Shiki.
+Markdown highlights fenced code automatically with Honest Prose Syntax. Set `syntaxHighlighting={false}` to disable it, or pass `renderCodeLine` to use your own highlighter. It receives the line, the language, and the line's index with the whole block, for a highlighter that reads across lines. See [Syntax highlighting](#syntax-highlighting) for setup and compatibility.
 
 `renderCodeActions` adds controls to a code block's header, before Copy. It receives the block's code, language, and title. Return a button for each action, and only for an action your application handles.
 
@@ -169,24 +169,19 @@ Three limits to know:
 
 ### Syntax highlighting
 
-`markdown-shiki` makes a `renderCodeLine` that colors code with Shiki.
-
-<CliBlock commands={["@honestai/markdown-shiki"]} />
+Honest Prose Syntax colors fenced code automatically, including code that is still arriving. It loads only the requested grammar and processes it in a worker. Until colors are ready, the original text stays visible.
 
 ```tsx
-import { createShikiCodeLine } from "@/lib/markdown-shiki"
-
-// Once, outside your components.
-const renderCodeLine = createShikiCodeLine()
-
-<Markdown renderCodeLine={renderCodeLine}>{reply.text}</Markdown>
+<Markdown>{reply.text}</Markdown>
+<Markdown syntaxHighlighting={false}>{reply.text}</Markdown>
+<Markdown syntaxPalette="graphite">{reply.text}</Markdown>
 ```
 
-Shiki and each language load the first time a block needs them. Until then, and for a language Shiki does not know, the code is plain text. A block is highlighted whole, so a comment or string that spans lines is colored correctly.
+Import `styles/prose-syntax-theme.css` once alongside Prose. The registry installs both files. Custom `renderCodeLine` functions take precedence. Unknown languages, blocks above 200 KB, and failed or timed-out highlighting remain plain text.
 
-`createShikiCodeLine({ light, dark })` takes the two themes. The dark one applies under Tailwind's `dark` variant. The defaults are GitHub's high-contrast themes.
+See [Honest Prose Syntax](/docs/prose-syntax) for themes, supported languages, standalone HTML, and server rendering.
 
-A block that is still arriving is highlighted again each time it grows. That is fine for a reply. For code of many hundreds of lines that streams, pass `renderCodeLine` only once the text is complete.
+The existing `markdown-shiki` adapter remains available for applications using explicit Shiki themes. `createShikiCodeLine({ light, dark })` keeps its existing defaults and behavior. It processes whole blocks on the main thread, so use the built-in worker integration for streamed code.
 
 ## Accessibility
 
@@ -317,6 +312,8 @@ Accepts native div props beyond those listed.
 | `children` | string | Required | The Markdown source, all of it or as much as has arrived. |
 | `isStreaming` | boolean | `false` | Closes unfinished syntax and shows a caret. |
 | `blocks` | `Record<string, MarkdownBlockRenderer>` | None | Draws a fenced block as a component, by the fence's language. |
+| `syntaxPalette` | `"violet" \| "graphite"` | `"violet"` | Token palette for built-in highlighting. |
+| `syntaxHighlighting` | boolean | `true` | Use built-in syntax highlighting. |
 | `renderCodeLine` | `(text: string, language: string \| undefined, line: MarkdownCodeLine) => ReactNode` | None | Colors one line of a code block. |
 | `renderCodeActions` | `(block: MarkdownCodeBlock) => ReactNode` | None | Controls for a code block's header, before Copy. |
 | `components` | `Components` from `react-markdown` | None | Replaces how an element is rendered. |

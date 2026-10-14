@@ -80,6 +80,10 @@ With a Markdown renderer, wrap its output:
 </div>
 ```
 
+## Syntax highlighting
+
+[Honest Prose Syntax](/docs/prose-syntax) adds restrained syntax colors, streaming support, and standalone HTML, React, and server integrations. Honest Markdown enables it automatically. Prose CSS itself remains JavaScript-free.
+
 ## Variables
 
 Three variables do most of the work. Set them on the `.honest-prose` element or on anything around it.
@@ -99,9 +103,10 @@ The rest are for matching a theme:
 | `--prose-tracking` | Body letter spacing | `--hui-letter-spacing-regular`, or `normal` |
 | `--prose-color` | Text | `--hui-color-foreground-base-primary`, or the current color |
 | `--prose-muted` | Quotes and captions | `--hui-color-foreground-base-secondary`, or 72% of the current color |
-| `--prose-surface` | Behind inline code and plain code blocks | `--hui-color-background-base-secondary`, or 7% of the current color |
+| `--prose-surface` | The shell around plain code blocks, and keyboard keys | `--hui-color-background-base-secondary`, or 7% of the current color |
 | `--prose-rule` | Table lines and horizontal rules | `--hui-color-border-base-primary`, or 18% of the current color |
 | `--prose-rule-strong` | The rule beside a quote | `--hui-color-border-base-secondary`, or 34% of the current color |
+| `--prose-code-color` | Inline code text | The body text color |
 | `--prose-font-mono` | Code | `--hui-font-mono`, or the system monospace font |
 | `--prose-radius` | Corners of inline code | `--hui-radius-1`, or `0.25em` |
 

@@ -3,16 +3,32 @@ import type { ComponentPropsWithoutRef } from "react"
 
 import { cn } from "@/lib/utils"
 
-function Table({ className, ...props }: ComponentPropsWithoutRef<"table">) {
+// Surface encloses the table in a bordered plate with a tinted header band, so
+// it reads as a table on its own. Plain leaves framing to a parent that already
+// draws one, such as Data Grid or Diff Table.
+const surfaceContainer =
+  "rounded-[var(--hui-radius-4)] border-[0.5px] border-[var(--hui-color-border-base-primary)] bg-[var(--hui-color-background-base-primary)] shadow-[var(--hui-shadow-feather)] [&_thead]:bg-[var(--hui-color-background-base-secondary)] [&_th]:bg-[var(--hui-color-background-base-secondary)] [&_td]:text-[var(--hui-color-foreground-base-primary)] [&_tbody>tr:last-child>td]:border-b-0"
+
+function Table({
+  className,
+  variant = "plain",
+  ...props
+}: ComponentPropsWithoutRef<"table"> & { variant?: "plain" | "surface" }) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      data-variant={variant}
+      className={cn(
+        "relative w-full overflow-x-auto",
+        variant === "surface" && surfaceContainer
+      )}
     >
       <table
         data-slot="table"
+        // No table-wide tabular-nums: in Love Sans it also widens spaces and
+        // punctuation to figure width. Apply it to numeric cells only.
         className={cn(
-          "w-full caption-bottom border-collapse overflow-visible text-[var(--hui-color-foreground-base-primary)] tabular-nums [font-size:var(--hui-font-size-small)] [line-height:var(--hui-line-height-small)]",
+          "w-full caption-bottom border-collapse overflow-visible text-[var(--hui-color-foreground-base-primary)] [font-size:var(--hui-font-size-small)] [line-height:var(--hui-line-height-small)]",
           className
         )}
         {...props}

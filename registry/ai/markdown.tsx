@@ -5,6 +5,9 @@ import ReactMarkdown, { type Components, type ExtraProps, type Options } from "r
 import remarkGfm from "remark-gfm"
 
 import { cn } from "@/lib/utils"
+import type { SyntaxPalette } from "@/registry/lib/prose-syntax-shared"
+import { SyntaxLine, useSyntax } from "@/registry/lib/prose-syntax-react"
+
 import { CodeView } from "@/registry/ai/code-view"
 import { repairMarkdown } from "@/registry/lib/repair-markdown"
 
@@ -100,6 +103,8 @@ type MarkdownSettings = {
   isStreaming: boolean
   labels: MarkdownLabels
   blocks: Record<string, MarkdownBlockRenderer> | undefined
+  syntaxPalette: SyntaxPalette
+  syntaxHighlighting: boolean
   renderCodeLine: MarkdownProps["renderCodeLine"]
   renderCodeActions: MarkdownProps["renderCodeActions"]
 }
@@ -149,7 +154,7 @@ function drawBlock(render: MarkdownBlockRenderer, body: string) {
 }
 
 function MarkdownPre({ children, node }: React.ComponentProps<"pre"> & ExtraProps) {
-  const { source, isStreaming, labels, blocks, renderCodeLine, renderCodeActions } = useMarkdownSettings()
+  const { source, isStreaming, labels, blocks, renderCodeLine, renderCodeActions, syntaxHighlighting, syntaxPalette } = useMarkdownSettings()
 
   const codeElement = React.Children.toArray(children).find(
     (child): child is React.ReactElement<{ className?: string; children?: React.ReactNode }> =>
@@ -165,6 +170,8 @@ function MarkdownPre({ children, node }: React.ComponentProps<"pre"> & ExtraProp
     language: /language-(\S+)/.exec(codeElement?.props.className ?? "")?.[1],
     title: titleMatch ? (titleMatch[1] ?? titleMatch[2] ?? titleMatch[3]) : undefined,
   }
+
+  const syntax = useSyntax(block.code, block.language, syntaxHighlighting && !renderCodeLine && !(block.language && blocks && Object.hasOwn(blocks, block.language)))
 
   // `hasOwn`, so a language such as "constructor" does not find a method of every object.
   const renderBlock =
@@ -199,7 +206,9 @@ function MarkdownPre({ children, node }: React.ComponentProps<"pre"> & ExtraProp
     <CodeView
       filename={block.title ?? language ?? labels.code}
       code={code}
-      renderLine={renderCodeLine && ((text, index) => renderCodeLine(text, language, { index, code }))}
+      data-syntax-palette={syntaxPalette}
+      className={syntaxHighlighting && !renderCodeLine ? "honest-syntax" : undefined}
+      renderLine={renderCodeLine ? ((text, index) => renderCodeLine(text, language, { index, code })) : syntax ? ((text, index) => syntax.lines[index] ? <SyntaxLine tokens={syntax.lines[index]} /> : text) : undefined}
       actions={renderCodeActions?.(block)}
     />
   )
@@ -260,7 +269,11 @@ export type MarkdownProps = Omit<React.ComponentProps<"div">, "children"> & {
    * held back until its closing fence arrives.
    */
   blocks?: Record<string, MarkdownBlockRenderer>
-  /** Colors one line of a code block. Without it, code is plain text. */
+  /** Enable Honest Prose Syntax. Defaults to true; custom renderers take precedence. */
+  syntaxHighlighting?: boolean
+  /** Token colors; each palette follows the current light or dark theme. */
+  syntaxPalette?: SyntaxPalette
+  /** Overrides built-in syntax highlighting for each line. */
   renderCodeLine?: (
     text: string,
     language: string | undefined,
@@ -279,13 +292,15 @@ export type MarkdownProps = Omit<React.ComponentProps<"div">, "children"> & {
 
 /**
  * Renders Markdown, including Markdown that is still arriving. It parses the
- * text it is given and requests nothing: HTML in the source is shown as text,
+ * text it is given without loading URLs selected by that text: HTML is shown as text,
  * and an image becomes a link, so a reply cannot make the browser load a URL.
  * Its text is styled by the `honest-prose` class, from `prose.css`.
  */
 function Markdown({
   children,
   isStreaming = false,
+  syntaxHighlighting = true,
+  syntaxPalette = "violet",
   blocks,
   renderCodeLine,
   renderCodeActions,
@@ -302,12 +317,14 @@ function Markdown({
     () => ({
       source,
       isStreaming,
+      syntaxHighlighting,
+      syntaxPalette,
       labels: { ...defaultMarkdownLabels, ...labelsProp },
       blocks,
       renderCodeLine,
       renderCodeActions,
     }),
-    [source, isStreaming, labelsProp, blocks, renderCodeLine, renderCodeActions]
+    [source, isStreaming, syntaxHighlighting, syntaxPalette, labelsProp, blocks, renderCodeLine, renderCodeActions]
   )
   const components = React.useMemo<Components>(
     () => ({ ...defaultComponents, ...componentsProp }),

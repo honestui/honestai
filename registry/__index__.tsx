@@ -45,26 +45,28 @@ import example40 from "./examples/prompt-bar-demo";
 import example41 from "./examples/prompt-bar-disabled";
 import example42 from "./examples/prompt-bar-stop";
 import example43 from "./examples/prose-demo";
-import example44 from "./examples/recommendation-card-demo";
-import example45 from "./examples/recommendation-card-failure";
-import example46 from "./examples/records-table-demo";
-import example47 from "./examples/records-table-static";
-import example48 from "./examples/search-list-demo";
-import example49 from "./examples/search-list-threads";
-import example50 from "./examples/selection-actions-demo";
-import example51 from "./examples/selection-actions-error";
-import example52 from "./examples/sidebar-nav-collapsed";
-import example53 from "./examples/sidebar-nav-demo";
-import example54 from "./examples/streaming-text-demo";
-import example55 from "./examples/streaming-text-error";
-import example56 from "./examples/streaming-text-static";
-import example57 from "./examples/task-rows-demo";
-import example58 from "./examples/task-rows-list";
-import example59 from "./examples/thinking-state-demo";
-import example60 from "./examples/thinking-state-error";
-import example61 from "./examples/thinking-state-search";
-import example62 from "./examples/tool-chips-demo";
-import example63 from "./examples/tool-chips-running";
+import example44 from "./examples/prose-syntax-demo";
+import example45 from "./examples/prose-syntax-editor-demo";
+import example46 from "./examples/recommendation-card-demo";
+import example47 from "./examples/recommendation-card-failure";
+import example48 from "./examples/records-table-demo";
+import example49 from "./examples/records-table-static";
+import example50 from "./examples/search-list-demo";
+import example51 from "./examples/search-list-threads";
+import example52 from "./examples/selection-actions-demo";
+import example53 from "./examples/selection-actions-error";
+import example54 from "./examples/sidebar-nav-collapsed";
+import example55 from "./examples/sidebar-nav-demo";
+import example56 from "./examples/streaming-text-demo";
+import example57 from "./examples/streaming-text-error";
+import example58 from "./examples/streaming-text-static";
+import example59 from "./examples/task-rows-demo";
+import example60 from "./examples/task-rows-list";
+import example61 from "./examples/thinking-state-demo";
+import example62 from "./examples/thinking-state-error";
+import example63 from "./examples/thinking-state-search";
+import example64 from "./examples/tool-chips-demo";
+import example65 from "./examples/tool-chips-running";
 
 export const Index: Record<string, { component: ComponentType }> = {
   "agent-screen-demo": { component: example0 },
@@ -111,24 +113,26 @@ export const Index: Record<string, { component: ComponentType }> = {
   "prompt-bar-disabled": { component: example41 },
   "prompt-bar-stop": { component: example42 },
   "prose-demo": { component: example43 },
-  "recommendation-card-demo": { component: example44 },
-  "recommendation-card-failure": { component: example45 },
-  "records-table-demo": { component: example46 },
-  "records-table-static": { component: example47 },
-  "search-list-demo": { component: example48 },
-  "search-list-threads": { component: example49 },
-  "selection-actions-demo": { component: example50 },
-  "selection-actions-error": { component: example51 },
-  "sidebar-nav-collapsed": { component: example52 },
-  "sidebar-nav-demo": { component: example53 },
-  "streaming-text-demo": { component: example54 },
-  "streaming-text-error": { component: example55 },
-  "streaming-text-static": { component: example56 },
-  "task-rows-demo": { component: example57 },
-  "task-rows-list": { component: example58 },
-  "thinking-state-demo": { component: example59 },
-  "thinking-state-error": { component: example60 },
-  "thinking-state-search": { component: example61 },
-  "tool-chips-demo": { component: example62 },
-  "tool-chips-running": { component: example63 },
+  "prose-syntax-demo": { component: example44 },
+  "prose-syntax-editor-demo": { component: example45 },
+  "recommendation-card-demo": { component: example46 },
+  "recommendation-card-failure": { component: example47 },
+  "records-table-demo": { component: example48 },
+  "records-table-static": { component: example49 },
+  "search-list-demo": { component: example50 },
+  "search-list-threads": { component: example51 },
+  "selection-actions-demo": { component: example52 },
+  "selection-actions-error": { component: example53 },
+  "sidebar-nav-collapsed": { component: example54 },
+  "sidebar-nav-demo": { component: example55 },
+  "streaming-text-demo": { component: example56 },
+  "streaming-text-error": { component: example57 },
+  "streaming-text-static": { component: example58 },
+  "task-rows-demo": { component: example59 },
+  "task-rows-list": { component: example60 },
+  "thinking-state-demo": { component: example61 },
+  "thinking-state-error": { component: example62 },
+  "thinking-state-search": { component: example63 },
+  "tool-chips-demo": { component: example64 },
+  "tool-chips-running": { component: example65 },
 };

@@ -44,9 +44,6 @@ export type FilterTableProps<Row> = {
   className?: string
 }
 
-// Table's own header color is too light for small text, so these headers use the secondary foreground.
-const headText = "text-[var(--hui-color-foreground-base-secondary)]!"
-
 const chipText =
   "[font-size:var(--hui-font-size-small)] [letter-spacing:var(--hui-letter-spacing-small)] [line-height:var(--hui-line-height-small)]"
 
@@ -116,11 +113,11 @@ function FilterTable<Row>({
         })}
       </div>
 
-      <Table aria-label={label}>
+      <Table variant="surface" aria-label={label}>
         <TableHeader>
           <TableRow>
             {columns.map((column) => (
-              <TableHead key={column.id} scope="col" className={headText}>
+              <TableHead key={column.id} scope="col">
                 {column.header}
               </TableHead>
             ))}

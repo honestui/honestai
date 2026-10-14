@@ -32,3 +32,7 @@ next-env.d.ts
 # agents
 .agents/
 AGENTS.md
+
+# Generated syntax package
+/packages/prose-syntax/dist/
+/packages/prose-syntax/*.tgz

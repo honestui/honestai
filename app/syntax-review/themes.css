@@ -1,0 +1,505 @@
+/* Comparison-only vendor themes; generated from the installed packages. */
+/**
+ * prism.js default theme for JavaScript, CSS and HTML
+ * Based on dabblet (http://dabblet.com)
+ * @author Lea Verou
+ */
+
+.prism-light code[class*="language-"],
+.prism-light pre[class*="language-"] {
+	color: black;
+	background: none;
+	text-shadow: 0 1px white;
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+.prism-light pre[class*="language-"]::-moz-selection, .prism-light pre[class*="language-"] ::-moz-selection, .prism-light code[class*="language-"]::-moz-selection, .prism-light code[class*="language-"] ::-moz-selection {
+	text-shadow: none;
+	background: #b3d4fc;
+}
+
+.prism-light pre[class*="language-"]::selection, .prism-light pre[class*="language-"] ::selection, .prism-light code[class*="language-"]::selection, .prism-light code[class*="language-"] ::selection {
+	text-shadow: none;
+	background: #b3d4fc;
+}
+
+@media print {
+	.prism-light code[class*="language-"],
+	.prism-light pre[class*="language-"] {
+		text-shadow: none;
+	}
+}
+
+/* Code blocks */
+.prism-light pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+}
+
+.prism-light :not(pre) > code[class*="language-"],
+.prism-light pre[class*="language-"] {
+	background: #f5f2f0;
+}
+
+/* Inline code */
+.prism-light :not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+.prism-light .token.comment,
+.prism-light .token.prolog,
+.prism-light .token.doctype,
+.prism-light .token.cdata {
+	color: slategray;
+}
+
+.prism-light .token.punctuation {
+	color: #999;
+}
+
+.prism-light .token.namespace {
+	opacity: .7;
+}
+
+.prism-light .token.property,
+.prism-light .token.tag,
+.prism-light .token.boolean,
+.prism-light .token.number,
+.prism-light .token.constant,
+.prism-light .token.symbol,
+.prism-light .token.deleted {
+	color: #905;
+}
+
+.prism-light .token.selector,
+.prism-light .token.attr-name,
+.prism-light .token.string,
+.prism-light .token.char,
+.prism-light .token.builtin,
+.prism-light .token.inserted {
+	color: #690;
+}
+
+.prism-light .token.operator,
+.prism-light .token.entity,
+.prism-light .token.url,
+.prism-light .language-css .token.string,
+.prism-light .style .token.string {
+	color: #9a6e3a;
+	/* This background color was intended by the author of this theme. */
+	background: hsla(0, 0%, 100%, .5);
+}
+
+.prism-light .token.atrule,
+.prism-light .token.attr-value,
+.prism-light .token.keyword {
+	color: #07a;
+}
+
+.prism-light .token.function,
+.prism-light .token.class-name {
+	color: #DD4A68;
+}
+
+.prism-light .token.regex,
+.prism-light .token.important,
+.prism-light .token.variable {
+	color: #e90;
+}
+
+.prism-light .token.important,
+.prism-light .token.bold {
+	font-weight: bold;
+}
+.prism-light .token.italic {
+	font-style: italic;
+}
+
+.prism-light .token.entity {
+	cursor: help;
+}
+
+/**
+ * prism.js tomorrow night eighties for JavaScript, CoffeeScript, CSS and HTML
+ * Based on https://github.com/chriskempson/tomorrow-theme
+ * @author Rose Pritchard
+ */
+
+.prism-dark code[class*="language-"],
+.prism-dark pre[class*="language-"] {
+	color: #ccc;
+	background: none;
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+
+}
+
+/* Code blocks */
+.prism-dark pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+}
+
+.prism-dark :not(pre) > code[class*="language-"],
+.prism-dark pre[class*="language-"] {
+	background: #2d2d2d;
+}
+
+/* Inline code */
+.prism-dark :not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+.prism-dark .token.comment,
+.prism-dark .token.block-comment,
+.prism-dark .token.prolog,
+.prism-dark .token.doctype,
+.prism-dark .token.cdata {
+	color: #999;
+}
+
+.prism-dark .token.punctuation {
+	color: #ccc;
+}
+
+.prism-dark .token.tag,
+.prism-dark .token.attr-name,
+.prism-dark .token.namespace,
+.prism-dark .token.deleted {
+	color: #e2777a;
+}
+
+.prism-dark .token.function-name {
+	color: #6196cc;
+}
+
+.prism-dark .token.boolean,
+.prism-dark .token.number,
+.prism-dark .token.function {
+	color: #f08d49;
+}
+
+.prism-dark .token.property,
+.prism-dark .token.class-name,
+.prism-dark .token.constant,
+.prism-dark .token.symbol {
+	color: #f8c555;
+}
+
+.prism-dark .token.selector,
+.prism-dark .token.important,
+.prism-dark .token.atrule,
+.prism-dark .token.keyword,
+.prism-dark .token.builtin {
+	color: #cc99cd;
+}
+
+.prism-dark .token.string,
+.prism-dark .token.char,
+.prism-dark .token.attr-value,
+.prism-dark .token.regex,
+.prism-dark .token.variable {
+	color: #7ec699;
+}
+
+.prism-dark .token.operator,
+.prism-dark .token.entity,
+.prism-dark .token.url {
+	color: #67cdcc;
+}
+
+.prism-dark .token.important,
+.prism-dark .token.bold {
+	font-weight: bold;
+}
+.prism-dark .token.italic {
+	font-style: italic;
+}
+
+.prism-dark .token.entity {
+	cursor: help;
+}
+
+.prism-dark .token.inserted {
+	color: green;
+}
+
+.highlight-light pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 1em
+}
+.highlight-light code.hljs {
+  padding: 3px 5px
+}
+/*!
+  Theme: GitHub
+  Description: Light theme as seen on github.com
+  Author: github.com
+  Maintainer: @Hirse
+  Updated: 2021-05-15
+
+  Outdated base version: https://github.com/primer/github-syntax-light
+  Current colors taken from GitHub's CSS
+*/
+.highlight-light .hljs {
+  color: #24292e;
+  background: #ffffff
+}
+.highlight-light .hljs-doctag,
+.highlight-light .hljs-keyword,
+.highlight-light .hljs-meta .hljs-keyword,
+.highlight-light .hljs-template-tag,
+.highlight-light .hljs-template-variable,
+.highlight-light .hljs-type,
+.highlight-light .hljs-variable.language_ {
+  /* prettylights-syntax-keyword */
+  color: #d73a49
+}
+.highlight-light .hljs-title,
+.highlight-light .hljs-title.class_,
+.highlight-light .hljs-title.class_.inherited__,
+.highlight-light .hljs-title.function_ {
+  /* prettylights-syntax-entity */
+  color: #6f42c1
+}
+.highlight-light .hljs-attr,
+.highlight-light .hljs-attribute,
+.highlight-light .hljs-literal,
+.highlight-light .hljs-meta,
+.highlight-light .hljs-number,
+.highlight-light .hljs-operator,
+.highlight-light .hljs-variable,
+.highlight-light .hljs-selector-attr,
+.highlight-light .hljs-selector-class,
+.highlight-light .hljs-selector-id {
+  /* prettylights-syntax-constant */
+  color: #005cc5
+}
+.highlight-light .hljs-regexp,
+.highlight-light .hljs-string,
+.highlight-light .hljs-meta .hljs-string {
+  /* prettylights-syntax-string */
+  color: #032f62
+}
+.highlight-light .hljs-built_in,
+.highlight-light .hljs-symbol {
+  /* prettylights-syntax-variable */
+  color: #e36209
+}
+.highlight-light .hljs-comment,
+.highlight-light .hljs-code,
+.highlight-light .hljs-formula {
+  /* prettylights-syntax-comment */
+  color: #6a737d
+}
+.highlight-light .hljs-name,
+.highlight-light .hljs-quote,
+.highlight-light .hljs-selector-tag,
+.highlight-light .hljs-selector-pseudo {
+  /* prettylights-syntax-entity-tag */
+  color: #22863a
+}
+.highlight-light .hljs-subst {
+  /* prettylights-syntax-storage-modifier-import */
+  color: #24292e
+}
+.highlight-light .hljs-section {
+  /* prettylights-syntax-markup-heading */
+  color: #005cc5;
+  font-weight: bold
+}
+.highlight-light .hljs-bullet {
+  /* prettylights-syntax-markup-list */
+  color: #735c0f
+}
+.highlight-light .hljs-emphasis {
+  /* prettylights-syntax-markup-italic */
+  color: #24292e;
+  font-style: italic
+}
+.highlight-light .hljs-strong {
+  /* prettylights-syntax-markup-bold */
+  color: #24292e;
+  font-weight: bold
+}
+.highlight-light .hljs-addition {
+  /* prettylights-syntax-markup-inserted */
+  color: #22863a;
+  background-color: #f0fff4
+}
+.highlight-light .hljs-deletion {
+  /* prettylights-syntax-markup-deleted */
+  color: #b31d28;
+  background-color: #ffeef0
+}
+.highlight-light .hljs-char.escape_,
+.highlight-light .hljs-link,
+.highlight-light .hljs-params,
+.highlight-light .hljs-property,
+.highlight-light .hljs-punctuation,
+.highlight-light .hljs-tag {
+  /* purposely ignored */
+  
+}
+.highlight-dark pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 1em
+}
+.highlight-dark code.hljs {
+  padding: 3px 5px
+}
+/*!
+  Theme: GitHub Dark
+  Description: Dark theme as seen on github.com
+  Author: github.com
+  Maintainer: @Hirse
+  Updated: 2021-05-15
+
+  Outdated base version: https://github.com/primer/github-syntax-dark
+  Current colors taken from GitHub's CSS
+*/
+.highlight-dark .hljs {
+  color: #c9d1d9;
+  background: #0d1117
+}
+.highlight-dark .hljs-doctag,
+.highlight-dark .hljs-keyword,
+.highlight-dark .hljs-meta .hljs-keyword,
+.highlight-dark .hljs-template-tag,
+.highlight-dark .hljs-template-variable,
+.highlight-dark .hljs-type,
+.highlight-dark .hljs-variable.language_ {
+  /* prettylights-syntax-keyword */
+  color: #ff7b72
+}
+.highlight-dark .hljs-title,
+.highlight-dark .hljs-title.class_,
+.highlight-dark .hljs-title.class_.inherited__,
+.highlight-dark .hljs-title.function_ {
+  /* prettylights-syntax-entity */
+  color: #d2a8ff
+}
+.highlight-dark .hljs-attr,
+.highlight-dark .hljs-attribute,
+.highlight-dark .hljs-literal,
+.highlight-dark .hljs-meta,
+.highlight-dark .hljs-number,
+.highlight-dark .hljs-operator,
+.highlight-dark .hljs-variable,
+.highlight-dark .hljs-selector-attr,
+.highlight-dark .hljs-selector-class,
+.highlight-dark .hljs-selector-id {
+  /* prettylights-syntax-constant */
+  color: #79c0ff
+}
+.highlight-dark .hljs-regexp,
+.highlight-dark .hljs-string,
+.highlight-dark .hljs-meta .hljs-string {
+  /* prettylights-syntax-string */
+  color: #a5d6ff
+}
+.highlight-dark .hljs-built_in,
+.highlight-dark .hljs-symbol {
+  /* prettylights-syntax-variable */
+  color: #ffa657
+}
+.highlight-dark .hljs-comment,
+.highlight-dark .hljs-code,
+.highlight-dark .hljs-formula {
+  /* prettylights-syntax-comment */
+  color: #8b949e
+}
+.highlight-dark .hljs-name,
+.highlight-dark .hljs-quote,
+.highlight-dark .hljs-selector-tag,
+.highlight-dark .hljs-selector-pseudo {
+  /* prettylights-syntax-entity-tag */
+  color: #7ee787
+}
+.highlight-dark .hljs-subst {
+  /* prettylights-syntax-storage-modifier-import */
+  color: #c9d1d9
+}
+.highlight-dark .hljs-section {
+  /* prettylights-syntax-markup-heading */
+  color: #1f6feb;
+  font-weight: bold
+}
+.highlight-dark .hljs-bullet {
+  /* prettylights-syntax-markup-list */
+  color: #f2cc60
+}
+.highlight-dark .hljs-emphasis {
+  /* prettylights-syntax-markup-italic */
+  color: #c9d1d9;
+  font-style: italic
+}
+.highlight-dark .hljs-strong {
+  /* prettylights-syntax-markup-bold */
+  color: #c9d1d9;
+  font-weight: bold
+}
+.highlight-dark .hljs-addition {
+  /* prettylights-syntax-markup-inserted */
+  color: #aff5b4;
+  background-color: #033a16
+}
+.highlight-dark .hljs-deletion {
+  /* prettylights-syntax-markup-deleted */
+  color: #ffdcd7;
+  background-color: #67060c
+}
+.highlight-dark .hljs-char.escape_,
+.highlight-dark .hljs-link,
+.highlight-dark .hljs-params,
+.highlight-dark .hljs-property,
+.highlight-dark .hljs-punctuation,
+.highlight-dark .hljs-tag {
+  /* purposely ignored */
+  
+}
+
+.syntax-comparison pre { margin: 0; padding: 1rem; overflow-x: auto; font-size: 14px; line-height: 1.65; border-radius: 4px; }
+.syntax-comparison code { font-family: ui-monospace, monospace; font-size: inherit; line-height: inherit; }
+.syntax-comparison h3 { margin-bottom: .5rem; }
+
+.syntax-comparison article pre, .syntax-comparison article pre code { font-family: ui-monospace, monospace !important; font-size: 14px !important; line-height: 1.65 !important; }

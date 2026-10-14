@@ -125,7 +125,10 @@ export function ComponentsNavigation({ tree }: { tree: PageTreeRoot }) {
 
 export function StylesNavigation({ tree }: { tree: PageTreeRoot }) {
   const pages = useMemo(
-    () => flattenTree(tree.children).filter((page) => page.url === "/docs/prose"),
+    () =>
+      flattenTree(tree.children).filter((page) =>
+        ["/docs/prose", "/docs/prose-syntax"].includes(page.url),
+      ),
     [tree.children],
   );
 

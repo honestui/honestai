@@ -7,9 +7,6 @@ import { Download as DownloadIcon } from "honestui/icons"
 import { Button } from "@/components/ui/button"
 import { Markdown, type MarkdownCodeBlock } from "@/registry/ai/markdown"
 import { mathPlugins, normalizeMathDelimiters } from "@/registry/lib/markdown-math"
-import { createShikiCodeLine } from "@/registry/lib/markdown-shiki"
-
-const renderCodeLine = createShikiCodeLine()
 
 function downloadCode({ code, title }: MarkdownCodeBlock) {
   const url = URL.createObjectURL(new Blob([code], { type: "text/plain" }))
@@ -51,7 +48,7 @@ const source = normalizeMathDelimiters(sampleDocument)
 export default function MarkdownAddOnsExample() {
   return (
     <div className="w-full max-w-md min-w-0">
-      <Markdown {...mathPlugins} renderCodeLine={renderCodeLine} renderCodeActions={renderCodeActions}>
+      <Markdown {...mathPlugins} renderCodeActions={renderCodeActions}>
         {source}
       </Markdown>
     </div>

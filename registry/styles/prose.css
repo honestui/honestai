@@ -12,7 +12,7 @@
  *   --prose-tracking  Body letter spacing.
  *   --prose-color, --prose-muted, --prose-surface,
  *   --prose-rule, --prose-rule-strong
- *   --prose-font-mono, --prose-radius
+ *   --prose-font-mono, --prose-radius, --prose-code-color
  *
  * Each one falls back to an Honest UI token, then to a value that works with
  * no tokens at all. Prose never sets them itself, so a value from a utility
@@ -112,17 +112,29 @@
 
 .honest-prose :where(code, kbd, samp):not(:where(.not-prose, .not-prose *)) {
   font-family: var(--_font-mono);
+}
+
+/* Inline code and code blocks set their own sizes, so code is not shrunk twice. */
+.honest-prose :where(kbd, samp):not(:where(.not-prose, .not-prose *)) {
   font-size: 0.9em;
 }
 
-.honest-prose :where(:not(pre) > code, kbd):not(:where(.not-prose, .not-prose *)) {
+/* Inline code matches the docs site: a page-colored chip with a rule. */
+.honest-prose :where(:not(pre) > code):not(:where(.not-prose, .not-prose *)) {
+  margin-inline: 0.25rem;
+  border: 1px solid var(--_rule-strong);
   border-radius: var(--_radius);
-  background: var(--_surface);
-  padding-inline: 0.3em;
+  background: var(--hui-color-background-base-primary, Canvas);
+  padding: 1px 0.3rem;
+  color: var(--prose-code-color, inherit);
+  font-size: 0.8em;
 }
 
 .honest-prose :where(kbd):not(:where(.not-prose, .not-prose *)) {
   border: 0.5px solid var(--_rule-strong);
+  border-radius: var(--_radius);
+  background: var(--_surface);
+  padding-inline: 0.3em;
 }
 
 /* Lists */
@@ -186,13 +198,20 @@
   height: 0;
 }
 
-/* Code blocks, for a renderer that does not bring a component for them */
+/*
+ * Code blocks, for a renderer that does not bring a component for them. The
+ * frame matches the docs site: a surface shell around a page-colored panel
+ * with a hairline rule. The border is the shell, so it needs no wrapper.
+ */
 
 .honest-prose :where(pre):not(:where(.not-prose, .not-prose *)) {
   overflow-x: auto;
-  border-radius: calc(var(--_radius) * 3);
-  background: var(--_surface);
-  padding: var(--_flow);
+  border: 0.25rem solid var(--_surface);
+  border-radius: calc(var(--_radius) + 0.25rem);
+  background: var(--hui-color-background-base-primary, Canvas);
+  box-shadow: inset 0 0 0 0.5px var(--_rule);
+  padding: 0.875rem 1rem;
+  font-size: 0.8125rem;
   line-height: 1.65;
 }
 
@@ -203,9 +222,17 @@
   overflow-x: auto;
 }
 
+/*
+ * The frame is drawn on the table itself, so it needs no wrapper. Separate
+ * borders let the corners round; collapsed borders cannot.
+ */
 .honest-prose :where(table):not(:where(.not-prose, .not-prose *)) {
   width: 100%;
-  border-collapse: collapse;
+  border: 0.5px solid var(--_rule);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--hui-radius-4, 0.5em);
+  box-shadow: var(--hui-shadow-feather, none);
   font-size: 0.857em;
   line-height: 1.34;
 }
@@ -215,13 +242,28 @@
 }
 
 .honest-prose :where(th, td):not(:where(.not-prose, .not-prose *)) {
-  padding: calc(var(--_flow) / 3) calc(var(--_flow) * 0.667);
+  padding: calc(var(--_flow) * 0.667) var(--_flow);
   vertical-align: top;
   text-align: start;
 }
 
 .honest-prose :where(th):not(:where(.not-prose, .not-prose *)) {
   font-weight: var(--hui-font-weight-medium, 500);
+}
+
+/* Column headers sit on a tinted band. Row headers in the body stay plain. */
+.honest-prose :where(thead th):not(:where(.not-prose, .not-prose *)) {
+  background: var(--_surface);
+  color: var(--_muted);
+}
+
+/* Cell backgrounds are not clipped by the table's radius, so the corner cells round themselves. */
+.honest-prose :where(thead > tr:first-child > th:first-child):not(:where(.not-prose, .not-prose *)) {
+  border-start-start-radius: var(--hui-radius-4, 0.5em);
+}
+
+.honest-prose :where(thead > tr:first-child > th:last-child):not(:where(.not-prose, .not-prose *)) {
+  border-start-end-radius: var(--hui-radius-4, 0.5em);
 }
 
 /* The line is drawn above each body cell, so a row that arrives later needs no restyle. */

@@ -79,3 +79,21 @@ x + y
   expect(html).toContain("Price: $5 and $10.")
   expect(html).toContain('class="katex"')
 })
+
+test("Markdown highlights by default without changing server text and supports opt-out", () => {
+  const source = '```js\nconst value = 1\n```'
+  const enabled = renderToStaticMarkup(<Markdown>{source}</Markdown>)
+  const disabled = renderToStaticMarkup(<Markdown syntaxHighlighting={false}>{source}</Markdown>)
+  expect(enabled).toContain("honest-syntax")
+  expect(enabled).toContain("const value = 1")
+  expect(disabled).not.toContain("honest-syntax")
+  const custom = renderToStaticMarkup(<Markdown renderCodeLine={text => <em>{text}</em>}>{source}</Markdown>)
+  expect(custom).not.toContain("honest-syntax")
+  expect(custom).toContain("<em>const value = 1</em>")
+})
+
+test("Markdown applies the chosen palette to its code surface", () => {
+  const html = renderToStaticMarkup(<Markdown syntaxPalette="graphite">{'```js\nconst n = 1\n```'}</Markdown>)
+  expect(html).toContain('data-syntax-palette="graphite"')
+  expect(html).toContain("honest-syntax")
+})

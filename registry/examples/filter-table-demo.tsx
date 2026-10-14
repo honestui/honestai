@@ -1,6 +1,7 @@
 "use client"
 
 import { FilterTable } from "@/registry/ai/filter-table"
+import { Badge } from "@/components/ui/badge"
 
 type AgentTask = { id: string; task: string; owner: string; status: "todo" | "running" | "done" }
 
@@ -14,6 +15,7 @@ const sampleTasks: AgentTask[] = [
 ]
 
 const statusLabel = { todo: "To do", running: "In progress", done: "Completed" }
+const statusVariant = { todo: "neutral", running: "info", done: "success" } as const
 
 export default function FilterTableDemo() {
   return (
@@ -25,7 +27,13 @@ export default function FilterTableDemo() {
         columns={[
           { id: "task", header: "Task", cell: (row) => row.task },
           { id: "owner", header: "Owner", cell: (row) => row.owner },
-          { id: "status", header: "Status", cell: (row) => statusLabel[row.status] },
+          {
+            id: "status",
+            header: "Status",
+            cell: (row) => (
+              <Badge variant={statusVariant[row.status]}>{statusLabel[row.status]}</Badge>
+            ),
+          },
         ]}
         filters={[
           { id: "todo", label: "To do", matches: (row) => row.status === "todo" },

@@ -1,0 +1,72 @@
+{
+  "name": "@honestui/prose-syntax",
+  "version": "0.1.0",
+  "description": "Reading-first syntax highlighting for Honest Prose, HTML, React, and server rendering.",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css",
+    "**/prose-syntax-worker.js"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/prose-syntax.d.ts",
+      "import": "./dist/prose-syntax.js"
+    },
+    "./browser": {
+      "types": "./dist/prose-syntax-browser.d.ts",
+      "import": "./dist/prose-syntax-browser.js"
+    },
+    "./react": {
+      "types": "./dist/prose-syntax-react.d.ts",
+      "import": "./dist/prose-syntax-react.js"
+    },
+    "./style.css": "./dist/style.css",
+    "./dist/*": "./dist/*",
+    "./tailwind": {
+      "types": "./dist/prose-syntax-tailwind.d.ts",
+      "import": "./dist/prose-syntax-tailwind.js"
+    },
+    "./codemirror": {
+      "types": "./dist/prose-syntax-codemirror.d.ts",
+      "import": "./dist/prose-syntax-codemirror.js"
+    },
+    "./themes": {
+      "types": "./dist/prose-syntax-themes.d.ts",
+      "import": "./dist/prose-syntax-themes.js"
+    },
+    "./themes/*.json": "./dist/themes/*.json"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "@codemirror/language": ">=6",
+    "@codemirror/state": ">=6",
+    "@codemirror/view": ">=6",
+    "@lezer/highlight": ">=1"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "@codemirror/language": {
+      "optional": true
+    },
+    "@codemirror/state": {
+      "optional": true
+    },
+    "@codemirror/view": {
+      "optional": true
+    },
+    "@lezer/highlight": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "shiki": "4.3.1"
+  }
+}
