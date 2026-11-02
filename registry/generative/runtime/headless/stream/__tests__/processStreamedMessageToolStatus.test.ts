@@ -30,6 +30,29 @@ const adapterFromEvents = (events: AGUIEvent[]): StreamProtocolAdapter => ({
 const flush = () => new Promise<void>((r) => setTimeout(r, 10));
 
 describe("processStreamedMessage — tool status + errors", () => {
+  it("stores AG-UI 1.0 multipart text results as text, including error fallback", async () => {
+    const created: Message[] = [];
+    await processStreamedMessage({
+      response: new Response(""),
+      createMessage: (message) => created.push(message),
+      updateMessage: () => {},
+      adapter: adapterFromEvents([
+        {
+          type: EventType.TOOL_CALL_RESULT,
+          toolCallId: "tc-multipart",
+          messageId: "tm-multipart",
+          role: "tool",
+          content: [{ type: "text", text: "tool failed" }],
+          isError: true,
+        } as unknown as AGUIEvent,
+      ]),
+    });
+    expect(created.find((message) => message.role === "tool")).toMatchObject({
+      content: "tool failed",
+      error: "tool failed",
+    });
+  });
+
   it("marks a tool executing on TOOL_CALL_END and clears it on TOOL_CALL_RESULT", async () => {
     const marked: string[] = [];
     const cleared: string[] = [];
