@@ -223,7 +223,7 @@ test.describe("Component docs previews, second set", () => {
     await expect(preview.getByText("Matched tax and contact IDs")).toBeVisible()
 
     await expect(failed).toHaveAttribute("data-status", "error")
-    await preview.getByRole("button", { name: "Retry: Draft supplier emails" }).click()
+    await preview.getByRole("button", { name: "Try again: Draft supplier emails" }).click()
     await expect(failed).toHaveAttribute("data-status", "running")
     await expect(failed.locator('[data-slot="task-status"]')).toHaveText("Running")
 
@@ -271,7 +271,7 @@ test.describe("Component docs previews, second set", () => {
     await expect(bodyRows).toHaveCount(5)
     await preview.getByRole("button", { name: "In progress 2" }).click()
     await expect(bodyRows).toHaveCount(2)
-    await expect(preview.getByRole("status")).toHaveText("2 of 5")
+    await expect(preview.getByRole("status")).toHaveText("Showing 2 of 5 rows")
 
     await preview.getByRole("button", { name: "Blocked 0" }).click()
     await expect(preview.getByText("No rows match this filter.")).toBeVisible()
@@ -394,6 +394,8 @@ test.describe("Component docs previews, second set", () => {
     await preview.getByRole("button", { name: "Next insight" }).click()
     await expect(preview.getByText("2 of 3")).toBeVisible()
     await expect(preview.getByText("Two suppliers account for 71% of late invoices.")).toBeVisible()
+    // A new card fades in; check contrast once it has finished.
+    await expect(preview.locator('[data-slot="insight-card"]').locator("..")).toHaveCSS("opacity", "1")
 
     await expectNoAxeViolations(page)
   })
@@ -404,7 +406,7 @@ test.describe("Component docs previews, second set", () => {
     const progress = preview.getByRole("status")
 
     await expect(progress).toHaveText("2 of 3 generated cells done", { timeout: 15_000 })
-    await preview.getByRole("button", { name: "Retry Payment summary for Harbor Paper Co." }).click()
+    await preview.getByRole("button", { name: "Try again: Payment summary for Harbor Paper Co." }).click()
     await expect(progress).toHaveText("3 of 3 generated cells done")
     await expect(preview.getByText("One invoice 14 days late.")).toBeVisible()
 
@@ -421,8 +423,8 @@ test.describe("Component docs previews, second set", () => {
 
     for (const mark of await marks.all()) {
       await expect(mark).toHaveAttribute("aria-hidden", "true")
-      await expect(mark).toHaveCSS("width", "15px")
-      await expect(mark).toHaveCSS("height", "15px")
+      await expect(mark).toHaveCSS("width", "16px")
+      await expect(mark).toHaveCSS("height", "16px")
     }
 
     const pulse = marks.filter({ has: page.locator(".hui-loading-cell") }).last()
@@ -498,7 +500,7 @@ test.describe("Component docs previews, third set", () => {
     await expect(markdown.getByRole("listitem")).toHaveCount(2)
     const code = markdown.locator('[data-slot="prose-code-block"]')
     await expect(code).toContainText("return roundTotal(total)")
-    await expect(code.getByRole("button", { name: "Copy code" })).toBeVisible()
+    await expect(code.getByRole("button", { name: "Copy" })).toBeVisible()
 
     await expectNoAxeViolations(page)
   })

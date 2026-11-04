@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { FileText as FileTextIcon } from "honestui/icons"
 
 import { SearchList } from "@/registry/ai/search-list"
 
@@ -15,9 +14,11 @@ export default function SearchListThreadsExample() {
         placeholder="Search recent threads…"
         emptyMessage="No threads match. Clear the search to see them all."
         items={[
-          { id: "t1", label: "Billing export rounding", icon: <FileTextIcon /> },
-          { id: "t2", label: "Staging migration plan", icon: <FileTextIcon /> },
-          { id: "t3", label: "Focus ring contrast", icon: <FileTextIcon /> },
+          // Every row is a thread, so a shared icon would add nothing; the
+          // last-active day tells them apart.
+          { id: "t1", label: "Billing export rounding", description: "Today" },
+          { id: "t2", label: "Staging migration plan", description: "Yesterday" },
+          { id: "t3", label: "Focus ring contrast", description: "Mar 4" },
         ]}
         onSelect={(item) => setOpened(item.label)}
       />

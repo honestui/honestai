@@ -16,8 +16,8 @@ It is a layout, not an editor. The steps are in the order you render them and ca
 ## Anatomy
 
 <Anatomy title="Flowchart">
-  <AnatomyItem name="Flowchart" description="The dotted canvas and the ordered list of steps" />
-  <AnatomyItem name="FlowStep" description="One step: a kind, a card, and the connector above it" />
+  <AnatomyItem name="Flowchart" description="The canvas and the ordered list of steps" />
+  <AnatomyItem name="FlowStep" description="One step: a card that opens with its kind, and the connector above it" />
   <AnatomyItem name="Children" description="Your controls for the step" />
 </Anatomy>
 
@@ -27,7 +27,7 @@ It is a layout, not an editor. The steps are in the order you render them and ca
 
 ### Order
 
-Steps are stacked in the order you render them, with a connector above every step but the first.
+Steps are stacked in the order you render them, with a connector above every step but the first. Each connector ends in an arrowhead pointing at the step it leads to. Flowchart draws a single path; it does not draw branches, so name a condition step for what it checks, such as "If the amount is over 1,000".
 
 ### Step content
 

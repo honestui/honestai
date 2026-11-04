@@ -25,7 +25,9 @@ export default function PromptBarDisabledExample() {
         role="status"
         className="m-0 min-h-[var(--hui-space-5)] text-[var(--hui-color-foreground-base-secondary)] [font-size:var(--hui-font-size-small)] [line-height:var(--hui-line-height-small)]"
       >
-        {pendingPrompt === null ? "" : `Waiting for a reply to “${pendingPrompt}”…`}
+        {pendingPrompt === null
+          ? "Send a message. The bar stays disabled until the reply ends."
+          : `Waiting for a reply to “${pendingPrompt}”…`}
       </p>
       <PromptBar
         placeholder="Write a message…"

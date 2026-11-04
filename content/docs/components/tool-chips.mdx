@@ -2,7 +2,7 @@
 title: Tool Chips
 metaTitle: React Tool Call Status and Results
 description: List the tool calls in an agent run, what each one returned, and the files the run changed.
-lastModified: "2026-10-13"
+lastModified: "2026-11-04"
 ---
 
 <ComponentPreview name="tool-chips-demo" previewClassName="h-auto min-h-[300px]" />
@@ -27,17 +27,17 @@ Use [Thinking State](/docs/components/thinking-state) instead when the run is re
   <AnatomyItem name="Changes" description="One chip for each changed file, with its diff in a popover" />
 </Anatomy>
 
-`ToolChips` is one component that takes data. Installing `tool-chips` brings [Collapsible](https://www.honestui.com/docs/components/collapsible) and [Popover](https://www.honestui.com/docs/components/popover) along as registry dependencies.
+`ToolChips` is one component that takes data. Installing `tool-chips` brings [Button](https://www.honestui.com/docs/components/button), [Collapsible](https://www.honestui.com/docs/components/collapsible), and [Popover](https://www.honestui.com/docs/components/popover) along as registry dependencies.
 
 ## Behavior
 
 ### Calls
 
-A call's `status` is `running`, `done`, or `error`, and defaults to done. A running call shows a spinner in place of its icon. A failed call shows an alert icon in the danger color. A call with `output` becomes a button that opens the output. A call without output is plain text.
+A call's `status` is `running`, `done`, or `error`, and defaults to done. A running call shows a spinner in place of its icon. A failed call shows an alert icon in the danger color. A finished call without its own `icon` shows a check in the success color. A call with `output` becomes a button that opens the output. A call without output is plain text.
 
 ### Output and diff lines
 
-Each line has a `kind`: `context`, `added`, or `removed`. When any line in a block is added or removed, every line in the block starts with a sign, and changed lines sit on a tint. A change is marked by a character as well as by color.
+Each line has a `kind`: `context`, `added`, or `removed`. When any line in a block is added or removed, every line in the block starts with a sign in the change's color, and changed lines sit on a light tint. A file's diff opens under a header with its path and counts. A change is marked by a character as well as by color.
 
 ### File changes
 
@@ -47,7 +47,7 @@ Each line has a `kind`: `context`, `added`, or `removed`. When any line in a blo
 
 The summary and every call with output are buttons that report whether they are expanded. The calls are a list. The file chips are a group named "Files changed".
 
-A running or failed call has its status in words after its label, read only by screen readers. A file chip reads its counts as "6 added" and "4 removed" in place of the bare signs. All of these strings come from `labels`.
+A running or failed call has its status in words after its label, read only by screen readers. A file chip reads its counts as "6 added" and "4 removed" in place of the bare signs, and leaves out a count that is zero. All of these strings come from `labels`.
 
 The diff popover can be opened and closed from the keyboard, and it takes its name from the file. Icons are decorative. With reduced motion, the spinner does not rotate and new rows appear without fading.
 

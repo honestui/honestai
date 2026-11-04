@@ -32,7 +32,7 @@ The four row types can be mixed in any order. Installing `thinking-state` brings
 
 ### Status
 
-`status` is `running`, `done`, or `error`. Running shimmers the label. Done sets it in the secondary text color. Error replaces the header icon with an alert icon in the danger color and sets the label in the primary text color, so it stays readable.
+`status` is `running`, `done`, or `error`. Running shimmers the label. Done sets it in the secondary text color. Error shows an alert icon in the danger color and sets the label in the primary text color, so it stays readable.
 
 ### Open and closed
 
@@ -140,7 +140,7 @@ Accepts native div props beyond those listed.
 | --- | --- | --- | --- |
 | `status` | `"running" \| "done" \| "error"` | Required | What the agent is doing now. |
 | `label` | string | Required | The header text. Announced when it changes. |
-| `icon` | ReactNode | Sparkles icon | Replaces the header icon. The error status always shows the alert icon. |
+| `icon` | ReactNode | None | An icon before the label. The error status always shows the alert icon. |
 | `open` | boolean | None | Controls whether the trace is shown. |
 | `defaultOpen` | boolean | Follows `status` | The initial open state. |
 | `onOpenChange` | `(open: boolean) => void` | None | Runs when the person opens or closes the trace. |

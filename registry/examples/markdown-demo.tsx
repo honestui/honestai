@@ -26,8 +26,10 @@ function exportTotal(rows: Row[]) {
 \`\`\`
 `
 
-// Cut into uneven pieces, so syntax arrives half-written as it does from a model.
-const sampleChunks = sampleReply.match(/[\s\S]{1,23}/g) ?? []
+// The preview opens with the first paragraph already shown, as if the reply had started a moment ago.
+const openingText = sampleReply.slice(0, sampleReply.indexOf("| Approach"))
+// The rest is cut into uneven pieces, so syntax arrives half-written as it does from a model.
+const sampleChunks = sampleReply.slice(openingText.length).match(/[\s\S]{1,23}/g) ?? []
 
 const CHUNK_MILLISECONDS = 160
 
@@ -59,7 +61,7 @@ export default function MarkdownDemo() {
         copyText={sampleReply}
         onRetry={() => setChunkCount(0)}
       >
-        <Markdown isStreaming={!isComplete}>{stream.text}</Markdown>
+        <Markdown className="[&_pre]:no-scrollbar" isStreaming={!isComplete}>{openingText + stream.text}</Markdown>
       </StreamingText>
     </div>
   )

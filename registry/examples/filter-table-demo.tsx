@@ -15,7 +15,10 @@ const sampleTasks: AgentTask[] = [
 ]
 
 const statusLabel = { todo: "To do", running: "In progress", done: "Completed" }
-const statusVariant = { todo: "neutral", running: "info", done: "success" } as const
+// One badge shape; only the tone changes. Status is not an interaction, so it
+// stays off the accent color. In progress takes the attention tone, as in
+// Linear's workflow states.
+const statusVariant = { todo: "secondary", running: "warning", done: "success" } as const
 
 export default function FilterTableDemo() {
   return (

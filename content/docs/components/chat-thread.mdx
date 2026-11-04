@@ -30,7 +30,7 @@ Chat Thread replaces the Chat panel from Beautiful UI, which played a scripted r
   <AnatomyItem name="Footer" description="Your composer" />
 </Anatomy>
 
-Installing `chat-thread` brings [Button](https://www.honestui.com/docs/components/button) along as a registry dependency.
+Installing `chat-thread` brings [Button](https://www.honestui.com/docs/components/button) and [Textarea](https://www.honestui.com/docs/components/textarea) along as registry dependencies.
 
 ## Behavior
 
@@ -54,7 +54,7 @@ Send calls `onEdit` with the trimmed text and waits for it. If the promise you r
 
 What an edit does to the conversation is your application's decision. Most products send the edited text as a new version of the message and discard the replies that followed the old one. If yours does, say so near the editor, since `onEdit` gives no warning of it.
 
-The Edit button is always visible, so it does not depend on hover.
+With a mouse, Edit appears when the person hovers over or focuses the message. On touch screens it stays visible.
 
 ### Versions
 

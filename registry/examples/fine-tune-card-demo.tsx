@@ -40,12 +40,18 @@ export default function FineTuneCardDemo() {
           },
         ]}
       />
-      <p
-        aria-live="polite"
-        className="m-0 font-mono text-[var(--hui-color-foreground-base-secondary)] [font-size:var(--hui-font-size-mono-mini)]"
-      >
-        {JSON.stringify(values)}
-      </p>
+      {/* Labelled, so the serialized values read as feedback rather than stray output. */}
+      <div className="flex min-w-0 flex-col gap-[var(--hui-space-1)] rounded-[var(--hui-radius-3)] bg-[var(--hui-color-background-neutral-primary)] px-[var(--hui-space-4)] py-[var(--hui-space-3)]">
+        <p className="m-0 text-[var(--hui-color-foreground-base-secondary)] [font-size:var(--hui-font-size-small)] [letter-spacing:var(--hui-letter-spacing-small)] [line-height:var(--hui-line-height-small)]">
+          Sent to <code className="font-mono">onValuesChange</code>
+        </p>
+        <p
+          aria-live="polite"
+          className="m-0 font-mono break-words text-[var(--hui-color-foreground-base-primary)] [font-size:var(--hui-font-size-mono-small)] [line-height:var(--hui-line-height-mono-small)]"
+        >
+          {JSON.stringify(values).replaceAll(",", ", ")}
+        </p>
+      </div>
     </div>
   )
 }

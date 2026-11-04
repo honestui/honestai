@@ -32,7 +32,7 @@ export default function PromptBarStopExample() {
         className="m-0 min-h-[var(--hui-space-5)] text-[var(--hui-color-foreground-base-secondary)] [font-size:var(--hui-font-size-small)] [line-height:var(--hui-line-height-small)]"
       >
         {reply === null
-          ? ""
+          ? "Send a message, then press Stop while the reply is pending."
           : reply.state === "pending"
             ? `Waiting for a reply to “${reply.prompt}”…`
             : reply.state === "stopped"

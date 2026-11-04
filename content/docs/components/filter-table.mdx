@@ -37,13 +37,14 @@ A chip that matches no rows shows 0 and can still be pressed. The table then sho
 
 ## Accessibility
 
-The chips are a named group of toggle buttons, and the active one reports that it is pressed. The table uses native table markup with column headers, and is named by `label`.
+The chips are a named group of toggle buttons in one segmented control, and the active one reports that it is pressed. On narrow screens the row scrolls sideways instead of wrapping above the table, a fade at the end edge shows more chips are out of view, and the chosen chip scrolls into view. The fade matches the page background; set `--filter-table-surface` when the table sits on another surface. The table uses native table markup with column headers, and is named by `label`.
 
-When the filter changes, a polite status announces how many rows are shown, as "2 of 5".
+When the filter changes, a polite status announces how many rows are shown, as "Showing 2 of 5 rows". Pass `countLabel` to word it differently or translate it.
 
 | Key | Action |
 | --- | --- |
-| <kbd>Tab</kbd> | Move across the chips |
+| <kbd>Tab</kbd> | Move into and out of the chips |
+| <kbd>ArrowLeft</kbd> or <kbd>ArrowRight</kbd> | Move between the chips |
 | <kbd>Enter</kbd> or <kbd>Space</kbd> | Apply the focused filter |
 
 ## Installation
@@ -122,6 +123,7 @@ The active filter is held in state and starts on Failed.
 | `allLabel` | string | `"All"` | The chip that shows every row. |
 | `filtersLabel` | string | English | The group name read before the chips. |
 | `emptyMessage` | string | English | Shown when the filter matches no rows. |
+| `countLabel` | `(shown: number, total: number) => string` | English | Announced when the filter changes. |
 | `activeFilter` | `string \| null` | None | The active filter's `id`, when you control it. |
 | `defaultActiveFilter` | `string \| null` | `null` | The initially active filter. |
 | `onActiveFilterChange` | `(filterId: string \| null) => void` | None | Runs when a chip is pressed. |

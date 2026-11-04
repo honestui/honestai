@@ -16,7 +16,8 @@ const failedRuns = [
 ]
 
 const failedRunsConfig = {
-  failed: { label: "Failed runs", colors: { light: ["#be123c"], dark: ["#fb7185"] } },
+  // A good-news finding, so the bars use the Honest UI accent rather than an alarm red.
+  failed: { label: "Failed runs", colors: { light: ["var(--hui-accent-9)"], dark: ["var(--hui-accent-10)"] } },
 } satisfies ChartConfig
 
 const lateInvoices = [
@@ -48,6 +49,7 @@ const chartFrame = "h-44 w-full min-w-0"
 const summary = "m-0 text-[var(--hui-color-foreground-base-secondary)]"
 
 /**
+ * The charts start drawn, so the evidence is there when a card appears.
  * Each card states its finding, plots it with an Honest UI chart, and then
  * gives the plotted values as text, because a canvas does not expose them.
  */
@@ -57,9 +59,10 @@ export default function InsightCardsDemo() {
       <InsightCards title="Insights">
         <InsightCard title="Failed runs fell from 9 to 2 a week after the rounding fix.">
           <div className={chartFrame}>
-            <BarChart data={failedRuns} config={failedRunsConfig} className="h-full w-full">
+            <BarChart data={failedRuns} config={failedRunsConfig} animation={false} className="h-full w-full">
               <BarChart.Grid />
               <BarChart.XAxis dataKey="week" />
+              <BarChart.YAxis />
               <BarChart.Tooltip />
               <BarChart.Bar dataKey="failed" variant="default" />
             </BarChart>
@@ -76,6 +79,7 @@ export default function InsightCardsDemo() {
               dataKey="invoices"
               nameKey="supplier"
               config={lateInvoicesConfig}
+              animation={false}
               className="h-full w-full"
             >
               <PieChart.Legend />
@@ -95,6 +99,7 @@ export default function InsightCardsDemo() {
               data={replyTimes}
               config={replyTimesConfig}
               xDataKey="day"
+              animation={false}
               className="h-full w-full"
             >
               <LineChart.Grid />

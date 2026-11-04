@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Scissors as ScissorsIcon, Sparkles as SparklesIcon } from "honestui/icons"
+import { PenLine as PenLineIcon, Scissors as ScissorsIcon } from "honestui/icons"
 
 import {
   SelectionActions,
@@ -38,7 +38,7 @@ export default function SelectionActionsDemo() {
 
   return (
     <div className="flex w-full max-w-md min-w-0 flex-col items-start gap-[var(--hui-space-3)]">
-      <p className="m-0 [font-size:var(--hui-font-size-regular)] [line-height:1.6]">
+      <p className="m-0 [font-size:var(--hui-font-size-regular)] [letter-spacing:var(--hui-letter-spacing-regular)] [line-height:var(--hui-line-height-regular)]">
         The export drifts by a cent.{" "}
         <mark className="rounded-[var(--hui-radius-1)] bg-[var(--hui-color-background-accent-primary)] px-0.5 text-[var(--hui-color-foreground-base-primary)]">
           {proposal ?? text}
@@ -47,7 +47,7 @@ export default function SelectionActionsDemo() {
       <SelectionActions
         status={status}
         actions={[
-          { id: "improve", label: "Improve", icon: <SparklesIcon aria-hidden="true" /> },
+          { id: "improve", label: "Improve", icon: <PenLineIcon aria-hidden="true" /> },
           { id: "shorten", label: "Shorten", icon: <ScissorsIcon aria-hidden="true" /> },
         ]}
         onAction={(actionId) => run(rewrites[actionId])}

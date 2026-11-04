@@ -189,7 +189,7 @@ Markdown renders native elements: headings, lists, tables, links, and block quot
 
 A heading in the source keeps its level. A reply that starts at `#` puts a level-one heading in the middle of your page. If that breaks your page's outline, map `h1` to `h3` in `components`.
 
-A table sits in a group named "Table" that can take focus, so a wide table can be scrolled from the keyboard. A task list item's checkbox is disabled and named "Done" or "Not done". The caret is hidden from assistive technology.
+A table sits in a group named "Table". When the table is wider than the reply, the group takes focus, so it can be scrolled from the keyboard; a table that fits adds no Tab stop. A task list item's checkbox is disabled and named "Done" or "Not done". The caret is hidden from assistive technology.
 
 A component drawn by `blocks` brings its own roles and names. Markdown adds none around it. Controls from `renderCodeActions` come before Copy in the tab order.
 

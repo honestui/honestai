@@ -17,8 +17,8 @@ Showing the retrieved text lets a person check an answer against its evidence. P
 
 <Anatomy title="ContextCards">
   <AnatomyItem name="Heading" description="The title and a count of passages" />
-  <AnatomyItem name="Card" description="One passage: title, an optional size or score, and the text" />
-  <AnatomyItem name="Source" description="Where the passage came from, as a link when you pass an address" />
+  <AnatomyItem name="Card" description="One passage: title, an optional rank, score, or size, and the text" />
+  <AnatomyItem name="Source" description="Where the passage came from, as a link with its domain when you pass an address" />
 </Anatomy>
 
 `context-cards` has no registry dependencies.
@@ -27,7 +27,7 @@ Showing the retrieved text lets a person check an answer against its evidence. P
 
 ### Sources
 
-A source with `href` is a link. A source without one is plain text, for files a person cannot open from the page.
+A source with `href` is a link, followed by its domain and an external-link icon. A source without one is plain secondary text after a file icon, with no chip, for files a person cannot open from the page, so it does not look pressable. Long source names wrap rather than truncate.
 
 ### Empty
 
@@ -35,7 +35,7 @@ With no passages, the count reads 0 and `emptyMessage` is shown in place of the 
 
 ## Accessibility
 
-The component is a section named by its heading, and the cards are a list. Source links are underlined, so they are not marked by color alone. Icons are decorative.
+The component is a section named by its heading, and the cards are a list. Source links sit in a filled chip with an external-link icon, so they are not marked by color alone. Icons are decorative.
 
 Context Cards has no motion and no keyboard interaction beyond its links.
 

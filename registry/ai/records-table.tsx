@@ -4,7 +4,6 @@ import * as React from "react"
 import {
   CircleAlert as CircleAlertIcon,
   LoaderCircle as LoaderCircleIcon,
-  Sparkles as SparklesIcon,
 } from "honestui/icons"
 
 import { cn } from "@/lib/utils"
@@ -17,6 +16,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+
+// The frame is drawn here rather than by a Table variant, so the component
+// keeps it when Table is installed from Honest UI. Cells wrap between words
+// first, so short values such as "EMEA" do not split at narrow widths.
+const tableFrame =
+  "overflow-hidden rounded-[var(--hui-radius-4)] border-[length:var(--hui-border-width-surface)] border-[var(--hui-color-border-base-primary)] bg-[var(--hui-color-background-base-primary)] shadow-[var(--hui-shadow-feather)] [&_thead]:bg-[var(--hui-color-background-base-secondary)] [&_th]:bg-[var(--hui-color-background-base-secondary)] [&_td]:text-[var(--hui-color-foreground-base-primary)] [&_td]:[overflow-wrap:break-word] [&_tbody>tr:last-child>td]:border-b-0"
 
 export type RecordsTableColumn = {
   id: string
@@ -56,8 +61,8 @@ export const defaultRecordsTableLabels: RecordsTableLabels = {
   queued: "Queued",
   running: "Working…",
   failed: "Failed",
-  retry: "Retry",
-  retryCell: (column, row) => `Retry ${column} for ${row}`,
+  retry: "Try again",
+  retryCell: (column, row) => `Try again: ${column} for ${row}`,
   progress: (done, total) => `${done} of ${total} generated cells done`,
 }
 
@@ -66,7 +71,7 @@ export type RecordsTableProps = {
   label: string
   columns: RecordsTableColumn[]
   rows: RecordsTableRow[]
-  /** Passing it shows Retry in every failed cell. */
+  /** Passing it shows Try again in every failed cell. */
   onRetry?: (rowId: string, columnId: string) => void
   labels?: Partial<RecordsTableLabels>
   className?: string
@@ -97,54 +102,66 @@ function RecordsTable({
 
   return (
     <div data-slot="records-table" className={cn("flex w-full min-w-0 flex-col gap-[var(--hui-space-3)]", className)}>
-      <Table variant="surface" aria-label={label}>
-        <TableHeader>
-          <TableRow>
-            {columns.map((column) => (
-              <TableHead key={column.id} scope="col">
-                <span className="flex items-center gap-[var(--hui-space-2)]">
-                  {column.isGenerated && (
-                    <>
-                      <SparklesIcon aria-hidden="true" className="size-3.5 shrink-0" />
-                      <span className="sr-only">{labels.generated}: </span>
-                    </>
-                  )}
-                  {column.header}
-                </span>
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              {columns.map((column) => (
-                <TableCell key={column.id} data-generated={column.isGenerated ? "" : undefined}>
-                  {column.isGenerated ? (
-                    <GeneratedCellContent
-                      cell={row.generated?.[column.id] ?? { status: "queued" }}
-                      labels={labels}
-                      retryLabel={labels.retryCell(column.header, row.name)}
-                      onRetry={onRetry ? () => onRetry(row.id, column.id) : undefined}
-                    />
-                  ) : (
-                    row.cells[column.id]
-                  )}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
       {total > 0 && (
-        // Announced as the count changes, so progress is heard without reading every cell.
+        // Above the table, next to the columns it counts, and announced as the
+        // count changes so progress is heard without reading every cell.
         <p
           role="status"
-          className="m-0 text-[var(--hui-color-foreground-base-secondary)] [font-size:var(--hui-font-size-small)] [line-height:var(--hui-line-height-small)]"
+          className="m-0 text-[var(--hui-color-foreground-base-secondary)] [font-size:var(--hui-font-size-small)] [letter-spacing:var(--hui-letter-spacing-small)] [line-height:var(--hui-line-height-small)]"
         >
           {labels.progress(done, total)}
         </p>
       )}
+      {/* The first and last cells clear the card's rounded corner, as the
+          other cards inset their content. */}
+      <div className={tableFrame}>
+        <Table
+          aria-label={label}
+          className="[&_tr>*:first-child]:ps-[var(--hui-space-5)] [&_tr>*:last-child]:pe-[var(--hui-space-5)]"
+        >
+          <TableHeader>
+            <TableRow>
+              {columns.map((column) => (
+                <TableHead key={column.id} scope="col">
+                  {column.isGenerated ? (
+                    // A separator and a lighter weight keep the marker from
+                    // reading as part of the column name.
+                    <span className="inline-flex flex-wrap items-baseline gap-x-[var(--hui-space-2)]">
+                      <span>{column.header}</span>
+                      <span className="inline-flex items-baseline gap-x-[var(--hui-space-2)] [font-weight:var(--hui-font-weight-regular)]">
+                        <span aria-hidden="true">·</span>
+                        {labels.generated}
+                      </span>
+                    </span>
+                  ) : (
+                    column.header
+                  )}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.id}>
+                {columns.map((column) => (
+                  <TableCell key={column.id} data-generated={column.isGenerated ? "" : undefined}>
+                    {column.isGenerated ? (
+                      <GeneratedCellContent
+                        cell={row.generated?.[column.id] ?? { status: "queued" }}
+                        labels={labels}
+                        retryLabel={labels.retryCell(column.header, row.name)}
+                        onRetry={onRetry ? () => onRetry(row.id, column.id) : undefined}
+                      />
+                    ) : (
+                      row.cells[column.id]
+                    )}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }
@@ -171,7 +188,15 @@ function GeneratedCellContent({
         />
         <span className="min-w-0 break-words">{cell.message ?? labels.failed}</span>
         {onRetry && (
-          <Button variant="secondary" size="xs" aria-label={retryLabel} onClick={onRetry}>
+          // The negative block margin keeps the 24px button inside the 20px
+          // line, so a failed cell does not make its row taller.
+          <Button
+            variant="secondary"
+            size="xs"
+            aria-label={retryLabel}
+            onClick={onRetry}
+            className="-my-[var(--hui-space-1)]"
+          >
             {labels.retry}
           </Button>
         )}
@@ -179,13 +204,17 @@ function GeneratedCellContent({
     )
   }
 
-  return (
-    <span className="flex items-center gap-[var(--hui-space-2)] text-[var(--hui-color-foreground-base-secondary)]">
-      {cell.status === "running" && (
-        <LoaderCircleIcon aria-hidden="true" className="size-3.5 shrink-0 motion-safe:animate-spin" />
-      )}
-      {cell.status === "running" ? labels.running : labels.queued}
+  // Working is louder than Queued, so the cell that is running stands out.
+  return cell.status === "running" ? (
+    <span className="flex items-center gap-[var(--hui-space-2)] text-[var(--hui-color-foreground-base-primary)]">
+      <LoaderCircleIcon
+        aria-hidden="true"
+        className="size-3.5 shrink-0 text-[var(--hui-color-foreground-base-secondary)] motion-safe:animate-spin"
+      />
+      {labels.running}
     </span>
+  ) : (
+    <span className="text-[var(--hui-color-foreground-base-secondary)]">{labels.queued}</span>
   )
 }
 

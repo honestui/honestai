@@ -21,7 +21,7 @@ Neither component holds the artifact or decides when it shows. Your application 
   <AnatomyItem name="ArtifactPanel" description="The frame beside the conversation">
     <AnatomyItem name="Header" description="The title, a short description, the status, your actions, and Close" />
     <AnatomyItem name="Error" description="A line under the header when the artifact stopped early, with Try again" />
-    <AnatomyItem name="Body" description="Your content, in a region that scrolls" />
+    <AnatomyItem name="Body" description="Your content, in a region that scrolls, ending with an Incomplete marker after an error" />
   </AnatomyItem>
   <AnatomyItem name="ArtifactCard" description="The mention of the artifact inside a message, which opens the panel" />
 </Anatomy>
@@ -36,7 +36,7 @@ Installing `artifact-panel` brings [Button](https://www.honestui.com/docs/compon
 
 - `streaming` shows "Writing…" in the panel's header and on the card.
 - `complete` shows the description.
-- `error` shows a line under the header saying the artifact stopped early, and the same sentence on the card. What was written so far stays in the body.
+- `error` shows a line under the header saying the artifact stopped early, and the same sentence on the card. What was written so far stays in the body, followed by an Incomplete marker where it stops.
 
 Passing `onRetry` adds Try again to the error line. Requesting the artifact again and resetting `status` are your application's work.
 
@@ -60,11 +60,11 @@ The body has padding, which suits a document. Set `flush` to remove it for conte
 
 When a person opens the panel, set `autoFocus`, so the panel takes focus and a keyboard or screen reader user lands in what they asked for. When a reply opens the panel by itself, leave `autoFocus` off, so focus is not pulled out of the prompt the person is typing.
 
-Closing the panel removes the focused button. In `onClose`, return focus to the card that opened it, as the preview does.
+Closing the panel removes the focused button. In `onClose`, return focus to the card that opened it, as the preview does. Try again removes the error line it sits in, so the panel takes focus when it is pressed.
 
 ## Accessibility
 
-The panel is a region named by its title. "Writing…" is a status and the error line is an alert, so both are announced when they appear. The body can take focus, so it can be scrolled from the keyboard.
+The panel is a region named by its title. "Writing…" is a status and the error line is an alert, so both are announced when they appear. While its content is taller or wider than the body, the body can take focus, so it can be scrolled from the keyboard.
 
 The card reports whether its panel is open through `aria-expanded`, and shows the same thing in words. Close and Try again are buttons with names.
 
@@ -77,7 +77,7 @@ The preview has been checked with a keyboard and with axe. It has not been check
 | Key | Action |
 | --- | --- |
 | <kbd>Enter</kbd> or <kbd>Space</kbd> | Open the panel from its card, or activate Close or Try again |
-| <kbd>Tab</kbd> | Move through the header's controls, then into the body |
+| <kbd>Tab</kbd> | Move through the header's controls, then into the body when it scrolls |
 | Arrow keys | Scroll the focused body |
 
 ## Installation
@@ -199,7 +199,7 @@ Accepts native button props beyond those listed, including `onClick`.
 | --- | --- | --- | --- |
 | `title` | string | Required | The same title as the panel it opens. |
 | `description` | string | None | A short note under the title. |
-| `status` | `ArtifactStatus` | `"complete"` | Replaces the description while the artifact is unfinished. |
+| `status` | `ArtifactStatus` | `"complete"` | Replaces the description while the artifact is unfinished. While `isOpen`, a finished card hides the description, which the panel header shows. |
 | `isOpen` | boolean | `false` | Whether this artifact's panel is showing. |
 | `icon` | ReactNode | A document | Shown before the title. |
 | `labels` | `Partial<ArtifactLabels>` | English | Control names and status text. |
@@ -209,4 +209,4 @@ Accepts native button props beyond those listed, including `onClick`.
 | Export | Shape |
 | --- | --- |
 | `ArtifactStatus` | `"streaming"`, `"complete"`, or `"error"` |
-| `ArtifactLabels` | `open`, `showing`, `close`, `streaming`, `error`, `retry` |
+| `ArtifactLabels` | `open`, `showing`, `close`, `streaming`, `error`, `retry`, `incomplete` |

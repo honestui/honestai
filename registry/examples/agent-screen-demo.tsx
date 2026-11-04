@@ -10,7 +10,7 @@ export default function AgentScreenDemo() {
   const [note, setNote] = React.useState("")
 
   return (
-    <div className="flex w-full max-w-sm min-w-0 flex-col gap-[var(--hui-space-3)]">
+    <div className="flex w-full max-w-lg min-w-0 flex-col gap-[var(--hui-space-3)]">
       <AgentScreen
         title="Research agent's screen"
         src="/examples/crm-client-workspace.png"

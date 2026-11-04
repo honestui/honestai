@@ -20,10 +20,12 @@ const CELL_MILLISECONDS = 1100
 
 /**
  * No model fills these cells. A timer completes one cell at a time, and the
- * second one fails on its first pass to show the error state and Retry.
+ * second one fails on its first pass to show the error state and Try again.
+ * The first cell starts done so the opening view shows a finished summary;
+ * running the sample again replays every cell from the start.
  */
 export default function RecordsTableDemo() {
-  const [completed, setCompleted] = React.useState(0)
+  const [completed, setCompleted] = React.useState(1)
   const [isRetried, setIsRetried] = React.useState(false)
   const isRunning = completed < sampleRecords.length
 

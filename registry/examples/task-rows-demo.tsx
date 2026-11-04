@@ -30,7 +30,7 @@ const sampleTasks: Task[] = [
   { id: "summary", label: "Write the summary", status: "queued" },
 ]
 
-/** No agent runs here. Retry moves the failed task to running, as your handler would. */
+/** No agent runs here. Try again moves the failed task to running, as your handler would. */
 export default function TaskRowsDemo() {
   const [tasks, setTasks] = React.useState(sampleTasks)
 

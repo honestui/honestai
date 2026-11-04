@@ -58,7 +58,7 @@ The options are a radio group or a group of checkboxes, named by the prompt. Eac
 
 The step line is a polite live region, so moving to another question announces "Question 2 of 3". The confirmation is a status. The error is an alert.
 
-Sending replaces the Send button with the confirmation. When that happens, the card takes focus so the next <kbd>Tab</kbd> continues from the card instead of the top of the page.
+Sending replaces the Send button with the confirmation. When that happens, the card takes focus so the next <kbd>Tab</kbd> continues from the card instead of the top of the page. While sending, Send stays focusable and ignores presses rather than becoming disabled. Going Back to the first question removes Back, so focus moves to the footer's main button.
 
 Every string comes from `labels`, including the dismiss button's name. The prompt and the option labels are yours.
 
@@ -163,4 +163,4 @@ Accepts native div props beyond those listed.
 | `ApprovalOption` | `value`, `label` |
 | `ApprovalAnswer` | `selected` (the chosen option values) and `custom` (the typed answer) |
 | `ApprovalAnswers` | An `ApprovalAnswer` for each question, keyed by question `id` |
-| `ApprovalCardLabels` | `back`, `skip`, `continue`, `send`, `sending`, `dismiss`, `customAnswer`, `customPlaceholder`, `step`, `incomplete`, `submitted`, `error` |
+| `ApprovalCardLabels` | `back`, `skip`, `continue`, `send`, `sending`, `dismiss`, `customAnswer`, `customPlaceholder`, `step`, `incomplete`, `incompleteSingle`, `required`, `submitted`, `error` |

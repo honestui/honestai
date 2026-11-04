@@ -140,6 +140,14 @@ function textColorStyle(color: unknown): React.CSSProperties | undefined {
 }
 
 // Badge has the soft tints. A solid Tag takes its colors from here.
+const badgeTones = {
+  neutral: "secondary",
+  info: "info",
+  success: "success",
+  warning: "warning",
+  danger: "error",
+} as const satisfies Record<Tone, string>;
+
 const solidTags: Record<Tone, string> = {
   neutral:
     "bg-[var(--hui-color-foreground-base-primary)] text-[var(--hui-color-background-base-primary)]",
@@ -537,7 +545,7 @@ export function GeneratedComponent(
     case "Tag": {
       const tone = tones[text(p.variant)] ?? "neutral";
       return p.fill === "solid" ? (
-        <Badge variant="neutral" className={solidTags[tone]}>
+        <Badge variant="secondary" className={solidTags[tone]}>
           {render(p.icon)}
           {text(p.text)}
         </Badge>
@@ -553,7 +561,7 @@ export function GeneratedComponent(
           {text(p.text)}
         </Badge>
       ) : (
-        <Badge variant={tone}>
+        <Badge variant={badgeTones[tone]}>
           {render(p.icon)}
           {text(p.text)}
         </Badge>
@@ -563,7 +571,7 @@ export function GeneratedComponent(
       return (
         <div className="flex flex-wrap gap-2">
           {array(p.tags).map((tag, i) => (
-            <Badge key={i} variant="neutral">
+            <Badge key={i} variant="secondary">
               {text(tag)}
             </Badge>
           ))}

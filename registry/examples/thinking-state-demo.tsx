@@ -18,10 +18,11 @@ const STEP_MILLISECONDS = 900
 /**
  * No agent runs behind this preview. A timer completes one step at a time so
  * you can see the running state settle; your application sets `status` and
- * the steps from its own events.
+ * the steps from its own events. The preview opens one step in, so the
+ * trace is legible before the first timer fires.
  */
 export default function ThinkingStateDemo() {
-  const [completed, setCompleted] = React.useState(0)
+  const [completed, setCompleted] = React.useState(1)
   const isRunning = completed < sampleSteps.length
 
   React.useEffect(() => {

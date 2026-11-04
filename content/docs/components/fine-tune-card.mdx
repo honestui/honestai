@@ -32,7 +32,7 @@ A number field accepts typing, steps with the arrow keys, and scrubs when its la
 
 ### Edited and Reset
 
-When any value differs from `defaultValues`, the header says Edited and offers Reset, which returns every control to its default and reports the defaults through `onValuesChange`.
+When any value differs from `defaultValues`, the header says Edited and Reset becomes available. Reset returns every control to its default and reports the defaults through `onValuesChange`. Reset stays in the header when nothing is edited, marked unavailable with `aria-disabled`, so pressing it never moves focus or changes the header's shape.
 
 ## Accessibility
 

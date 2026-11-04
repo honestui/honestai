@@ -18,15 +18,17 @@ export default function SidebarNavDemo() {
   const [activeThread, setActiveThread] = React.useState<string | undefined>("t1")
 
   return (
-    <div className="flex h-96 w-full max-w-lg min-w-0 overflow-hidden rounded-[var(--hui-radius-4)] border-[0.5px] border-[var(--hui-color-border-base-primary)]">
+    <div className="flex h-96 w-full max-w-lg min-w-0 overflow-hidden rounded-[var(--hui-radius-4)] border-[length:var(--hui-border-width-surface)] border-[var(--hui-color-border-base-primary)]">
       <SidebarNav
+        className="[&_ul]:no-scrollbar"
         header={<span className="[font-weight:var(--hui-font-weight-medium)]">Sample workspace</span>}
         items={[
           { id: "home", label: "Home", icon: <GlobeIcon /> },
           { id: "files", label: "Files", icon: <FileTextIcon />, badge: "12" },
           { id: "tools", label: "Tools", icon: <WrenchIcon /> },
         ]}
-        activeItemId={activeItem}
+        // An open chat is the current location, so no destination is marked current with it.
+        activeItemId={activeThread ? undefined : activeItem}
         onNavigate={(itemId) => {
           setActiveItem(itemId)
           setActiveThread(undefined)
@@ -34,7 +36,10 @@ export default function SidebarNavDemo() {
         threads={sampleThreads}
         activeThreadId={activeThread}
         onThreadSelect={setActiveThread}
-        onNewChat={() => setActiveThread(undefined)}
+        onNewChat={() => {
+          setActiveItem("home")
+          setActiveThread(undefined)
+        }}
       />
       <p className="m-0 min-w-0 flex-1 p-[var(--hui-space-5)] text-[var(--hui-color-foreground-base-secondary)] [font-size:var(--hui-font-size-small)]">
         {activeThread

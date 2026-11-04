@@ -110,8 +110,10 @@
   font-weight: var(--hui-font-weight-semibold, 600);
 }
 
+/* Code shows the characters as typed, so ligatures such as => are off. */
 .honest-prose :where(code, kbd, samp):not(:where(.not-prose, .not-prose *)) {
   font-family: var(--_font-mono);
+  font-variant-ligatures: none;
 }
 
 /* Inline code and code blocks set their own sizes, so code is not shrunk twice. */
@@ -119,15 +121,16 @@
   font-size: 0.9em;
 }
 
-/* Inline code matches the docs site: a page-colored chip with a rule. */
+/* Inline code matches the docs site: a page-colored chip with a hairline. Its
+   padding sits inside the chip, so the spaces around it are the only gap. */
 .honest-prose :where(:not(pre) > code):not(:where(.not-prose, .not-prose *)) {
-  margin-inline: 0.25rem;
-  border: 1px solid var(--_rule-strong);
+  border: var(--hui-border-width-surface, 0.5px) solid var(--_rule-strong);
   border-radius: var(--_radius);
   background: var(--hui-color-background-base-primary, Canvas);
   padding: 1px 0.3rem;
   color: var(--prose-code-color, inherit);
-  font-size: 0.8em;
+  /* 12px at the 14px body size, so inline code stays on the type scale. */
+  font-size: var(--hui-font-size-mono-small, 0.857em);
 }
 
 .honest-prose :where(kbd):not(:where(.not-prose, .not-prose *)) {
@@ -149,6 +152,11 @@
 
 .honest-prose :where(ol):not(:where(.not-prose, .not-prose *)) {
   list-style: decimal;
+}
+
+/* Browsers give list numbers tabular figures, which LoveSans draws like code. */
+.honest-prose :where(ol > li)::marker {
+  font-variant-numeric: normal;
 }
 
 .honest-prose :where(ul ul):not(:where(.not-prose, .not-prose *)) {
@@ -233,8 +241,7 @@
   border-spacing: 0;
   border-radius: var(--hui-radius-4, 0.5em);
   box-shadow: var(--hui-shadow-feather, none);
-  font-size: 0.857em;
-  line-height: 1.34;
+  /* Cells are content, so they keep the body size and line height. */
 }
 
 .honest-prose :where(.prose-scroll) > :where(table) {
@@ -245,6 +252,15 @@
   padding: calc(var(--_flow) * 0.667) var(--_flow);
   vertical-align: top;
   text-align: start;
+}
+
+/* The outer cells clear the table's rounded corners, as framed tables do elsewhere. */
+.honest-prose :where(tr > :first-child):not(:where(.not-prose, .not-prose *)) {
+  padding-inline-start: var(--hui-space-5, calc(var(--_flow) * 1.333));
+}
+
+.honest-prose :where(tr > :last-child):not(:where(.not-prose, .not-prose *)) {
+  padding-inline-end: var(--hui-space-5, calc(var(--_flow) * 1.333));
 }
 
 .honest-prose :where(th):not(:where(.not-prose, .not-prose *)) {
@@ -281,7 +297,7 @@
 .honest-prose :where(figcaption):not(:where(.not-prose, .not-prose *)) {
   margin-block-start: calc(var(--_flow) / 2);
   color: var(--_muted);
-  font-size: 0.857em;
+  font-size: calc(1em * 6 / 7);
 }
 
 /* Last, so it wins over the flow rules above: nothing is pushed off the top of its container. */

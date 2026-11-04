@@ -3,6 +3,7 @@
 import * as React from "react"
 
 import { FilterTable } from "@/registry/ai/filter-table"
+import { Badge } from "@/components/ui/badge"
 
 type Run = { id: string; name: string; result: "passed" | "failed" }
 
@@ -26,7 +27,16 @@ export default function FilterTableControlledExample() {
         onActiveFilterChange={setFilter}
         columns={[
           { id: "name", header: "Run", cell: (row) => row.name },
-          { id: "result", header: "Result", cell: (row) => (row.result === "passed" ? "Passed" : "Failed") },
+          {
+            id: "result",
+            header: "Result",
+            cell: (row) =>
+              row.result === "passed" ? (
+                <Badge variant="success">Passed</Badge>
+              ) : (
+                <Badge variant="error">Failed</Badge>
+              ),
+          },
         ]}
         filters={[
           { id: "passed", label: "Passed", matches: (row) => row.result === "passed" },

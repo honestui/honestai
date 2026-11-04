@@ -4,13 +4,14 @@ import * as React from "react"
 
 import { SearchList, type SearchListItem } from "@/registry/ai/search-list"
 
-// Sample saved prompts.
+// Sample saved prompts. A description is shown only where it tells one row
+// from the others, here the prompts shared with a team.
 const samplePrompts: SearchListItem[] = [
-  { id: "summarize", label: "Summarize this thread", description: "Saved prompt" },
-  { id: "review", label: "Review the last change", description: "Saved prompt" },
-  { id: "plan", label: "Plan before editing", description: "Saved prompt" },
-  { id: "tests", label: "Write tests for this file", description: "Saved prompt" },
-  { id: "explain", label: "Explain this error", description: "Saved prompt" },
+  { id: "summarize", label: "Summarize this thread" },
+  { id: "review", label: "Review the last change", description: "Shared" },
+  { id: "plan", label: "Plan before editing" },
+  { id: "tests", label: "Write tests for this file", description: "Shared" },
+  { id: "explain", label: "Explain this error" },
 ]
 
 export default function SearchListDemo() {

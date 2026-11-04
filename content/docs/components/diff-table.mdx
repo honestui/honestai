@@ -2,7 +2,7 @@
 title: Diff Table
 metaTitle: React Diff Table for Reviewing Agent Changes
 description: Review the rows an agent proposes to add or remove, clear the ones you do not want, and apply the rest.
-lastModified: "2026-10-13"
+lastModified: "2026-11-04"
 ---
 
 <ComponentPreview name="diff-table-demo" previewClassName="h-auto min-h-[380px]" />
@@ -30,11 +30,11 @@ Installing `diff-table` brings [Button](https://www.honestui.com/docs/components
 
 ### Selecting changes
 
-A selected addition is tinted green and a selected removal is tinted red with its cells struck through. Clearing a change removes the tint, and the row is left as it is today. The footer counts what is selected, and Apply is disabled when nothing is.
+A selected addition has a light green tint and a selected removal a light red one, with the row's name in the first column struck through. The other values stay readable, so you can review what is being removed. Clearing a change removes the tint, and the row is left as it is today. The footer counts what is selected, and Apply is disabled when nothing is.
 
 ### Applying
 
-If `onApply` returns a promise, Apply shows progress and the checkboxes lock until it settles. When it resolves, the footer confirms how many changes were applied. When it rejects, the footer shows an error and keeps the selection.
+If `onApply` returns a promise, Apply shows progress and the checkboxes lock until it settles. When it resolves, the footer confirms how many changes were applied and Apply goes away; if Apply had focus, the confirmation takes it. Apply stays focusable while it works. When it rejects, the footer shows an error and keeps the selection.
 
 ## Accessibility
 

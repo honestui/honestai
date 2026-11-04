@@ -2,7 +2,7 @@
 title: Prose Code Block
 metaTitle: React Code Block for Markdown and Chat Replies
 description: Code in a document, framed like the docs' code blocks, with its language and a copy button.
-lastModified: "2026-10-14"
+lastModified: "2026-11-04"
 ---
 
 <ComponentPreview name="prose-code-block-demo" previewClassName="h-auto min-h-[200px]" />
@@ -26,7 +26,7 @@ Installing `prose-code-block` brings [Button](https://www.honestui.com/docs/comp
 
 ### Copy
 
-Copy puts the code on the clipboard and shows a check for a moment. If the browser refuses clipboard access, the block says "Copy failed" instead of pretending it worked. Copy is always visible, so it works with touch and keyboard as well as a pointer.
+Copy puts the code on the clipboard, and its label reads "Copied" with a check for a moment. If the browser refuses clipboard access, the block says "Copy failed" instead of pretending it worked. Copy is always visible, so it works with touch and keyboard as well as a pointer.
 
 ### Actions
 
@@ -34,15 +34,15 @@ Copy puts the code on the clipboard and shows a check for a moment. If the brows
 
 ### Long lines
 
-Lines do not wrap. The panel scrolls sideways.
+Lines do not wrap. The panel scrolls sideways, with a thin scrollbar and a fade at the end edge while more is out of view.
 
 ## Accessibility
 
-The block is a figure with the language or file name as its caption. The panel can take focus, so a keyboard user can scroll long lines, and it is named by the same label. Copy is an icon button named "Copy code", and it announces "Copied" or "Copy failed" through a polite status.
+The block is a figure with the language or file name as its caption. When its lines are wider than the panel, the panel can take focus, so a keyboard user can scroll them, and it is named by the same label. A block that fits adds no tab stop. Copy is a button with a visible "Copy" label, and it announces "Copied" or "Copy failed" through a polite status.
 
 | Key | Action |
 | --- | --- |
-| <kbd>Tab</kbd> | Move to your actions, then Copy, then the code |
+| <kbd>Tab</kbd> | Move to your actions, then Copy, then the code when it scrolls |
 | Arrow keys | Scroll the focused code |
 | <kbd>Enter</kbd> or <kbd>Space</kbd> | Copy |
 

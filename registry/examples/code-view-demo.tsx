@@ -8,7 +8,7 @@ const sampleCode = `function exportTotal(rows: Row[]) {
 export default function CodeViewDemo() {
   return (
     <div className="w-full max-w-md min-w-0">
-      <CodeView filename="export.ts" code={sampleCode} />
+      <CodeView className="[&_pre]:no-scrollbar" filename="export.ts" code={sampleCode} />
     </div>
   )
 }

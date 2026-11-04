@@ -6,7 +6,7 @@ import { SidebarNav } from "@/registry/ai/sidebar-nav"
 
 export default function SidebarNavCollapsedExample() {
   return (
-    <div className="flex h-64 w-full max-w-lg min-w-0 overflow-hidden rounded-[var(--hui-radius-4)] border-[0.5px] border-[var(--hui-color-border-base-primary)]">
+    <div className="flex h-64 w-full max-w-lg min-w-0 overflow-hidden rounded-[var(--hui-radius-4)] border-[length:var(--hui-border-width-surface)] border-[var(--hui-color-border-base-primary)]">
       <SidebarNav
         defaultCollapsed
         labels={{ navigation: "Workspace, collapsed example" }}

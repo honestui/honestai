@@ -33,7 +33,7 @@ Installing `selection-actions` brings [Button](https://www.honestui.com/docs/com
 - `result` shows Keep and Discard.
 - `error` shows a message and Discard.
 
-Pass `onRetry` to add Try again to a result or an error.
+Pass `onRetry` to add Try again to a result or an error. After an error, Try again comes first, because it is the recovery. While working or after an error, the bar keeps the width it had with its actions, so it does not jump.
 
 ### Prompt
 
@@ -43,7 +43,7 @@ Pass `onPrompt` to add the field. Send is disabled while it is empty, and the fi
 
 The bar is a toolbar with a name. Working and the error are announced through a status that stays mounted. The prompt field has a name, and Send is a submit button.
 
-When the status changes, the buttons under focus are replaced. Move focus to the new controls from your handler if the person triggered the change from the keyboard.
+When the status changes, the buttons under focus are replaced. If focus was in the bar, the bar moves it for you: to the bar itself while working, to Keep on a result, and to Try again (or Discard) after an error. Focus elsewhere on the page is never moved.
 
 With reduced motion, the working label does not shimmer.
 

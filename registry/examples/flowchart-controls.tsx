@@ -24,7 +24,7 @@ export default function FlowchartControlsExample() {
     <div className="w-full max-w-md min-w-0">
       <Flowchart label="Condition editor">
         <FlowStep kind="Trigger" title="Invoice becomes overdue" />
-        <FlowStep kind="If / Else" title="Branch on a field">
+        <FlowStep kind="Condition" title="Branch on a field">
           <Select
             items={fields}
             value={field}

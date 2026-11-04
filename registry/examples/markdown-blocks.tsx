@@ -35,7 +35,7 @@ const sampleReply = `The follow-up runs as **three steps**:
   "label": "Invoice follow-up workflow",
   "steps": [
     { "kind": "Trigger", "title": "Invoice becomes overdue", "caption": "Runs the day after the due date." },
-    { "kind": "If / Else", "title": "Amount is over 1,000", "caption": "Larger invoices go to a person first." },
+    { "kind": "Condition", "title": "If the amount is over 1,000", "caption": "Larger invoices go to a person first." },
     { "kind": "Action", "title": "Draft a reminder email", "caption": "Waits for approval." }
   ]
 }
@@ -44,8 +44,10 @@ const sampleReply = `The follow-up runs as **three steps**:
 Nothing is sent until someone approves the draft.
 `
 
-// Cut into uneven pieces, so the block's data arrives half-written as it does from a model.
-const sampleChunks = sampleReply.match(/[\s\S]{1,31}/g) ?? []
+// The first sentence arrives whole, so the preview opens on readable text. The
+// rest is cut into uneven pieces, so the block's data arrives half-written as it does from a model.
+const openingText = sampleReply.slice(0, sampleReply.indexOf("```"))
+const sampleChunks = [openingText, ...(sampleReply.slice(openingText.length).match(/[\s\S]{1,31}/g) ?? [])]
 
 const CHUNK_MILLISECONDS = 140
 
@@ -54,7 +56,7 @@ const CHUNK_MILLISECONDS = 140
  * piece at a time. Try again restarts the timer.
  */
 export default function MarkdownBlocksExample() {
-  const [chunkCount, setChunkCount] = React.useState(0)
+  const [chunkCount, setChunkCount] = React.useState(1)
   const isComplete = chunkCount >= sampleChunks.length
 
   React.useEffect(() => {
@@ -69,7 +71,7 @@ export default function MarkdownBlocksExample() {
         status={isComplete ? "complete" : "streaming"}
         // The text changes several times a second, which is too much to announce.
         announce={false}
-        onRetry={() => setChunkCount(0)}
+        onRetry={() => setChunkCount(1)}
       >
         <Markdown isStreaming={!isComplete} blocks={blocks}>
           {sampleChunks.slice(0, chunkCount).join("")}

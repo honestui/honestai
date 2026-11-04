@@ -19,7 +19,7 @@ export default function ContextMeterRingExample() {
       <Button variant="secondary" size="sm" onClick={() => setUsed(used + SAMPLE_STEP)}>
         Add 30,000 tokens
       </Button>
-      <Button variant="link" size="sm" disabled={used === 48_000} onClick={() => setUsed(48_000)}>
+      <Button variant="ghost" size="sm" disabled={used === 48_000} onClick={() => setUsed(48_000)}>
         Reset
       </Button>
     </div>

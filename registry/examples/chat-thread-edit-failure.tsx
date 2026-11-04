@@ -15,8 +15,11 @@ export default function ChatThreadEditFailureExample() {
   const attempts = React.useRef(0)
 
   return (
-    <div className="h-64 w-full max-w-md min-w-0">
-      <ChatThread label="Conversation with the billing agent">
+    <div className="flex h-72 w-full max-w-md min-w-0 flex-col gap-[var(--hui-space-3)]">
+      <p className="m-0 text-[var(--hui-color-foreground-base-secondary)] [font-size:var(--hui-font-size-small)] [letter-spacing:var(--hui-letter-spacing-small)] [line-height:var(--hui-line-height-small)]">
+        Point at the message, or press Tab to reach it, then choose Edit and Send.
+      </p>
+      <ChatThread label="Conversation with the billing agent" className="min-h-0 flex-1">
         <ChatMessage
           role="user"
           author="You"

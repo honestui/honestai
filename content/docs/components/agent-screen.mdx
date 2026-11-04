@@ -28,7 +28,7 @@ Installing `agent-screen` brings [Dialog](https://www.honestui.com/docs/componen
 
 ### Status
 
-`live` shows the capture. `connecting` shows a spinner and a message. `offline` shows a message and no capture. The frame can be opened only while live.
+`live` shows the capture and the word "Live" beside the title. `connecting` shows a spinner and a message. `offline` shows a message and no capture. The frame can be opened only while live.
 
 ### Media
 
@@ -119,4 +119,4 @@ Accepts native div props beyond those listed.
 | `src` | string | None | The capture or stream URL. |
 | `mediaType` | `"image" \| "video"` | `"image"` | How to render `src`. |
 | `actions` | ReactNode | None | Controls in the viewer's header. |
-| `labels` | `Partial<AgentScreenLabels>` | English | The Open name and the two status messages. |
+| `labels` | `Partial<AgentScreenLabels>` | English | The Open name, the Live label, and the two status messages. |

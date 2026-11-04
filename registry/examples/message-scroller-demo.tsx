@@ -21,8 +21,9 @@ export default function MessageScrollerDemo() {
       <MessageScroller
         label="Sample conversation"
         navigation="rail"
-        className="h-96 rounded-lg border bg-background"
-        contentClassName="flex flex-col gap-5 p-5"
+        viewportClassName="no-scrollbar"
+        className="h-96 rounded-[var(--hui-radius-4)] border-[length:var(--hui-border-width-surface)] border-[var(--hui-color-border-base-primary)] bg-[var(--hui-color-background-base-primary)]"
+        contentClassName="flex flex-col gap-[var(--hui-space-5)] p-[var(--hui-space-5)]"
       >
         {messages.map((message, index) => (
           <ChatMessage
@@ -37,7 +38,7 @@ export default function MessageScrollerDemo() {
           </ChatMessage>
         ))}
       </MessageScroller>
-      <p className="mt-3 text-sm text-muted-foreground">
+      <p className="mt-[var(--hui-space-3)] mb-0 text-[var(--hui-color-foreground-base-secondary)] [font-size:var(--hui-font-size-small)] [line-height:var(--hui-line-height-small)]">
         Static sample conversation. No model is connected. Use the rail to revisit a message.
       </p>
     </div>

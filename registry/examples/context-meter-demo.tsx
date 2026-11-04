@@ -36,7 +36,7 @@ export default function ContextMeterDemo() {
         <Button variant="secondary" size="sm" onClick={() => setAddedFiles(addedFiles + 1)}>
           Add a 40,000-token file
         </Button>
-        <Button variant="link" size="sm" disabled={addedFiles === 0} onClick={() => setAddedFiles(0)}>
+        <Button variant="ghost" size="sm" disabled={addedFiles === 0} onClick={() => setAddedFiles(0)}>
           Reset
         </Button>
       </div>

@@ -32,7 +32,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <>
       <Button
-        variant="link"
+        variant="ghost"
         size="sm"
         onClick={async () => {
           try {

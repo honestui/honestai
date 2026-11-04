@@ -10,8 +10,8 @@ export default function FlowchartDemo() {
           caption="Runs once for each invoice, the day after its due date."
         />
         <FlowStep
-          kind="If / Else"
-          title="Amount is over 1,000"
+          kind="Condition"
+          title="If the amount is over 1,000"
           caption="Larger invoices go to a person before any email is sent."
         />
         <FlowStep kind="Action" title="Draft a reminder email" caption="Waits for approval." />

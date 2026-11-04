@@ -31,7 +31,7 @@ Installing `recommendation-card` brings [Button](https://www.honestui.com/docs/c
 
 ### Options
 
-The first option is the recommendation. Choosing an alternative makes it the selected option: the body, the confidence, and the accept button's text all change to match.
+The first option is the recommendation. Choosing an alternative makes it the selected option: the body, the confidence, and the accept button's text all change to match, and focus moves to the accept button. Once another option has been viewed, the first one is marked Recommended in the list and, when it is selected again, beside its confidence.
 
 ### Confidence
 
@@ -39,7 +39,7 @@ The first option is the recommendation. Choosing an alternative makes it the sel
 
 ### Accepting
 
-If `onAccept` returns a promise, the button shows progress and the card locks until it settles. When it resolves, the card confirms and stays locked. When it rejects, the card shows an error and the person can accept again or pick another option.
+If `onAccept` returns a promise, the button shows progress and the card locks until it settles. The button stays focusable while locked (it is `aria-disabled`, not `disabled`), so focus does not jump away. When it resolves, the card confirms and stays locked. When it rejects, the card shows an error and the person can accept again or pick another option.
 
 ## Accessibility
 
@@ -117,7 +117,7 @@ Accepts native div props beyond those listed.
 | `title` | string | Required | The question the agent is asking. |
 | `options` | `RecommendationOption[]` | Required | The recommendation first, then the alternatives. |
 | `onAccept` | `(option) => void \| Promise<void>` | Required | Receives the chosen option. |
-| `labels` | `Partial<RecommendationCardLabels>` | English | Button names and outcome messages. |
+| `labels` | `Partial<RecommendationCardLabels>` | English | Button names, the Recommended mark, and outcome messages. |
 
 ### Types
 

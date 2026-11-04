@@ -18,6 +18,9 @@ const sampleChunks = [
   "The same ratio applies to the boundaries of controls.",
 ]
 const sampleText = sampleChunks.join("")
+// The preview opens with the first chunks already shown, as if the reply had started a moment ago.
+const OPENING_CHUNKS = 2
+const openingText = sampleChunks.slice(0, OPENING_CHUNKS).join("")
 
 const sampleSources = [
   {
@@ -41,10 +44,10 @@ const CHUNK_MILLISECONDS = 420
  * bottom shows what each handler received.
  */
 export default function StreamingTextDemo() {
-  const [chunkCount, setChunkCount] = React.useState(0)
+  const [chunkCount, setChunkCount] = React.useState(OPENING_CHUNKS)
   const [received, setReceived] = React.useState("")
   const hasAllChunks = chunkCount >= sampleChunks.length
-  const stream = useSmoothStream(sampleChunks.slice(0, chunkCount).join(""))
+  const stream = useSmoothStream(sampleChunks.slice(OPENING_CHUNKS, chunkCount).join(""))
   const isComplete = hasAllChunks && stream.isSettled
 
   React.useEffect(() => {
@@ -61,12 +64,13 @@ export default function StreamingTextDemo() {
         sources={sampleSources}
         onRetry={() => {
           setReceived("")
-          setChunkCount(0)
+          setChunkCount(OPENING_CHUNKS)
         }}
         onFeedbackChange={(feedback: StreamingTextFeedback) =>
           setReceived(`onFeedbackChange received ${JSON.stringify(feedback)}`)
         }
       >
+        {openingText}
         {stream.text}
         {isComplete && (
           <>
