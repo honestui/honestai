@@ -252,7 +252,7 @@ function MarkdownTable({ children }: React.ComponentProps<"table">) {
       aria-label={labels.table}
       tabIndex={overflows ? 0 : undefined}
       data-slot="markdown-table"
-      className="prose-scroll rounded-[var(--hui-radius-4)] outline-none focus-visible:[outline:var(--hui-focus-ring)]"
+      className="prose-scroll rounded-[var(--hui-radius-code-block)] outline-none focus-visible:[outline:var(--hui-focus-ring)]"
     >
       <table>{children}</table>
     </div>
@@ -268,7 +268,7 @@ function MarkdownTaskCheckbox({ type, checked }: React.ComponentProps<"input">) 
     <span
       data-slot="markdown-task-mark"
       data-checked={checked ? "" : undefined}
-      className="relative me-[0.5em] inline-flex size-[1em] translate-y-[0.125em] items-center justify-center rounded-[calc(var(--hui-radius-1)/2)] border-[length:var(--hui-border-width-surface)] border-solid border-[var(--hui-color-border-base-secondary)] text-[var(--hui-color-foreground-base-secondary)] data-checked:border-transparent data-checked:bg-[var(--hui-color-background-neutral-secondary)]"
+      className="relative inline-flex size-[1em] items-center justify-center rounded-[calc(var(--hui-radius-1)/2)] border-[length:var(--hui-border-width-surface)] border-solid border-[var(--hui-color-border-base-secondary)] text-[var(--hui-color-foreground-base-secondary)] data-checked:border-transparent data-checked:bg-[var(--hui-color-background-neutral-secondary)]"
     >
       <input
         type={type}

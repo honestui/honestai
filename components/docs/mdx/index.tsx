@@ -12,6 +12,7 @@ import { Step, Steps, StepTitle, StepContent, StepDescription } from "./componen
 import { CodeCollapsibleWrapper } from "../component/code-collapsible-wrapper";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import { ComponentPreview } from "../component/component-preview";
+import { GenerativeSample } from "../generative-gallery/generative-sample";
 import { H1, H2, H3, H4, H5, H6 } from "./components/headings";
 import { ComponentSource } from "../component/component-source";
 import { stripCodeAnnotations } from "@/lib/highlight-code";
@@ -151,6 +152,7 @@ export const mdxComponents: MDXComponents = {
   CodeCollapsibleWrapper,
   CodeTabs,
   ComponentPreview,
+  GenerativeSample,
   ComponentSource,
   Accordion,
   AccordionItem,

@@ -21,14 +21,14 @@ const controls = [
   { name: "--prose-tracking", label: "Letter spacing", min: -0.02, max: 0.12, step: 0.01, unit: "em" },
 ] as const
 
-const radiusControl = { name: "--prose-radius", label: "Code corner radius", min: 0, max: 12, step: 1, unit: "px" } as const
+const radiusControl = { name: "--prose-radius", label: "Inline code radius", min: 0, max: 12, step: 1, unit: "px" } as const
 
 type NumericName = (typeof controls)[number]["name"] | typeof radiusControl.name
 type Values = Record<NumericName, number>
 
 const presets: Record<string, Values> = {
-  Chat: { "--prose-size": 14, "--prose-leading": 1.6, "--prose-flow": 12, "--prose-width": 60, "--prose-heading": 1.15, "--prose-tracking": 0, "--prose-radius": 4 },
-  Document: { "--prose-size": 16, "--prose-leading": 1.7, "--prose-flow": 18, "--prose-width": 68, "--prose-heading": 1.5, "--prose-tracking": 0, "--prose-radius": 4 },
+  Chat: { "--prose-size": 14, "--prose-leading": 1.6, "--prose-flow": 12, "--prose-width": 60, "--prose-heading": 1.15, "--prose-tracking": 0, "--prose-radius": 6 },
+  Document: { "--prose-size": 16, "--prose-leading": 1.7, "--prose-flow": 18, "--prose-width": 68, "--prose-heading": 1.5, "--prose-tracking": 0, "--prose-radius": 6 },
   Compact: { "--prose-size": 13, "--prose-leading": 1.45, "--prose-flow": 8, "--prose-width": 52, "--prose-heading": 1.15, "--prose-tracking": 0, "--prose-radius": 2 },
 }
 
@@ -190,8 +190,10 @@ export default function ProseDemo() {
           <h2>How Prose spaces text</h2>
           <p>
             Every block takes its space from <code>--prose-flow</code>, as a margin above it.{" "}
-            <strong>Nothing</strong> is spaced from below, so a block that arrives later does not
-            move the ones before it.
+            <strong>Nothing</strong> is spaced from below
+            <sup><a href="#prose-demo-fn-1" id="prose-demo-fnref-1" data-footnote-ref aria-describedby="prose-demo-footnotes">1</a></sup>,
+            so a block that arrives later does not move the ones before it. The{" "}
+            <a href="#streaming">streaming notes</a> explain why.
           </p>
           <ul>
             <li>A heading sits closer to the block under it than to the one above.</li>
@@ -200,6 +202,26 @@ export default function ProseDemo() {
               <ul>
                 <li>A nested list changes its marker.</li>
               </ul>
+            </li>
+          </ul>
+          <h3>Try it</h3>
+          <ol>
+            <li>Choose a preset in the panel below.</li>
+            <li>
+              Drag <strong>Block spacing</strong> and watch every gap follow it.
+            </li>
+            <li>
+              Copy the settings, or select them and press <kbd>⌘</kbd> <kbd>C</kbd>.
+            </li>
+          </ol>
+          <ul className="contains-task-list">
+            <li className="task-list-item">
+              <input type="checkbox" checked readOnly disabled aria-label="Done" /> Links stay underlined, so they
+              never depend on color.
+            </li>
+            <li className="task-list-item">
+              <input type="checkbox" readOnly disabled aria-label="Not done" /> Check contrast after changing
+              colors.
             </li>
           </ul>
           <blockquote>
@@ -227,8 +249,25 @@ export default function ProseDemo() {
               </tr>
             </tbody>
           </table>
+          <hr />
           <h2>Code that belongs in the document</h2>
+          <p>A renderer without its own code component gets one quiet panel:</p>
+          <pre>
+            <code>{`.honest-prose {\n  --prose-flow: 12px;\n}`}</code>
+          </pre>
+          <p>Honest Prose Syntax adds color and a toolbar:</p>
           <ProseSyntaxDemo tailwind={format === "tailwind"} />
+          <section data-footnotes>
+            <h2 id="prose-demo-footnotes" className="sr-only">Footnotes</h2>
+            <ol>
+              <li id="prose-demo-fn-1">
+                <p>
+                  A heading’s closer spacing is set on the block under it, not on the heading.{" "}
+                  <a href="#prose-demo-fnref-1" data-footnote-backref aria-label="Back to reference 1">↩</a>
+                </p>
+              </li>
+            </ol>
+          </section>
         </article>
       </div>
     </>

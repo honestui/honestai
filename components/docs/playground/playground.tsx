@@ -36,14 +36,23 @@ import {
   AssistantResponse,
   UserMessageContent,
   ChatProvider,
+  replyText,
+  ArtifactPortalTarget,
+  PendingArtifactEdits,
+  useArtifactEditCleanup,
   useThread,
   useThreadList,
 } from "@/registry/generative/chat";
 import { useChatStore } from "@/registry/generative/runtime/headless/store/ChatContext";
+import { DetailedViewContext } from "@/registry/generative/runtime/headless/store/DetailedViewContext";
+import { peekArtifactEdits, replyBegan, settleArtifactEdits } from "@/registry/generative/renderers/artifact";
+import { beforePayload, readEdits, withoutEdits } from "@/registry/generative/user-message";
+import { noteStopped, takeStopped } from "@/registry/generative/renderers/shared";
 
 import { createHostedLLM } from "./hosted";
 import { playgroundMapServices } from "./maps";
 import { ModelIcon } from "./model-icon";
+import { PlaygroundStarters } from "./starters";
 import {
   CONTEXT_TOKENS,
   OLLAMA_URL,
@@ -56,13 +65,6 @@ const OLLAMA_HOST = new URL(OLLAMA_URL).host;
 const MODEL_STORAGE_KEY = "honest-ai:playground-model";
 const ORIGINS_HELP_URL =
   "https://docs.ollama.com/faq#how-can-i-allow-additional-web-origins-to-access-ollama";
-
-const STARTERS = [
-  "Explain how DNS resolves a domain name",
-  "Compare SQLite and Postgres",
-  "Build a sign-up form for a pottery class",
-  "Chart a sample monthly budget",
-];
 
 /** Messages and the composer share one reading column. */
 const column = "mx-auto w-full max-w-3xl";
@@ -211,6 +213,7 @@ function ReplyActions({
   text,
   onRegenerate,
 }: {
+  /** The reply's prose. Empty for a reply that is only generated components. */
   text: string;
   /** Omitted when the reply cannot be regenerated. */
   onRegenerate?: () => void;
@@ -240,19 +243,21 @@ function ReplyActions({
       data-slot="reply-actions"
       className="flex items-center gap-1 text-muted-foreground"
     >
-      <Button
-        variant="link"
-        size="icon-sm"
-        aria-label="Copy reply"
-        title="Copy reply"
-        onClick={() => void copy()}
-      >
-        {copyState === "copied" ? (
-          <CheckIcon aria-hidden="true" />
-        ) : (
-          <CopyIcon aria-hidden="true" />
-        )}
-      </Button>
+      {text && (
+        <Button
+          variant="link"
+          size="icon-sm"
+          aria-label="Copy text"
+          title="Copy text"
+          onClick={() => void copy()}
+        >
+          {copyState === "copied" ? (
+            <CheckIcon aria-hidden="true" />
+          ) : (
+            <CopyIcon aria-hidden="true" />
+          )}
+        </Button>
+      )}
       {onRegenerate && (
         <Button
           variant="link"
@@ -300,7 +305,12 @@ function Conversation({
   const thread = useThread();
   const threads = useThreadList();
   const store = useChatStore();
-  const canceled = React.useRef(false);
+  const detailedViews = React.useContext(DetailedViewContext);
+  useArtifactEditCleanup();
+  // An empty answer's notice holds the thread length then, and hides once
+  // the conversation moves on (another send, or a follow-up that got a reply).
+  const [noReplyAt, setNoReplyAt] = React.useState<number | null>(null);
+  const noReply = noReplyAt !== null && noReplyAt === thread.messages.length;
   const [prompt, setPrompt] = React.useState("");
 
   const models = connection.status === "ready" ? connection.models : [];
@@ -316,25 +326,62 @@ function Conversation({
   const isWaitingForFirstToken =
     thread.isRunning && lastMessage?.role === "user";
 
-  const send = (text: string) => {
-    canceled.current = false;
-    void thread.processMessage({ role: "user", content: text }).then(() => {
-      const failed = store.getState().threadError !== null;
-      // A failed or stopped message goes back in the composer for another try.
-      setPrompt(failed || canceled.current ? text : "");
+  /**
+   * Sends `text` with any artifact edits the reader saved. With `regenerate`,
+   * re-sends a stored message as it was, and `restore` is the thread to bring
+   * back (the earlier reply included) if no new reply begins.
+   */
+  const send = (
+    text: string,
+    regenerate?: { stored: string; restore: typeof thread.messages },
+  ) => {
+    const before = regenerate?.restore ?? store.getState().messages;
+    // Edits go with this message and stay pending (with their chip) until a
+    // reply begins. A re-sent message keeps its own edits, less any to an
+    // artifact edited again since, which go fresh, so none is sent twice.
+    const edits = peekArtifactEdits(detailedViews, store.getState().selectedThreadId);
+    const pendingTitles = new Set(
+      readEdits(edits.text.trimStart()).edits.map((edit) => edit.title),
+    );
+    // Edits go before a stored follow-up's form payload, which stays last.
+    const content = regenerate
+      ? beforePayload(withoutEdits(regenerate.stored, pendingTitles), edits.text)
+      : text + edits.text;
+    const sentAt = store.getState().messages.length;
+    const threadAtSend = store.getState().selectedThreadId;
+    void thread.processMessage({ role: "user", content }).then(() => {
+      const state = store.getState();
+      const failed = state.threadError !== null;
+      // Text, a tool call or a tool's result: the model got the message.
+      const reached = replyBegan(state.messages.slice(sentAt));
+      // If another conversation is showing now, this one's state is not undone into it.
+      if (threadAtSend !== null && state.selectedThreadId !== threadAtSend) return;
+      if (reached) settleArtifactEdits(detailedViews, edits);
+      // A turn with no reply (failed, stopped, or an empty answer) leaves the
+      // thread, so retrying never sends it twice. A partial reply stays,
+      // since the reader has read it.
+      if (!reached) thread.setMessages(before);
+      // An empty answer has no error to show, so say what happened.
+      // Stop is the reader's choice, recorded per chat, so it isn't reported.
+      const wasStopped = takeStopped(store);
+      setNoReplyAt(!reached && !failed && !wasStopped ? store.getState().messages.length : null);
+      // A new message goes back in the composer for another try; a
+      // regenerated one is still in the thread, where Regenerate retries it.
+      setPrompt(!reached && !regenerate ? text : "");
       if (failed) onReplyFailed?.();
     });
   };
 
-  /** Drops the newest exchange and sends its message again. */
+  /** Drops the newest reply and asks again; the old reply returns if the new one never starts. */
   const regenerate = () => {
     const asked = thread.messages.findLastIndex(
       (message) => message.role === "user",
     );
     const question = thread.messages[asked];
     if (typeof question?.content !== "string") return;
+    const restore = thread.messages;
     thread.setMessages(thread.messages.slice(0, asked));
-    send(question.content);
+    send(readEdits(question.content).text, { stored: question.content, restore });
   };
 
   const isEmpty = visibleMessages.length === 0 && !thread.isLoadingMessages;
@@ -363,12 +410,20 @@ function Conversation({
           <AlertTitle>The reply didn’t finish</AlertTitle>
           <AlertDescription>
             <p>{thread.threadError.message}</p>
-            <p>
-              Your message is preserved in the box below.
-            </p>
+            {/* Only true when the composer was refilled. */}
+            {prompt.trim() && <p>Your message is preserved in the box below.</p>}
           </AlertDescription>
         </Alert>
       )}
+      {noReply && (
+        <Alert className="text-left">
+          <AlertTitle>No reply came back</AlertTitle>
+          <AlertDescription>
+            <p>Your message is in the box below. Try sending it again.</p>
+          </AlertDescription>
+        </Alert>
+      )}
+      <PendingArtifactEdits />
       <PromptBar
         // Quieter than the bar's default edge, and a step above the generated
         // cards' so the input still reads as a field. The accent border on
@@ -390,7 +445,7 @@ function Conversation({
         onStop={
           thread.isRunning
             ? () => {
-                canceled.current = true;
+                noteStopped(store);
                 thread.cancelMessage();
               }
             : undefined
@@ -401,7 +456,8 @@ function Conversation({
             <ContextMeter
               used={context.used}
               limit={context.limit}
-              showPercent={false}
+              // The number keeps the ring from reading as a spinner.
+              showPercent
               note={`Counted by ${context.countedBy} after the last reply. It includes the playground’s instructions to the model.`}
             />
           )
@@ -423,7 +479,12 @@ function Conversation({
         gutter beside the message column, so messages scroll to the top edge
         and never pass under them. Narrower, they take a row of their own.
       */}
-      <div className="flex min-h-8 items-center justify-end gap-2 px-4 pt-3 sm:px-6 sm:pt-[47px] @5xl:absolute @5xl:top-[55px] @5xl:right-6 @5xl:z-10 @5xl:p-0">
+      {/* With an artifact open, the panel takes the gutter the controls float
+          in, so they take a row of their own above the conversation and panel. */}
+      <div
+        data-slot="thread-controls"
+        className="flex min-h-8 items-center justify-end gap-2 px-4 pt-3 sm:px-6 sm:pt-[47px] @5xl:absolute @5xl:top-[55px] @5xl:right-6 @5xl:z-10 @5xl:p-0 @5xl:[[data-slot=playground]:has([data-slot=artifact-target]>:not([hidden]))_&]:static @5xl:[[data-slot=playground]:has([data-slot=artifact-target]>:not([hidden]))_&]:px-6 @5xl:[[data-slot=playground]:has([data-slot=artifact-target]>:not([hidden]))_&]:pt-[47px]"
+      >
         {threads.threads.length > 0 && (
           <Menu>
             <MenuTrigger
@@ -485,31 +546,14 @@ function Conversation({
               What do you want to see?
             </h2>
             {composer}
-            {canChat && (
-              <ul
-                aria-label="Example prompts"
-                className="m-0 flex list-none flex-wrap justify-center gap-2 p-0"
-              >
-                {STARTERS.map((starter) => (
-                  <li key={starter}>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="rounded-full"
-                      onClick={() => send(starter)}
-                    >
-                      {starter}
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            )}
+            {canChat && <PlaygroundStarters onPick={send} />}
           </div>
           {footnote}
         </div>
       ) : (
+        <div className="flex min-h-0 flex-1">
         <div
-          className="relative flex min-h-0 flex-1 flex-col"
+          className="relative flex min-h-0 min-w-0 flex-1 flex-col"
           style={
             {
               "--composer-height": `${composerHeight}px`,
@@ -524,7 +568,7 @@ function Conversation({
             className="flex-1"
             viewportClassName="no-scrollbar relative"
             // With floating controls, the first message starts below the docs header.
-            contentClassName="flex min-h-full flex-col gap-[var(--hui-space-5)] p-[var(--hui-space-5)] pb-[calc(var(--composer-height)+var(--hui-space-5))] @5xl:pt-14"
+            contentClassName="flex min-h-full flex-col gap-[var(--hui-space-5)] p-[var(--hui-space-5)] pb-[calc(var(--composer-height)+var(--hui-space-5))] @5xl:pt-14 @5xl:[[data-slot=playground]:has([data-slot=artifact-target]>:not([hidden]))_&]:pt-[var(--hui-space-5)]"
           >
             {[
               ...visibleMessages.map((message) => (
@@ -551,7 +595,9 @@ function Conversation({
                       {typeof message.content === "string" &&
                         !(thread.isRunning && message === lastMessage) && (
                           <ReplyActions
-                            text={message.content}
+                            // Generated components are copied as their
+                            // surrounding text, never as program source.
+                            text={replyText(message.content)}
                             onRegenerate={
                               message === lastMessage &&
                               canChat &&
@@ -593,6 +639,13 @@ function Conversation({
               {footnote}
             </div>
           </div>
+        </div>
+        {/*
+          An open Artifact's panel. Wide, it sits beside the conversation and
+          the message column narrows; narrow, it covers the conversation until
+          closed.
+        */}
+        <ArtifactPortalTarget className="fixed inset-0 z-50 flex bg-[var(--hui-color-background-base-primary)] p-3 @5xl:static @5xl:z-auto @5xl:w-[min(44rem,46%)] @5xl:shrink-0 @5xl:bg-transparent @5xl:ps-0 @5xl:pt-2" />
         </div>
       )}
     </div>

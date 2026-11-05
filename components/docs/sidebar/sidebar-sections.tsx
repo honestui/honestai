@@ -36,7 +36,7 @@ export function SidebarSections({ tree }: { tree: PageTreeRoot }) {
           <PageGroup
             label="Components"
             pages={pages.filter((page) =>
-              ["/docs/generative/renderer", "/docs/generative/chat"].includes(
+              ["/docs/generative/renderer", "/docs/generative/chat", "/docs/generative/replies"].includes(
                 page.url,
               ),
             )}

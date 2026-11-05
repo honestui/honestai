@@ -39,7 +39,7 @@ describe("Honest component adapters", () => {
       .examples!.join("\n")
       .matchAll(/^```honestai\n([\s\S]*?)\n```$/gm);
     const programs = [...blocks].map((match) => match[1]);
-    expect(programs).toHaveLength(12);
+    expect(programs).toHaveLength(14);
     for (const program of programs) {
       const result = parser.parse(program);
       expect(result.meta.errors).toEqual([]);

@@ -133,9 +133,18 @@ test("a reply can be copied and regenerated", async ({ page, context }) => {
   await playground.getByRole("textbox", { name: "Prompt" }).fill("Say hello");
   await page.keyboard.press("Enter");
 
-  await playground.getByRole("button", { name: "Copy reply" }).click();
+  await playground.getByRole("button", { name: "Copy text" }).click();
   await expect(playground.getByRole("status").getByText("Copied")).toBeVisible();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(reply);
+  // The reply's prose is copied; its generated block is not copied as source.
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+    [
+      "## Mocked reply",
+      "",
+      "Written in **Markdown** by the test transport.",
+      "",
+      "Prose after the block.",
+    ].join("\n"),
+  );
 
   const request = page.waitForRequest(`${OLLAMA}/api/chat`);
   await playground.getByRole("button", { name: "Regenerate reply" }).click();
@@ -210,7 +219,7 @@ test("overflowing conversations use the message rail and keep the composer fixed
   const prompt = playground.getByRole("textbox", { name: "Prompt" });
   await prompt.fill("Read this conversation");
   await page.keyboard.press("Enter");
-  await expect(playground.getByRole("button", { name: "Copy reply" })).toBeVisible();
+  await expect(playground.getByRole("button", { name: "Copy text" })).toBeVisible();
   const viewport = playground.getByRole("region", { name: "Playground conversation" });
   const rail = playground.getByRole("navigation", { name: "Message navigation" });
   await expect(rail.getByRole("button")).toHaveCount(2);
@@ -589,4 +598,533 @@ test("a PartsDiagram row is one bar when wide and lines when narrow", async ({ p
   await page.setViewportSize({ width: 360, height: 800 });
   await expect.poll(async () => (await top(1)) - (await top(0))).toBeGreaterThan(20);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+test("a failed submit brings the first invalid field into view", async ({ page }) => {
+  const fields = Array.from(
+    { length: 8 },
+    (_, i) => `f${i} = FormControl("Field ${i}", Input("f${i}", "", "text"${i === 0 ? ", { required: true }" : ""}), "A hint for field ${i}")`,
+  );
+  const form = [
+    "A long form.", "", "```honestai",
+    "root = Stack([form])",
+    `form = Form("long", Buttons([Button("Send it", @ToAssistant("Here it is"), "primary")]), [${fields.map((_, i) => `f${i}`).join(", ")}])`,
+    ...fields,
+    "```",
+  ].join("\n");
+  await mockOllama(page, form);
+  await page.setViewportSize({ width: 390, height: 640 });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt", exact: true }).fill("Give me a form");
+  await page.keyboard.press("Enter");
+  await playground.getByRole("button", { name: "Send it", exact: true }).click();
+  const first = playground.getByRole("textbox", { name: "Field 0", exact: true });
+  await expect(first).toBeFocused();
+  // Content growing under the error must not scroll the field away again.
+  await page.waitForTimeout(400);
+  await expect(first).toBeInViewport();
+});
+
+test("on a narrow screen an artifact opens as a modal that keeps focus and returns it", async ({ page }) => {
+  const reply = [
+    "Here is the plan.", "", "```honestai",
+    "root = Stack([plan])",
+    'plan = Artifact("Onboarding plan", [doc], "Markdown")',
+    'doc = MarkDownRenderer("## Week 1\\nMeet the team")',
+    "```",
+  ].join("\n");
+  await mockOllama(page, reply);
+  await page.setViewportSize({ width: 390, height: 760 });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt", exact: true }).fill("Write a plan");
+  await page.keyboard.press("Enter");
+  const card = playground.locator('[data-slot="artifact-card"]');
+  await expect(card).toBeVisible();
+  // On a phone it never opens by itself over the reply and its Stop button.
+  await expect(card).toHaveAttribute("aria-expanded", "false");
+  await card.click();
+  const dialog = page.getByRole("dialog", { name: /Onboarding plan/ });
+  await expect(dialog).toBeVisible();
+  await expect.poll(() => dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);
+  // Tab cycles within the panel rather than reaching the covered chat.
+  for (let i = 0; i < 6; i++) {
+    await page.keyboard.press("Tab");
+    expect(await dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);
+  }
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(card).toBeFocused();
+});
+
+test("an HtmlVisual cannot navigate away or reach the network, and a normal one renders", async ({ page }) => {
+  const visual = (title: string, html: string) =>
+    `${title.replace(/\W/g, "")} = HtmlVisual("${title}", "${html.replaceAll('"', '\\"')}", "", 160)`;
+  const reply = [
+    "Three visuals.", "", "```honestai",
+    "root = Stack([Good, Escape, Refresh, Links, Cut, Spoof])",
+    visual("Spoof", "<p>Quiet</p><script>parent.postMessage({type:'honest-visual:link',href:'http://127.0.0.1:9/spoof'},'*')</script>"),
+    visual("Good", "<p id=t>Ready</p><img alt=dot src='data:image/gif;base64,R0lGODlhAQABAAAAACw='><script>t.textContent='Script ran'</script>"),
+    visual("Links", "<a href='#sec'>Jump</a> <a href='#' id=b>Press</a> <a href='http://127.0.0.1:9/away'>Away</a><div style='height:400px'></div><h2 id=sec>Section</h2><script>b.onclick=()=>{b.textContent='Pressed'}</script>"),
+    visual("Cut", "<p>Started</p><textarea>never closed"),
+    visual("Escape", "<script>location.href='http://127.0.0.1:9/leak?secret=1'</script>"),
+    visual("Refresh", "<meta http-equiv=refresh content='0;url=http://127.0.0.1:9/refresh'>"),
+    "```",
+  ].join("\n");
+  const outside: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().startsWith("http://127.0.0.1:9/")) outside.push(request.url());
+  });
+  await mockOllama(page, reply);
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt", exact: true }).fill("Draw");
+  await page.keyboard.press("Enter");
+  // The good visual's script runs inside the inner frame.
+  const good = page.frameLocator('iframe[title="Good"]').frameLocator("iframe");
+  await expect(good.getByText("Script ran")).toBeVisible();
+  // The page's own typeface reaches the sandbox, inlined, so its text matches the reply.
+  const family = (await page.evaluate(() => getComputedStyle(document.body).fontFamily.split(",")[0]))!.trim();
+  await expect
+    .poll(() =>
+      good.locator("body").evaluate(async (body, name) => {
+        await document.fonts.ready;
+        return [...document.fonts].some((face) => face.family.replace(/["']/g, "") === name.replace(/["']/g, "") && face.status === "loaded")
+          && getComputedStyle(body).fontFamily.includes(name.replace(/["']/g, ""));
+      }, family),
+    )
+    .toBe(true);
+  // A link request the visual sends without a click opens nothing.
+  await expect(page.frameLocator('iframe[title="Spoof"]').frameLocator("iframe").getByText("Quiet")).toBeVisible();
+  await page.waitForTimeout(300);
+  await expect(page.getByRole("dialog", { name: "Open this link?" })).toHaveCount(0);
+  // In-page links stay in the visual rather than reading as an escape.
+  const links = page.frameLocator('iframe[title="Links"]').frameLocator("iframe");
+  await links.getByText("Jump").click();
+  await links.getByText("Press").click();
+  await expect(links.getByText("Pressed")).toBeVisible();
+  // An outside link asks first and leaves the visual working.
+  await links.getByText("Away").click();
+  const confirm = page.getByRole("dialog", { name: "Open this link?" });
+  await expect(confirm).toContainText("http://127.0.0.1:9/away");
+  await confirm.getByRole("button", { name: "Cancel" }).click();
+  await expect(links.getByText("Pressed")).toBeVisible();
+  // A visual cut off mid-markup still draws what it has, with no false alarm.
+  await expect(page.frameLocator('iframe[title="Cut"]').frameLocator("iframe").getByText("Started")).toBeVisible();
+  // Exactly the two real escapes are stopped and say so; nothing left the sandbox.
+  await page.waitForTimeout(500);
+  await expect(playground.getByText("This visual tried to open another page and was stopped.")).toHaveCount(2);
+  expect(outside).toEqual([]);
+});
+
+test("Escape in a dropdown inside a narrow-screen artifact closes the dropdown, not the panel", async ({ page }) => {
+  const reply = [
+    "A form.", "", "```honestai",
+    "root = Stack([a])",
+    'a = Artifact("Preferences", [f])',
+    'f = Form("prefs", Buttons([Button("Send", @ToAssistant("Here"), "primary")]), [c])',
+    'c = FormControl("Size", Select("size", [SelectItem("s", "Small"), SelectItem("l", "Large")], "Pick one"))',
+    "```",
+  ].join("\n");
+  await mockOllama(page, reply);
+  await page.setViewportSize({ width: 390, height: 760 });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt", exact: true }).fill("Prefs");
+  await page.keyboard.press("Enter");
+  await playground.locator('[data-slot="artifact-card"]').click();
+  const dialog = page.getByRole("dialog", { name: /Preferences/ });
+  await dialog.getByRole("combobox").click();
+  await expect(page.getByRole("option", { name: "Large" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("option", { name: "Large" })).toBeHidden();
+  await expect(dialog).toBeVisible();
+});
+
+test("an artifact opened as a modal stops trapping focus once the window is widened", async ({ page }) => {
+  const reply = [
+    "Here is the plan.", "", "```honestai",
+    "root = Stack([plan])",
+    'plan = Artifact("Onboarding plan", [doc], "Markdown")',
+    'doc = MarkDownRenderer("## Week 1\\nMeet the team")',
+    "```",
+  ].join("\n");
+  await mockOllama(page, reply);
+  await page.setViewportSize({ width: 390, height: 760 });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt", exact: true }).fill("Write a plan");
+  await page.keyboard.press("Enter");
+  await playground.locator('[data-slot="artifact-card"]').click();
+  await expect(page.getByRole("dialog", { name: /Onboarding plan/ })).toBeVisible();
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(page.getByRole("dialog", { name: /Onboarding plan/ })).toHaveCount(0);
+  await expect(playground.locator('[data-slot="generated-artifact-panel"]:not([hidden])')).toBeVisible();
+});
+
+test("an artifact edit comes back after switching chats, still attached if unsent", async ({ page }) => {
+  const reply = [
+    "Here is the plan.", "", "```honestai",
+    "root = Stack([plan])",
+    'plan = Artifact("Onboarding plan", [doc], "Markdown")',
+    'doc = MarkDownRenderer("## Week 1\\nMeet the team")',
+    "```",
+  ].join("\n");
+  await mockOllama(page, reply);
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt", exact: true }).fill("Write a plan");
+  await page.keyboard.press("Enter");
+  const card = playground.locator('[data-slot="artifact-card"]');
+  await expect(card).toBeVisible();
+  if ((await card.getAttribute("aria-expanded")) !== "true") await card.click();
+  const panel = page.locator('[data-slot="generated-artifact-panel"]:not([hidden])');
+  await expect(panel).toBeVisible();
+  await panel.getByRole("button", { name: "Edit Onboarding plan" }).click();
+  await panel.getByRole("textbox").fill("## Week 1\nKEPT ACROSS CHATS");
+  await panel.getByRole("button", { name: "Save" }).click();
+  await panel.getByRole("button", { name: "Close" }).click();
+  await expect(playground.getByRole("list", { name: "Attached to your next message" }).getByText("Your edit to Onboarding plan")).toBeVisible();
+
+  await playground.getByRole("button", { name: "New chat" }).click();
+  await expect(playground.getByRole("list", { name: "Attached to your next message" }).getByText("Your edit to Onboarding plan")).toHaveCount(0);
+  await playground.getByRole("button", { name: "Conversation history" }).click();
+  await page.getByRole("menuitemradio").filter({ hasText: "Write a plan" }).click();
+  await page.keyboard.press("Escape");
+
+  await playground.locator('[data-slot="artifact-card"]').click();
+  await expect(page.locator('[data-slot="generated-artifact-panel"]:not([hidden])')).toContainText(
+    "KEPT ACROSS CHATS",
+  );
+  await page.keyboard.press("Escape");
+  await expect(playground.getByRole("list", { name: "Attached to your next message" }).getByText("Your edit to Onboarding plan")).toBeVisible();
+});
+
+test("a failed Regenerate keeps the earlier exchange, and Stop before a reply resends as one turn", async ({ page }) => {
+  let chats = 0;
+  const bodies: { role: string; content: string }[][] = [];
+  await page.route(`${OLLAMA}/api/tags`, (route) =>
+    route.fulfill({ headers: cors, json: { models: [{ name: "test-model:1b", capabilities: ["completion"] }] } }),
+  );
+  await page.route(`${OLLAMA}/api/chat`, async (route) => {
+    chats += 1;
+    bodies.push(route.request().postDataJSON().messages.filter((m: { role: string }) => m.role === "user"));
+    // 2nd call (Regenerate) fails; 3rd (sent then stopped) never answers.
+    if (chats === 2) return route.fulfill({ status: 500, headers: cors, body: "busy" });
+    if (chats === 3) return new Promise(() => {});
+    return route.fulfill({
+      headers: { ...cors, "content-type": "application/x-ndjson" },
+      body:
+        [{ message: { role: "assistant", content: `Answer ${chats}` } }, { message: { role: "assistant", content: "" }, done: true }]
+          .map((chunk) => JSON.stringify(chunk))
+          .join("\n") + "\n",
+    });
+  });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  const prompt = playground.getByRole("textbox", { name: "Prompt", exact: true });
+  await prompt.fill("First question");
+  await page.keyboard.press("Enter");
+  await expect(playground.getByText("Answer 1")).toBeVisible();
+
+  await playground.getByRole("button", { name: "Regenerate reply" }).click();
+  // The new reply never started, so the question and the earlier reply return.
+  await expect(playground.getByText("Answer 1")).toBeVisible();
+  await expect(playground.locator('[data-role="user"]')).toHaveCount(1);
+  await expect(prompt).toHaveValue("");
+
+  await prompt.fill("Stop me");
+  await page.keyboard.press("Enter");
+  await playground.getByRole("button", { name: "Stop" }).click();
+  await expect(prompt).toHaveValue("Stop me");
+  await expect(playground.locator('[data-role="user"]')).toHaveCount(1);
+  await prompt.press("Enter");
+  await expect(playground.getByText("Answer 4")).toBeVisible();
+  // The retried request carries "Stop me" exactly once.
+  expect(bodies.at(-1)!.filter((m) => m.content === "Stop me")).toHaveLength(1);
+});
+
+test("Regenerate carries an edit saved since the question, rather than dropping it", async ({ page }) => {
+  const bodies: string[] = [];
+  const reply = [
+    "Here is the plan.", "", "```honestai",
+    "root = Stack([plan])",
+    'plan = Artifact("Onboarding plan", [doc], "Markdown")',
+    'doc = MarkDownRenderer("## Week 1\\nMeet the team")',
+    "```",
+  ].join("\n");
+  await page.route(`${OLLAMA}/api/tags`, (route) =>
+    route.fulfill({ headers: cors, json: { models: [{ name: "test-model:1b", capabilities: ["completion"] }] } }),
+  );
+  await page.route(`${OLLAMA}/api/chat`, (route) => {
+    const users = route.request().postDataJSON().messages.filter((m: { role: string }) => m.role === "user");
+    bodies.push(users.at(-1).content);
+    return route.fulfill({
+      headers: { ...cors, "content-type": "application/x-ndjson" },
+      body: [{ message: { role: "assistant", content: reply } }, { message: { role: "assistant", content: "" }, done: true }]
+        .map((chunk) => JSON.stringify(chunk))
+        .join("\n") + "\n",
+    });
+  });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt", exact: true }).fill("Write a plan");
+  await page.keyboard.press("Enter");
+  const card = playground.locator('[data-slot="artifact-card"]');
+  await expect(card).toBeVisible();
+  if ((await card.getAttribute("aria-expanded")) !== "true") await card.click();
+  const panel = page.locator('[data-slot="generated-artifact-panel"]:not([hidden])');
+  await panel.getByRole("button", { name: "Edit Onboarding plan" }).click();
+  await panel.getByRole("textbox").fill("## Week 1\nREGEN EDIT");
+  await panel.getByRole("button", { name: "Save" }).click();
+  await panel.getByRole("button", { name: "Close" }).click();
+  await playground.getByRole("button", { name: "Regenerate reply" }).click();
+  await expect.poll(() => bodies.length).toBe(2);
+  expect(bodies[1]).toContain("Write a plan");
+  expect(bodies[1]).toContain("REGEN EDIT");
+});
+
+test("controls in earlier replies wait while a reply runs, and a visual fits its content", async ({ page }) => {
+  let chats = 0;
+  const first = [
+    "Here you go.", "", "```honestai",
+    "root = Stack([f, v])",
+    'f = FollowUpBlock([FollowUpItem("Tell me more")])',
+    'v = HtmlVisual("Small", "<h3>Title</h3><p>Short caption that ends the visual.</p>", "", 400)',
+    "```",
+  ].join("\n");
+  await page.route(`${OLLAMA}/api/tags`, (route) =>
+    route.fulfill({ headers: cors, json: { models: [{ name: "test-model:1b", capabilities: ["completion"] }] } }),
+  );
+  await page.route(`${OLLAMA}/api/chat`, (route) => {
+    chats += 1;
+    // The second reply never finishes, so the chat stays busy.
+    if (chats === 2) return new Promise(() => {});
+    return route.fulfill({
+      headers: { ...cors, "content-type": "application/x-ndjson" },
+      body: [{ message: { role: "assistant", content: first } }, { message: { role: "assistant", content: "" }, done: true }]
+        .map((chunk) => JSON.stringify(chunk))
+        .join("\n") + "\n",
+    });
+  });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  const prompt = playground.getByRole("textbox", { name: "Prompt", exact: true });
+  await prompt.fill("Start");
+  await page.keyboard.press("Enter");
+  const chip = playground.getByRole("button", { name: "Tell me more" });
+  await expect(chip).toBeEnabled();
+  // The visual reports its content's height, well under the 400px it asked for.
+  await expect.poll(async () => (await playground.locator('iframe[title="Small"]').boundingBox())?.height ?? 999).toBeLessThan(200);
+  // A heading-first visual is not clipped: its document fits the frame.
+  const inner = page.frameLocator('iframe[title="Small"]').frameLocator("iframe");
+  await expect(inner.getByText("Short caption that ends the visual.")).toBeVisible();
+  await expect
+    .poll(() => inner.locator("html").evaluate((root) => root.scrollHeight - root.clientHeight))
+    .toBeLessThanOrEqual(0);
+  await prompt.fill("Second");
+  await prompt.press("Enter");
+  await expect(chip).toBeDisabled();
+});
+
+test("selecting text in an artifact asks about that passage with the next message", async ({ page }) => {
+  const bodies: string[] = [];
+  const reply = [
+    "Here is the plan.", "", "```honestai",
+    "root = Stack([plan])",
+    'plan = Artifact("Onboarding plan", [doc], "Markdown")',
+    'doc = MarkDownRenderer("## Week 1\\nMeet the team and set up accounts")',
+    "```",
+  ].join("\n");
+  await page.route(`${OLLAMA}/api/tags`, (route) =>
+    route.fulfill({ headers: cors, json: { models: [{ name: "test-model:1b", capabilities: ["completion"] }] } }),
+  );
+  await page.route(`${OLLAMA}/api/chat`, (route) => {
+    const users = route.request().postDataJSON().messages.filter((m: { role: string }) => m.role === "user");
+    bodies.push(users.at(-1).content);
+    return route.fulfill({
+      headers: { ...cors, "content-type": "application/x-ndjson" },
+      body: [{ message: { role: "assistant", content: reply } }, { message: { role: "assistant", content: "" }, done: true }]
+        .map((chunk) => JSON.stringify(chunk))
+        .join("\n") + "\n",
+    });
+  });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  const prompt = playground.getByRole("textbox", { name: "Prompt", exact: true });
+  await prompt.fill("Write a plan");
+  await page.keyboard.press("Enter");
+  const card = playground.locator('[data-slot="artifact-card"]');
+  await expect(card).toBeVisible();
+  if ((await card.getAttribute("aria-expanded")) !== "true") await card.click();
+  const panel = page.locator('[data-slot="generated-artifact-panel"]:not([hidden])');
+  const passage = panel.getByText("Meet the team and set up accounts");
+  await expect(passage).toBeVisible();
+  // Select the passage, as a reader would by dragging across it.
+  await passage.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+  });
+  await panel.getByRole("button", { name: "Ask about this" }).click();
+  await expect(playground.getByRole("list", { name: "Attached to your next message" }).getByText("Quote from Onboarding plan: “Meet the team")).toBeVisible();
+  // The question comes next, so the caret is already in the composer.
+  await expect(prompt).toBeFocused();
+  await prompt.fill("Make this friendlier");
+  await prompt.press("Enter");
+  await expect.poll(() => bodies.length).toBe(2);
+  expect(bodies[1]).toContain("Make this friendlier");
+  expect(bodies[1]).toContain("> Meet the team and set up accounts");
+  await expect(playground.getByRole("list", { name: "Attached to your next message" }).getByText("Quote from Onboarding plan")).toHaveCount(0);
+  // The sent bubble shows the passage as a quote, not as raw transport text.
+  const quote = playground.locator("figure", { hasText: "From Onboarding plan" });
+  await expect(quote.locator("blockquote")).toHaveText("Meet the team and set up accounts");
+  await expect(playground.getByText("About this part of")).toHaveCount(0);
+
+  // On a phone the panel covers the chat; asking closes it to show the chip.
+  await page.setViewportSize({ width: 390, height: 844 });
+  const modal = page.locator('[data-slot="generated-artifact-panel"]:not([hidden])');
+  // The newest version opened beside the chat; narrowed, it covers it.
+  if ((await modal.count()) === 0) await playground.locator('[data-slot="artifact-card"]').last().click();
+  const line = modal.getByText("Meet the team and set up accounts");
+  await expect(line).toBeVisible();
+  await line.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    window.getSelection()!.removeAllRanges();
+    window.getSelection()!.addRange(range);
+  });
+  // The chat it covers is out of reach, for a screen reader as well as Tab.
+  expect(await prompt.evaluate((element) => element.closest("[inert]") !== null)).toBe(true);
+  await modal.getByRole("button", { name: "Ask about this" }).click();
+  await expect(modal).toHaveCount(0);
+  expect(await prompt.evaluate((element) => element.closest("[inert]") !== null)).toBe(false);
+  await expect(playground.getByRole("list", { name: "Attached to your next message" }).getByText("Quote from Onboarding plan")).toBeVisible();
+  await expect(prompt).toBeFocused();
+});
+
+test("table headers sit on one line whether their sort arrow leads or trails", async ({ page }) => {
+  const reply = [
+    "Here they are.", "", "```honestai",
+    "root = Stack([t])",
+    't = Table([Col("City", ["Oslo", "Lima"]), Col("Population", [709000, 10883000])])',
+    "```",
+  ].join("\n");
+  await page.route(`${OLLAMA}/api/tags`, (route) =>
+    route.fulfill({ headers: cors, json: { models: [{ name: "test-model:1b", capabilities: ["completion"] }] } }),
+  );
+  await page.route(`${OLLAMA}/api/chat`, (route) =>
+    route.fulfill({
+      headers: { ...cors, "content-type": "application/x-ndjson" },
+      body: [{ message: { role: "assistant", content: reply } }, { message: { role: "assistant", content: "" }, done: true }]
+        .map((chunk) => JSON.stringify(chunk))
+        .join("\n") + "\n",
+    }),
+  );
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  await playground.getByRole("textbox", { name: "Prompt", exact: true }).fill("Two cities");
+  await page.keyboard.press("Enter");
+  const labels = playground.locator('[data-slot="records-table"] thead button > span');
+  await expect(labels).toHaveCount(2);
+  const [city, population] = await labels.evaluateAll((spans) => spans.map((span) => span.getBoundingClientRect().top));
+  expect(Math.abs(city - population)).toBeLessThan(0.5);
+});
+
+test("chosen table rows wait by the composer and go with the reader's own question", async ({ page }) => {
+  const bodies: string[] = [];
+  const reply = [
+    "Here they are.", "", "```honestai",
+    "root = Stack([t])",
+    't = Table([Col("City", ["Oslo", "Lima"]), Col("Population", [709000, 10883000])])',
+    "```",
+  ].join("\n");
+  await page.route(`${OLLAMA}/api/tags`, (route) =>
+    route.fulfill({ headers: cors, json: { models: [{ name: "test-model:1b", capabilities: ["completion"] }] } }),
+  );
+  await page.route(`${OLLAMA}/api/chat`, (route) => {
+    const users = route.request().postDataJSON().messages.filter((m: { role: string }) => m.role === "user");
+    bodies.push(users.at(-1).content);
+    return route.fulfill({
+      headers: { ...cors, "content-type": "application/x-ndjson" },
+      body: [{ message: { role: "assistant", content: reply } }, { message: { role: "assistant", content: "" }, done: true }]
+        .map((chunk) => JSON.stringify(chunk))
+        .join("\n") + "\n",
+    });
+  });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  const prompt = playground.getByRole("textbox", { name: "Prompt", exact: true });
+  await prompt.fill("Two cities");
+  await page.keyboard.press("Enter");
+  await playground.getByRole("button", { name: "Ask about rows of City, Population" }).click();
+  await playground.getByRole("checkbox", { name: "Select Lima" }).click();
+  await playground.getByRole("button", { name: "Ask about 1 row" }).click();
+  await expect(playground.getByRole("list", { name: "Attached to your next message" }).getByText("1 row from the table")).toBeVisible();
+  await expect(prompt).toBeFocused();
+  expect(bodies).toHaveLength(1);
+  await prompt.fill("Why is it so large?");
+  await prompt.press("Enter");
+  await expect.poll(() => bodies.length).toBe(2);
+  expect(bodies[1]).toContain("Why is it so large?");
+  expect(bodies[1]).toContain("| Lima | 10,883,000 |");
+  expect(bodies[1]).not.toContain("Oslo");
+  await expect(playground.locator('[data-role="user"]').last().locator("table")).toBeVisible();
+});
+
+test("chosen rows stay with their conversation across a chat switch, and only there", async ({ page }) => {
+  const bodies: string[] = [];
+  const reply = [
+    "Here they are.", "", "```honestai",
+    "root = Stack([t])",
+    't = Table([Col("City", ["Oslo", "Lima"]), Col("Population", [709000, 10883000])], "Capital cities")',
+    "```",
+  ].join("\n");
+  await page.route(`${OLLAMA}/api/tags`, (route) =>
+    route.fulfill({ headers: cors, json: { models: [{ name: "test-model:1b", capabilities: ["completion"] }] } }),
+  );
+  await page.route(`${OLLAMA}/api/chat`, (route) => {
+    const users = route.request().postDataJSON().messages.filter((m: { role: string }) => m.role === "user");
+    bodies.push(users.at(-1).content);
+    return route.fulfill({
+      headers: { ...cors, "content-type": "application/x-ndjson" },
+      body: [{ message: { role: "assistant", content: reply } }, { message: { role: "assistant", content: "" }, done: true }]
+        .map((chunk) => JSON.stringify(chunk))
+        .join("\n") + "\n",
+    });
+  });
+  await page.goto("/docs/generative/playground");
+  const playground = page.locator('[data-slot="playground"]');
+  const prompt = playground.getByRole("textbox", { name: "Prompt", exact: true });
+  const chips = playground.getByRole("list", { name: "Attached to your next message" });
+  await prompt.fill("Two cities");
+  await page.keyboard.press("Enter");
+  await playground.getByRole("button", { name: "Ask about rows of Capital cities" }).click();
+  await playground.getByRole("checkbox", { name: "Select Lima" }).click();
+  await playground.getByRole("button", { name: "Ask about 1 row" }).click();
+  await expect(chips.getByText("1 row from Capital cities")).toBeVisible();
+
+  // Another conversation neither shows nor sends them.
+  await playground.getByRole("button", { name: "New chat" }).click();
+  await expect(chips.getByText("1 row from Capital cities")).toHaveCount(0);
+  await prompt.fill("Something else");
+  await page.keyboard.press("Enter");
+  await expect.poll(() => bodies.length).toBe(2);
+  expect(bodies[1]).not.toContain("Lima");
+
+  // Back in their own conversation, they are still attached.
+  await playground.getByRole("button", { name: "Conversation history" }).click();
+  await page.getByRole("menuitemradio").filter({ hasText: "Two cities" }).click();
+  await page.keyboard.press("Escape");
+  await expect(chips.getByText("1 row from Capital cities")).toBeVisible();
+  await prompt.fill("Why so large?");
+  await prompt.press("Enter");
+  await expect.poll(() => bodies.length).toBe(3);
+  expect(bodies[2]).toContain("| Lima | 10,883,000 |");
 });

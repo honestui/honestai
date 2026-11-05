@@ -1,4 +1,4 @@
-import { HouseIcon, SquareAddonIcon } from "@/assets/icons";
+import { ComponentBlocksIcon, HouseIcon, SquareAddonIcon } from "@/assets/icons";
 
 interface SidebarOption {
   name: string;
@@ -17,6 +17,7 @@ export const StartedOptions: SidebarOption[] = [
 
 export const GenerativeStartedOptions: SidebarOption[] = [
   { name: "Overview", url: "/docs/generative", icon: <HouseIcon /> },
+  { name: "Gallery", url: "/docs/generative/gallery", icon: <ComponentBlocksIcon /> },
   {
     name: "Installation",
     url: "/docs/generative/installation",

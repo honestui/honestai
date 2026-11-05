@@ -112,6 +112,81 @@ test("local chat sends through the headless adapter and keeps thread history", a
     .analyze();
   expect(axe.violations.map((item) => item.id)).toEqual([]);
 });
+test("reply features demo shows a table, a visual and an editable artifact", async ({
+  page,
+}) => {
+  await page.goto("/docs/generative/replies");
+  await page
+    .locator('[data-component-preview="generative-reply-demo"]')
+    .scrollIntoViewIfNeeded();
+  const preview = page.locator('[data-slot="generative-reply-demo"]');
+  const prompt = preview.getByRole("textbox", { name: "Prompt", exact: true });
+  const send = async (text: string) => {
+    await prompt.fill(text);
+    await preview.getByRole("button", { name: "Send", exact: true }).click();
+  };
+  await send("table");
+  await expect(preview.getByText("Planets and dwarf planets").first()).toBeVisible();
+  await preview.getByRole("searchbox").fill("dwarf");
+  await expect(preview.getByRole("status").filter({ hasText: /2 of 10 rows/ })).toBeVisible();
+  await send("visual");
+  await expect(preview.locator('iframe[title="TCP three-way handshake"]')).toBeVisible();
+  await send("artifact");
+  await preview.getByRole("button", { name: /Onboarding plan/ }).click();
+  await page.getByRole("button", { name: "Edit Onboarding plan" }).click();
+  await expect(page.getByRole("textbox", { name: /Onboarding plan/ })).toHaveValue(/## Week 1: Setup/);
+});
+test("gallery renders every sample without errors", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/docs/generative/gallery");
+  const previews = page.locator('[data-component-preview^="gallery-"]');
+  const count = await previews.count();
+  expect(count).toBeGreaterThan(20);
+  for (let index = 0; index < count; index++) {
+    const preview = previews.nth(index);
+    await preview.scrollIntoViewIfNeeded();
+    await expect(preview.locator('[data-slot="generative-sample"]')).toBeVisible();
+  }
+  const buttons = page.locator('[data-component-preview="gallery-buttons"]');
+  await buttons.getByRole("button", { name: "Explain it simply" }).click();
+  await expect(buttons.getByRole("status")).toHaveText(
+    "In a chat, this sends “Explain it simply” to the assistant.",
+  );
+  expect(errors).toEqual([]);
+});
+test("a visual's canvas drawing that runs past its edges zooms out to stay in frame", async ({ page }) => {
+  const { canvasFit } = await import("../../registry/generative/renderers/canvas-fit");
+  await page.setContent("<canvas id=c width=200 height=100></canvas>");
+  await page.addScriptTag({ content: `(function(){var __name=function(t){return t};(${canvasFit.toString()})();})();` });
+  const drawn = await page.evaluate(() => {
+    const canvas = document.getElementById("c") as HTMLCanvasElement;
+    const context = canvas.getContext("2d")!;
+    // A trail that runs four times past the right edge, with no clear between dots.
+    for (let x = 0; x <= 800; x += 10) context.fillRect(x, 50, 4, 4);
+    const pixels = context.getImageData(0, 0, 200, 100).data;
+    let right = 0;
+    for (let i = 0; i < pixels.length; i += 4) if (pixels[i + 3] > 0) right = Math.max(right, (i / 4) % 200);
+    return { right, transform: context.getTransform().isIdentity };
+  });
+  // The last dot is drawn inside the canvas, and the visual still sees its own transform.
+  expect(drawn.right).toBeGreaterThan(150);
+  expect(drawn.right).toBeLessThan(200);
+  expect(drawn.transform).toBe(true);
+});
+test("a checklist in a reply can be ticked by its box or its text", async ({ page }) => {
+  await page.goto("/docs/generative/gallery");
+  const preview = page.locator('[data-component-preview="gallery-lists"]');
+  await preview.scrollIntoViewIfNeeded();
+  const tests = preview.getByRole("checkbox", { name: "Run the tests" });
+  await expect(tests).not.toBeChecked();
+  await preview.getByText("Run the tests").click();
+  await expect(tests).toBeChecked();
+  await expect(preview.locator("li[data-done]")).toHaveCount(2);
+  const release = preview.getByRole("checkbox", { name: "Tag the release" });
+  await release.press("Space");
+  await expect(release).not.toBeChecked();
+});
 test("registry bundles contain portable source and their dependencies", async ({
   request,
 }) => {
@@ -168,7 +243,9 @@ test("generated charts render and narrow layouts remain operable", async ({
   const preview = await playground(page);
   await preview.getByRole("button", { name: "Chart", exact: true }).click();
   await expect(
-    preview.getByRole("img", { name: "BarChart", exact: true }),
+    // Without axis labels the chart has no caption, so it is named for its
+    // series, never for the component.
+    preview.getByRole("img", { name: "Orders", exact: true }),
   ).toBeVisible();
   const axe = await new AxeBuilder({ page })
     .include('[data-slot="generative-playground"]')

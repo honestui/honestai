@@ -62,6 +62,7 @@ const COMPONENT_ICONS = {
   tools: ToolsIcon,
   renderer: BrowserIcon,
   chat: BubbleChatIcon,
+  replies: PanelRightIcon,
   library: Layers01Icon,
   server: ToolsIcon,
 } as const;

@@ -2,6 +2,9 @@
 
 import * as React from "react"
 import {
+  ArrowDown as ArrowDownIcon,
+  ArrowUp as ArrowUpIcon,
+  ChevronsUpDown as ChevronsUpDownIcon,
   CircleAlert as CircleAlertIcon,
   LoaderCircle as LoaderCircleIcon,
 } from "honestui/icons"
@@ -26,8 +29,14 @@ const tableFrame =
 export type RecordsTableColumn = {
   id: string
   header: string
+  /** "end" right-aligns a numeric column, so place values line up. */
+  align?: "start" | "end"
+  /** False for a column of controls, such as row checkboxes, that sorting would not order. */
+  sortable?: boolean
   /** Marks a column whose cells an agent fills in. */
   isGenerated?: boolean
+  /** Shown in place of `header` in a column that doesn't sort, such as a select-all checkbox. */
+  headerContent?: React.ReactNode
 }
 
 export type GeneratedCell =
@@ -66,15 +75,78 @@ export const defaultRecordsTableLabels: RecordsTableLabels = {
   progress: (done, total) => `${done} of ${total} generated cells done`,
 }
 
+export type RecordsTableSort = {
+  columnId: string
+  direction: "ascending" | "descending"
+}
+
 export type RecordsTableProps = {
   /** Names the table for screen readers. */
   label: string
   columns: RecordsTableColumn[]
+  /** In display order; sorting them is the caller's. */
   rows: RecordsTableRow[]
+  /** The column rows are ordered by, shown in its header. */
+  sort?: RecordsTableSort | null
+  /** Passing it makes each header a button that asks to sort by its column. */
+  onSortChange?: (columnId: string) => void
   /** Passing it shows Try again in every failed cell. */
   onRetry?: (rowId: string, columnId: string) => void
   labels?: Partial<RecordsTableLabels>
+  /** Controls for the whole table, such as a filter or export, in the card above the columns. */
+  toolbar?: React.ReactNode
   className?: string
+}
+
+/**
+ * A column's alignment. Text that follows a figure column gets extra room
+ * at its start, so "15.7" and "1991" don't read as one value.
+ */
+function cellAlign(columns: RecordsTableColumn[], index: number) {
+  const column = columns[index]
+  if (column.align === "end") return "text-end"
+  return columns[index - 1]?.align === "end" ? "ps-[var(--hui-space-6)]" : undefined
+}
+
+/**
+ * A column header that sorts by its column. The arrow shows the current order;
+ * an unsorted column shows a faint two-way arrow at rest, so sorting is
+ * findable without hovering, and a stronger one on hover and focus.
+ */
+function SortButton({
+  label,
+  direction,
+  end,
+  onClick,
+}: {
+  label: string
+  direction?: "ascending" | "descending"
+  end: boolean
+  onClick: () => void
+}) {
+  const Icon = direction === "ascending" ? ArrowUpIcon : direction === "descending" ? ArrowDownIcon : ChevronsUpDownIcon
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        // Middle-aligned, so a header whose icon comes first (an end-aligned
+        // column) sits on the same line as one whose label does.
+        "group/sort -mx-[var(--hui-space-1)] inline-flex align-middle max-w-full cursor-pointer items-center gap-[var(--hui-space-1)] rounded-[var(--hui-radius-1)] px-[var(--hui-space-1)] text-inherit outline-none hover:text-[var(--hui-color-foreground-base-primary)] focus-visible:[outline:var(--hui-focus-ring)]",
+        end && "flex-row-reverse"
+      )}
+    >
+      <span>{label}</span>
+      <Icon
+        aria-hidden="true"
+        className={cn(
+          "size-3.5 shrink-0",
+          !direction &&
+            "opacity-30 group-hover/sort:opacity-70 group-focus-visible/sort:opacity-70"
+        )}
+      />
+    </button>
+  )
 }
 
 /**
@@ -86,8 +158,11 @@ function RecordsTable({
   label,
   columns,
   rows,
+  sort,
+  onSortChange,
   onRetry,
   labels: labelsProp,
+  toolbar,
   className,
 }: RecordsTableProps) {
   const labels = { ...defaultRecordsTableLabels, ...labelsProp }
@@ -115,15 +190,41 @@ function RecordsTable({
       {/* The first and last cells clear the card's rounded corner, as the
           other cards inset their content. */}
       <div className={tableFrame}>
+        {toolbar && (
+          <div
+            data-slot="records-table-toolbar"
+            className="border-b-[length:var(--hui-border-width-surface)] border-[var(--hui-color-border-base-primary)] px-[var(--hui-space-5)] py-[var(--hui-space-3)]"
+          >
+            {toolbar}
+          </div>
+        )}
         <Table
           aria-label={label}
           className="[&_tr>*:first-child]:ps-[var(--hui-space-5)] [&_tr>*:last-child]:pe-[var(--hui-space-5)]"
         >
           <TableHeader>
             <TableRow>
-              {columns.map((column) => (
-                <TableHead key={column.id} scope="col">
-                  {column.isGenerated ? (
+              {columns.map((column, index) => (
+                <TableHead
+                  key={column.id}
+                  scope="col"
+                  aria-sort={
+                    onSortChange && column.sortable !== false
+                      ? sort?.columnId === column.id
+                        ? sort.direction
+                        : "none"
+                      : undefined
+                  }
+                  className={cellAlign(columns, index)}
+                >
+                  {onSortChange && column.sortable !== false ? (
+                    <SortButton
+                      label={column.header}
+                      direction={sort?.columnId === column.id ? sort.direction : undefined}
+                      end={column.align === "end"}
+                      onClick={() => onSortChange(column.id)}
+                    />
+                  ) : column.isGenerated ? (
                     // A separator and a lighter weight keep the marker from
                     // reading as part of the column name.
                     <span className="inline-flex flex-wrap items-baseline gap-x-[var(--hui-space-2)]">
@@ -134,7 +235,7 @@ function RecordsTable({
                       </span>
                     </span>
                   ) : (
-                    column.header
+                    column.headerContent ?? column.header
                   )}
                 </TableHead>
               ))}
@@ -143,8 +244,12 @@ function RecordsTable({
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.id}>
-                {columns.map((column) => (
-                  <TableCell key={column.id} data-generated={column.isGenerated ? "" : undefined}>
+                {columns.map((column, index) => (
+                  <TableCell
+                    key={column.id}
+                    data-generated={column.isGenerated ? "" : undefined}
+                    className={cellAlign(columns, index)}
+                  >
                     {column.isGenerated ? (
                       <GeneratedCellContent
                         cell={row.generated?.[column.id] ?? { status: "queued" }}

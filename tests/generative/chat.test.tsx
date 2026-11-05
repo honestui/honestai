@@ -150,7 +150,7 @@ it("frames content in a card only where the reply asks for one", async () => {
   expect(reply.querySelector('[data-slot="card"]')?.textContent).toContain(
     "Lisbon",
   );
-  expect(reply.querySelector('[role="alert"]')).toBeNull();
+  expect(reply.querySelector('[data-slot="generated-block-error"]')).toBeNull();
   await unmount();
 });
 
@@ -178,7 +178,7 @@ it("reports a block only for what is missing from view", async () => {
     ].join("\n"),
   );
   expect(recovered.reply.textContent).toContain("Income");
-  expect(recovered.reply.querySelector('[role="alert"]')).toBeNull();
+  expect(recovered.reply.querySelector('[data-slot="generated-block-error"]')).toBeNull();
   await recovered.unmount();
 
   // An unknown component is dropped, so that is reported, once.
@@ -189,8 +189,10 @@ it("reports a block only for what is missing from view", async () => {
       "```",
     ].join("\n"),
   );
-  const alert = dropped.reply.querySelector('[role="alert"]')?.textContent;
-  expect(alert).toContain("Part of the generated interface could not be shown");
+  const alert = dropped.reply.querySelector(
+    '[data-slot="generated-block-error"]',
+  )?.textContent;
+  expect(alert).toContain("Part of this reply couldn’t be displayed.");
   expect(alert?.match(/Unknown component "Missing"/g)).toHaveLength(1);
   await dropped.unmount();
 });
@@ -260,7 +262,7 @@ it("renders a Diagram as an ordered list that names each arrow", async () => {
     "points to Variable x.",
   );
   expect(boxes[1].querySelector(".sr-only")).toBeNull();
-  expect(reply.querySelector('[role="alert"]')).toBeNull();
+  expect(reply.querySelector('[data-slot="generated-block-error"]')).toBeNull();
   await unmount();
 });
 
@@ -275,8 +277,8 @@ it("says when a finished program left a bracket open, instead of dropping what f
       "```",
     ].join("\n"),
   );
-  expect(reply.querySelector('[role="alert"]')?.textContent).toContain(
-    "ends with a bracket or quote left open",
-  );
+  expect(
+    reply.querySelector('[data-slot="generated-block-error"]')?.textContent,
+  ).toContain("ends with a bracket or quote left open");
   await unmount();
 });

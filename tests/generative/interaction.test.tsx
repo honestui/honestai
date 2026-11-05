@@ -298,3 +298,23 @@ it("draws one frame for a Map, Calculator or Quiz, dropping its own inside a Car
   expect(inCard.reply.textContent).toContain("Question 1 of 1");
   expect(inCard.reply.textContent).toContain("Moab");
 });
+
+it("takes focus to the first invalid field on a failed submit, even when it is a group", async () => {
+  const { reply } = await renderProgram(
+    [
+      "root = Stack([form])",
+      'form = Form("trip", Buttons([Button("Plan my trip", @ToAssistant("Plan it"), "primary")]), [kind, name])',
+      'kind = FormControl("Trip type", OptionCards("kind", "single", [OptionCard("city", "City break"), OptionCard("beach", "Beach")], { required: true }))',
+      'name = FormControl("Name", Input("name", "", "text", { required: true }))',
+    ].join("\n"),
+  );
+  await click(button(reply, "Plan my trip")!);
+  // The group's container is marked invalid; focus lands on its first choice.
+  await React.act(async () => {
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+  });
+  const group = reply.querySelector('[aria-invalid="true"]')!;
+  expect(group).not.toBeNull();
+  expect(group.contains(document.activeElement)).toBe(true);
+  expect(document.activeElement).not.toBe(button(reply, "Plan my trip"));
+});

@@ -220,11 +220,14 @@
   --border: var(--hui-color-border-base-secondary);
   --input: var(--hui-color-border-base-secondary);
   --ring: var(--hui-color-border-accent-emphasis);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  /* Generated charts. Series keep their hue in both themes; only lightness
+     changes, so a chart reads as the same chart after a theme switch. Series 1
+     is the accent. Each holds at least 3:1 against the page. */
+  --chart-1: var(--hui-accent-9);
+  --chart-2: oklch(0.6 0.11 185);
+  --chart-3: oklch(0.66 0.15 65);
+  --chart-4: oklch(0.56 0.19 300);
+  --chart-5: oklch(0.6 0.19 15);
   --sidebar: var(--hui-color-background-base-secondary);
   --sidebar-foreground: var(--hui-color-foreground-base-primary);
   --sidebar-primary: var(--hui-color-background-neutral-emphasis);
@@ -250,11 +253,11 @@
 }
 
 [data-theme="dark"] {
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: oklch(0.68 0.17 258);
+  --chart-2: oklch(0.74 0.11 185);
+  --chart-3: oklch(0.8 0.14 70);
+  --chart-4: oklch(0.7 0.16 300);
+  --chart-5: oklch(0.72 0.16 15);
   /* code stuff */
   --color-vesper-type: oklch(0.8689 0.0877 60.68);
   --color-vesper-string: oklch(0.93 0.1035 175.07);

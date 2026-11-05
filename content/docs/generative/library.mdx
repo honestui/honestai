@@ -2,7 +2,7 @@
 title: Component library
 metaTitle: Honest AI Generative UI Component Library
 description: Use Honest AI component contracts backed by existing Honest AI and Honest UI implementations.
-lastModified: "2026-10-13"
+lastModified: "2026-11-05"
 ---
 
 `honestLibrary` renders application layouts with a `Stack` root. `honestChatLibrary` renders the generated blocks inside a Markdown chat reply. Its `Stack` root is a plain vertical list, `Card` is an optional frame, and it adds follow-ups and sections.
@@ -45,6 +45,8 @@ root = Stack([TextContent("Example note", "small")])
 | Quizzes | Honest UI radio groups with local marking and scoring |
 | Parts diagrams | Honest AI parts renderer on Honest UI theme tokens |
 | Maps | MapLibre GL JS with a place list on Honest UI theme tokens |
+| Artifacts (chat) | Honest AI Artifact Panel and Artifact Card |
+| HTML visuals (chat) | Nested sandboxed frames on Honest UI theme tokens |
 
 Card layouts, entity lists, follow-up actions, and form bindings compose the existing components. They share the existing primitive components and theme tokens.
 
@@ -63,6 +65,14 @@ These names are the Honest AI Lang wire format. The generated output stays compa
 ### Tables
 
 `Table`, `Col`, `EditableTable`.
+
+`Table(columns, title?)` is for reading: people can sort, filter, export and, in chat, select rows to ask about. `EditableTable` is for changing values and saving them. [Reply features](/docs/generative/replies#tables) describes every table control.
+
+### Chat only
+
+`Artifact`, `HtmlVisual`, `FollowUpBlock`, `FollowUpItem`, `SectionBlock`, `SectionItem`.
+
+`Artifact` opens a document, code file or report in a panel beside the conversation, where people can edit it and move between versions. `HtmlVisual` runs model-written HTML and SVG in a sandboxed frame. See [Reply features](/docs/generative/replies) for both.
 
 ### Diagrams
 

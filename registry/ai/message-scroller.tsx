@@ -997,6 +997,27 @@ export function MessageScroller({
     };
   }, [followOutput, scrollToEnd]);
 
+  // Focus that carries the view away from the end, such as a form taking the
+  // reader back to its first error, means they have left the live edge, and
+  // following would scroll the control back out of view as content grows.
+  // This reads the position at focusin, so a caller that moves focus far
+  // should scroll to the target before focusing it; engines differ on when
+  // focus() itself scrolls.
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const handleFocusIn = () => {
+      const distance =
+        viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
+      if (distance > followThreshold) {
+        programmaticScrollRef.current = false;
+        setFollowing(false);
+      }
+    };
+    viewport.addEventListener("focusin", handleFocusIn);
+    return () => viewport.removeEventListener("focusin", handleFocusIn);
+  }, [followThreshold, setFollowing]);
+
   useEffect(() => {
     const content = contentRef.current;
     if (!content || typeof ResizeObserver === "undefined") return;

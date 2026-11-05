@@ -85,15 +85,22 @@ function ProseCodeBlock({
         <span className="min-w-0 truncate font-mono text-[var(--hui-color-foreground-base-secondary)] [font-size:var(--hui-font-size-mono-small)] [letter-spacing:var(--hui-letter-spacing-mono-small)] [line-height:var(--hui-line-height-mono-small)]">{label}</span>
         <div className="ms-auto flex shrink-0 items-center gap-[var(--hui-space-2)]">
           {actions}
-          <Button type="button" variant="ghost" size="sm" onClick={() => void copy()}>
-            {copyState === "copied" ? <CheckIcon aria-hidden="true" /> : <CopyIcon aria-hidden="true" />}
-            {/* Both labels share one cell, so the button keeps its width when the label changes. */}
-            <span className="grid">
-              <span className="invisible col-start-1 row-start-1" aria-hidden="true">
-                {labels.copied.length > labels.copy.length ? labels.copied : labels.copy}
-              </span>
-              <span className="col-start-1 row-start-1 text-start">{copyState === "copied" ? labels.copied : labels.copy}</span>
-            </span>
+          {/* Icon only: the header already says what is copied. The name stays
+              the same while the check shows; the status below announces it. */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={labels.copy}
+            title={labels.copy}
+            className="text-[var(--hui-color-foreground-base-secondary)] hover:text-[var(--hui-color-foreground-base-primary)] [&_svg]:size-3.5"
+            onClick={() => void copy()}
+          >
+            {copyState === "copied" ? (
+              <CheckIcon aria-hidden="true" className="text-[var(--hui-color-foreground-success-primary)]" />
+            ) : (
+              <CopyIcon aria-hidden="true" />
+            )}
           </Button>
         </div>
         <span role="status" className="sr-only">

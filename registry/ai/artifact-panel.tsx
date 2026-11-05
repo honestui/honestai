@@ -263,6 +263,8 @@ export type ArtifactCardProps = Omit<React.ComponentProps<"button">, "children" 
   isOpen?: boolean
   /** Replaces the document icon. */
   icon?: React.ReactNode
+  /** Keeps the description while the panel is open, such as a version that tells two cards apart. */
+  keepDescription?: boolean
   labels?: Partial<ArtifactLabels>
 }
 
@@ -273,6 +275,7 @@ function ArtifactCard({
   status = "complete",
   isOpen = false,
   icon,
+  keepDescription = false,
   labels: labelsProp,
   className,
   ...props
@@ -280,7 +283,13 @@ function ArtifactCard({
   const labels = { ...defaultArtifactLabels, ...labelsProp }
   // While its panel is open, the panel header already shows the description.
   const note =
-    status === "streaming" ? labels.streaming : status === "error" ? labels.error : isOpen ? undefined : description
+    status === "streaming"
+      ? labels.streaming
+      : status === "error"
+        ? labels.error
+        : isOpen && !keepDescription
+          ? undefined
+          : description
 
   return (
     <button

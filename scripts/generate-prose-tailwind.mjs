@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises"
 
 const css = (await readFile("registry/styles/prose.css", "utf8")).replace(/\/\*[\s\S]*?\*\//g, "")
 const classes = []
-const encode = (text) => text.replace(/--_([\w-]+)/g, "--prose-internal-$1").replace(/\s*([(),])\s*/g, "$1").replace(/\s+/g, "_")
+const encode = (text) => text.replace(/--_([\w-]+)/g, "--prose-internal-$1").replace(/\s*([(,])\s*/g, "$1").replace(/\s+\)/g, ")").replace(/\s+/g, "_")
 
 // Split selector lists, leaving commas inside :where() and :not() alone.
 function selectors(text) {
@@ -26,7 +26,7 @@ for (const rule of css.matchAll(/([^{}]+)\{([^{}]+)\}/g)) {
     // Tailwind sorts utilities itself. Preserve overlapping CSS rules with
     // explicit specificity rather than depending on the order of class names.
     const priority = selector.includes(":first-child") ? 3 :
-      /:where\(h1, h2\)|\+ \*|ul ul|contains-task-list|li\) >|:where\(hr\)|prose-scroll\) >/.test(selector) ? 2 : 1
+      /:is\(h1, h2\)|\+ \*|ul ul|contains-task-list|li\) >|:where\(hr\)|prose-scroll\) >|a:hover|p \+ p|\) \+ li\)|dd \+ dt|\(kbd\)|:has\(> code\)|\) :where\(blockquote|\) :where\(li\)/.test(selector) ? 2 : 1
     const variant = root ? "" : `[${encode(selector.replace(".honest-prose", "&".repeat(priority)))}]:`
     for (const declaration of rule[2].split(";").map((value) => value.trim()).filter(Boolean)) {
       // Logical border overrides must beat the border reset regardless of
@@ -34,7 +34,10 @@ for (const rule of css.matchAll(/([^{}]+)\{([^{}]+)\}/g)) {
       const orderedVariant = declaration.startsWith("border-block-start:")
         ? variant.replace(`[${"&".repeat(priority)}`, `[${"&".repeat(priority + 1)}`)
         : variant
-      classes.push(`${orderedVariant}[${encode(declaration.replace(/:\s*/, ":"))}]!`)
+      // Markdown aligns table columns with inline styles, which an important
+      // utility would override.
+      const important = declaration.startsWith("text-align:") ? "" : "!"
+      classes.push(`${orderedVariant}[${encode(declaration.replace(/:\s*/, ":"))}]${important}`)
     }
   }
 }

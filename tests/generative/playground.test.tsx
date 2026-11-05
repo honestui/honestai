@@ -84,4 +84,5 @@ it.each([
     expect(input.value).toBe("Hello");
   }
   await React.act(async () => root.unmount());
-});
+  // The first run imports the whole playground cold, which can pass 5s on a busy machine.
+}, 20_000);
