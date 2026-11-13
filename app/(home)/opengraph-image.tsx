@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
 export const alt =
@@ -16,16 +14,9 @@ const colors = {
   rule: "#d7dbdf",
 };
 
-function loadFont(file: string) {
-  return readFile(join(process.cwd(), "public/fonts", file));
-}
-
+// Set in Geist, the font next/og ships as its default. It bundles the regular
+// weight only, so the 500-weight lines render in regular.
 export default async function Image() {
-  const [regular, medium] = await Promise.all([
-    loadFont("LoveSans-Regular.woff"),
-    loadFont("LoveSans-Medium.woff"),
-  ]);
-
   return new ImageResponse(
     (
       <div
@@ -38,7 +29,6 @@ export default async function Image() {
           padding: 72,
           background: colors.background,
           color: colors.text,
-          fontFamily: "Love Sans",
         }}
       >
         <div style={{ display: "flex", fontSize: 34, fontWeight: 500 }}>
@@ -89,12 +79,6 @@ export default async function Image() {
         </div>
       </div>
     ),
-    {
-      ...size,
-      fonts: [
-        { name: "Love Sans", data: regular, weight: 400, style: "normal" },
-        { name: "Love Sans", data: medium, weight: 500, style: "normal" },
-      ],
-    },
+    size,
   );
 }

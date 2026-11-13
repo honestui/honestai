@@ -71,9 +71,11 @@ export function PageGroup({ label, pages }: { label: string; pages: PageItem[] }
   if (pages.length === 0) return null;
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>{label}</SidebarGroupLabel>
-      <SidebarMenu>
+    <SidebarGroup className="py-1 group-data-[collapsible=icon]:hidden">
+      <SidebarGroupLabel className="text-muted-foreground/70 h-7 text-[11px]">
+        {label}
+      </SidebarGroupLabel>
+      <SidebarMenu className="gap-px">
         {pages.map((page) => {
           const isActive = pathname === page.url;
           const isNew = isRecentlyReleased(page.url);
@@ -92,12 +94,12 @@ export function PageGroup({ label, pages }: { label: string; pages: PageItem[] }
                   />
                 }
                 className={cn(
+                  "h-7 text-[13px]",
                   !isActive &&
-                    "text-muted-foreground/90 hover:text-primary dark:text-muted-foreground/80 dark:hover:text-primary",
+                    "text-muted-foreground dark:text-foreground/80 hover:text-foreground dark:hover:text-foreground hover:bg-sidebar-accent/60 active:bg-sidebar-accent",
                 )}
                 isActive={isActive}
               >
-                {icon}
                 <span className="min-w-0 truncate">{page.name}</span>
                 {isNew && (
                   <Badge className="ms-auto" size="sm" variant="secondary">
